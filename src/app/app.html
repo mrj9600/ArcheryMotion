@@ -1,0 +1,11 @@
+<header class="topbar">
+  <span class="logo">🏹 ArcheryMotion</span>
+  <nav>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Live</a>
+    <a routerLink="/skud" routerLinkActive="active">Skud</a>
+    <a routerLink="/ble" routerLinkActive="active">BLE</a>
+  </nav>
+</header>
+<main>
+  <router-outlet />
+</main>

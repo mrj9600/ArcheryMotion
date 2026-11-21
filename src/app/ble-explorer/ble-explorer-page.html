@@ -1,0 +1,139 @@
+<div class="page">
+  <section class="card">
+    <h2>BLE-udforsker</h2>
+    <p class="hint">
+      Forbind til en eller flere Bluetooth-enheder, slå notifications til og log de rå pakker i én fælles log med fælles
+      tid. Chrome giver kun adgang til services, der er nævnt på forhånd – disse er indbygget:
+    </p>
+    <ul class="known">
+      @for (s of known; track s.uuid) {
+        <li><code>{{ s.uuid }}</code> {{ s.name }}</li>
+      }
+    </ul>
+    <label class="field">
+      Ekstra service-UUID'er (adskil med komma)
+      <input type="text" [value]="extraServices()" (change)="setExtra($any($event.target).value)" placeholder="f.eks. 0000fff0-0000-1000-8000-00805f9b34fb" />
+    </label>
+    <div class="actions">
+      <button (click)="connect()" [disabled]="busy()">{{ busy() ? 'Forbinder…' : sessions().length ? 'Tilføj enhed' : 'Vælg enhed' }}</button>
+    </div>
+    @if (error(); as err) {
+      <p class="error">{{ err }}</p>
+    }
+  </section>
+
+  @for (s of sessions(); track s.device.id) {
+    <section class="card device-card" [class.offline]="!s.connected()">
+      <div class="device-head">
+        <h3>{{ s.label }} <span class="muted">{{ s.connected() ? 'forbundet' : 'afbrudt' }}</span></h3>
+        <div class="actions">
+          @if (s.kind === 'mantis') {
+            <button (click)="startMantis(s)" [disabled]="!s.connected()">Start MantisX som appen gør</button>
+          }
+          @if (s.kind === 'wit') {
+            <button (click)="startWit(s)" [disabled]="!s.connected()">Start WIT (200 Hz)</button>
+          }
+          @if (s.connected()) {
+            <button class="danger small" (click)="disconnect(s)">Afbryd</button>
+          } @else {
+            <button class="secondary small" (click)="remove(s)">Fjern</button>
+          }
+        </div>
+      </div>
+      @if (s.kind === 'mantis') {
+        <p class="hint">Læg sensoren stille, før du starter (som ved "Calibrate" i MantisX-appen).</p>
+      }
+
+      <details>
+        <summary>Characteristics ({{ s.chars().length }})</summary>
+        <div class="chars">
+          @for (c of s.chars(); track c.uuid) {
+            <div class="char" [class.dfu]="c.dfu">
+              <div class="char-head">
+                <code>{{ c.uuid }}</code>
+                <span class="muted">{{ c.serviceName }}</span>
+              </div>
+              <div class="props">
+                @for (p of c.props; track p) {
+                  <span class="prop">{{ p }}</span>
+                }
+                @if (c.packets()) {
+                  <span class="muted">{{ c.packets() }} pakker · {{ c.lastLength() }} bytes</span>
+                }
+              </div>
+              <div class="actions">
+                @if (c.props.includes('read')) {
+                  <button class="secondary small" (click)="read(c)" [disabled]="!s.connected()">Læs</button>
+                }
+                @if (c.props.includes('notify') || c.props.includes('indicate')) {
+                  <button class="small" [class.secondary]="!c.notifying()" (click)="toggleNotify(c)" [disabled]="!s.connected()">
+                    {{ c.notifying() ? 'Stop notify' : 'Start notify' }}
+                  </button>
+                }
+              </div>
+              @if (c.dfu) {
+                <p class="error small">Firmware-opdatering – skrivning er slået fra for at beskytte sensoren.</p>
+              } @else if (c.props.includes('write') || c.props.includes('writeNoResp')) {
+                <div class="write">
+                  <input type="text" placeholder="hex, f.eks. 01 02 ff" (input)="c.writeHex = $any($event.target).value" />
+                  @if (c.props.includes('write')) {
+                    <button class="secondary small" (click)="write(c, true)" [disabled]="!s.connected()">Skriv</button>
+                  }
+                  @if (c.props.includes('writeNoResp')) {
+                    <button class="secondary small" (click)="write(c, false)" [disabled]="!s.connected()">Skriv u. svar</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </details>
+    </section>
+  }
+
+  @if (anyConnected()) {
+    <section class="card">
+      <h3>Markør</h3>
+      <p class="hint">Tryk lige før du udfører bevægelsen – det kommer med i loggen med tidspunkt.</p>
+      <div class="actions marker">
+        @for (
+          m of ['stille', 'flad', 'på hovedet', 'venstre side', 'højre side', 'front op', 'front ned', 'drej 90° lodret akse', 'drej 90° tilbage', 'tip frem/tilbage', 'kant venstre/højre', 'ryk'];
+          track m
+        ) {
+          <button class="secondary small" (click)="addMarker(m)">{{ m }}</button>
+        }
+        <input type="text" placeholder="egen tekst" #marker (keydown.enter)="addMarker(marker.value); marker.value = ''" />
+      </div>
+    </section>
+  }
+
+  <section class="card log-card">
+    <div class="log-head">
+      <h3>Log <span class="muted">({{ logCount() }} linjer, viser de nyeste 300)</span></h3>
+      <div class="actions">
+        <select (change)="format.set($any($event.target).value)">
+          <option value="hex">Hex</option>
+          <option value="int16">int16 LE (fra byte 0)</option>
+          <option value="int16odd">int16 LE (fra byte 1)</option>
+        </select>
+        <label class="check"><input type="checkbox" [checked]="paused()" (change)="paused.set($any($event.target).checked)" /> Pause</label>
+        <button class="secondary small" (click)="clearLog()">Ryd</button>
+        <button class="secondary small" (click)="download()" [disabled]="!logCount()">Gem log</button>
+      </div>
+    </div>
+    <div class="log">
+      @for (e of visibleLog(); track $index) {
+        <div class="line" [class]="e.dir">
+          <span class="t">{{ e.time | number: '1.3-3' }}</span>
+          <span class="dev">{{ e.dev }}</span>
+          <span class="d">{{ e.dir }}</span>
+          <span class="c">{{ e.char ? short(e.char) : '' }}</span>
+          <span class="v">{{ render(e) }}</span>
+          <span class="a">{{ ascii(e) }}</span>
+        </div>
+      } @empty {
+        <p class="hint">Ingen data endnu.</p>
+      }
+    </div>
+  </section>
+</div>

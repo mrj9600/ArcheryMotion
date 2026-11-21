@@ -1,0 +1,201 @@
+@if (analysis(); as a) {
+  <div class="layout">
+    <section class="main">
+      <div class="viewport">
+        <app-motion-scene [poses]="poses" [trailMode]="trailMode()" />
+        <div class="overlay">
+          <strong>{{ time() | number: '1.3-3' }} s{{ currentPhase() ? ' · ' + currentPhase() : '' }}</strong>
+          @if (current(); as c) {
+            @if (c.displacement; as d) {
+              <span>Frem {{ d.forward | number: '1.1-1' }} cm · Op {{ d.up | number: '1.1-1' }} cm · Højre {{ d.right | number: '1.1-1' }} cm</span>
+            }
+            <span
+              >Op/ned {{ c.angles.vertical | number: '1.1-1' }}° · Kant {{ c.angles.cant | number: '1.1-1' }}° · H/V
+              {{ c.angles.horizontal | number: '1.1-1' }}°</span
+            >
+          }
+        </div>
+      </div>
+
+      <div class="transport">
+        <button (click)="togglePlay()">{{ playing() ? 'Pause' : 'Afspil' }}</button>
+        <input
+          type="range"
+          [min]="a.range[0]"
+          [max]="a.range[1]"
+          step="0.001"
+          [value]="time()"
+          (input)="onScrub($any($event.target).value)"
+        />
+      </div>
+
+      @if (score(); as sc) {
+        <section class="stability">
+          <div class="score-head">
+            <div class="big">
+              <span class="value">{{ sc.stability | number: '1.0-0' }}</span>
+              <span class="label">Stabilitet</span>
+            </div>
+            <div class="axes">
+              @if (sc.vertical; as v) {
+                <div>Op/ned <strong>{{ v.score | number: '1.0-0' }}</strong> <span class="muted">({{ v.meanSpeed | number: '1.1-1' }} °/s)</span></div>
+              }
+              @if (sc.horizontal; as h) {
+                <div>Højre/venstre <strong>{{ h.score | number: '1.0-0' }}</strong> <span class="muted">({{ h.meanSpeed | number: '1.1-1' }} °/s)</span></div>
+              }
+              @for (o of otherBowScores(); track o.name) {
+                <div class="muted">{{ o.name }}: {{ o.score === undefined ? '–' : (o.score | number: '1.0-0') }}</div>
+              }
+            </div>
+          </div>
+
+          <ul class="reasons">
+            @for (r of sc.reasons; track r) {
+              <li>{{ r }}</li>
+            }
+          </ul>
+
+          <div class="loss">
+            <div class="loss-title">Hvor scoren tabes (point pr. halve sekund før slip)</div>
+            @for (b of lossBars(); track b.start) {
+              <div class="loss-row">
+                <span class="loss-t">{{ -b.end | number: '1.1-1' }}–{{ -b.start | number: '1.1-1' }} s</span>
+                <span class="loss-bar"><i [style.width.%]="b.width"></i></span>
+                <span class="loss-v">{{ b.loss | number: '1.1-1' }}</span>
+              </div>
+            }
+          </div>
+
+          <app-time-chart
+            title="Sigtehastighed i holdet"
+            unit="°/s"
+            [series]="speedSeries()"
+            [domain]="scoreDomain()"
+            [cursor]="time()"
+            (seek)="seek($event)"
+          />
+          <p class="hint">
+            Scoren ser på de største 25 % af sigtebevægelserne fra holdet starter (højst 3 s) til slippet, vægtet så uro tæt
+            på slippet tæller mest. 100 = helt roligt; ca. 1 °/s i gennemsnit giver 88.
+          </p>
+        </section>
+      }
+
+      @if (phases(); as ph) {
+        <section class="phase-table">
+          @for (p of phaseInfo; track p.id) {
+            <div class="phase-cell">
+              <span class="swatch" [style.background]="p.color"></span>
+              <span>{{ p.label }}</span>
+              <strong>{{ ph.durations[p.id] | number: '1.1-1' }} s</strong>
+            </div>
+          }
+        </section>
+      }
+
+      @if (a.bow; as bow) {
+        <div class="charts">
+          <app-time-chart
+            title="Buens forskydning"
+            unit="cm"
+            [times]="bow.times"
+            [series]="displacementSeries()"
+            [domain]="displacementDomain"
+            [cursor]="time()"
+            (seek)="seek($event)"
+          />
+          @if (comparisonCharts().length) {
+            @for (c of comparisonCharts(); track c.title) {
+              <app-time-chart
+                [title]="c.title"
+                unit="°"
+                [series]="c.series"
+                [domain]="angleDomain()"
+                [bands]="phaseBands()"
+                [cursor]="time()"
+                (seek)="seek($event)"
+              />
+            }
+          } @else {
+            <app-time-chart
+              title="Buens vinkler i forhold til slippet"
+              unit="°"
+              [times]="bow.times"
+              [series]="angleSeries()"
+              [domain]="angleDomain()"
+                [bands]="phaseBands()"
+              [cursor]="time()"
+              (seek)="seek($event)"
+            />
+          }
+          @if (bowPlacement().length > 1) {
+            <p class="hint">
+              3D:
+              @for (b of bowPlacement(); track b.name; let last = $last) {
+                {{ b.name }} {{ b.place }}{{ last ? '.' : ', ' }}
+              }
+              Forskydning og grafen ovenfor er fra {{ bow.name }}.
+            </p>
+          }
+          <p class="hint">
+            Forskydningen er beregnet ud fra accelerometeret ({{ bow.sampleRate | number: '1.0-0' }} Hz) fra
+            {{ displacementDomain[0] }} s til {{ displacementDomain[1] }} s omkring slippet. Den er et estimat: buen
+            antages at stå stille lige før slippet, og fejlen vokser med tiden efter. I 3D er forskydningen forstørret
+            {{ scale() }}×.
+          </p>
+        </div>
+      } @else {
+        <p class="hint">Der var ingen sensor med placeringen <em>Bue</em> i dette skud.</p>
+      }
+    </section>
+
+    <aside class="panel">
+      <div class="controls">
+        <label>
+          Hastighed
+          <select (change)="speed.set(+$any($event.target).value)">
+            @for (s of speeds; track s) {
+              <option [value]="s" [selected]="s === speed()">{{ s }}×</option>
+            }
+          </select>
+        </label>
+        <label>
+          Forstør bevægelse
+          <select (change)="setScale($any($event.target).value)">
+            @for (s of scales; track s) {
+              <option [value]="s" [selected]="s === scale()">{{ s }}×</option>
+            }
+          </select>
+        </label>
+        <label>
+          Spor
+          <select (change)="setTrailMode($any($event.target).value)">
+            <option value="grip" [selected]="trailMode() === 'grip'">Buens greb</option>
+            <option value="aim" [selected]="trailMode() === 'aim'">Sigtepunkt</option>
+          </select>
+        </label>
+        <button class="secondary" (click)="resetView()">Bagfra</button>
+      </div>
+
+      <h3>Optagne skud</h3>
+      @for (s of recorder.shots(); track s.id) {
+        <div class="shot" [class.selected]="s === shot()" (click)="select(s)">
+          <span>Skud {{ s.id }}</span>
+          @if (shotScores().get(s.id); as sc) {
+            <strong class="shot-score">{{ sc | number: '1.0-0' }}</strong>
+          }
+          <span class="muted">{{ s.recordedAt | date: 'HH:mm:ss' }} · {{ s.trigger === 'auto' ? 'auto' : 'manuel' }}</span>
+          <button class="danger small" (click)="recorder.remove(s); $event.stopPropagation()">Slet</button>
+        </div>
+      }
+    </aside>
+  </div>
+} @else {
+  <div class="empty">
+    <p>Der er ikke optaget nogen skud endnu.</p>
+    <p class="hint">
+      Gå til <a routerLink="/">Live</a>, sæt <em>Klar til skud</em> til, og skyd – eller tryk <em>Udløs nu</em> for at
+      optage uden et rigtigt skud. Med en simuleret sensor kommer der et helt skud hvert 12. sekund.
+    </p>
+  </div>
+}
