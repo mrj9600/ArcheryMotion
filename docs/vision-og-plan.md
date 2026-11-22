@@ -40,7 +40,7 @@ Det betyder:
 **Skytteprofiler.** Én installation skal kunne bruges af flere skytter. Hver skytte har sin egen profil med optagelser, sin egen "normale form", kalibreringer og træningslog.
 
 **Udstyr pr. skytte.** Hver skytte kan registrere flere opsætninger:
-- bue: håndtag, ben, trækvægt og trækkelængde
+- bue: håndsektion, ben, trækvægt og træklængde
 - vægte og stabilisatorer, og hvor de sidder
 - pile og tiller
 
@@ -49,9 +49,9 @@ Hvert skud gemmes med den opsætning, der blev brugt. Så kan appen sammenligne 
 **Barebow.** Martin skyder barebow. Det betyder:
 - **Ingen sigte.** Der sigtes med pilespidsen, string walking eller face walking, så ankeret og hvor man griber strengen kan variere mellem afstande. Et skud skal kunne mærkes med greb/crawl.
 - **Ingen klikker** som standard, så slippet og ekspansionen skal findes ud fra bevægelsen alene.
-- **Ingen lange stabilisatorer**, kun vægte i håndtaget. Buen reagerer derfor anderledes i slippet end en olympisk recurve, og MantisX' tal er ikke nødvendigvis direkte sammenlignelige.
+- **Ingen lange stabilisatorer**, kun vægte i håndsektionen. Buen reagerer derfor anderledes i slippet end en olympisk recurve, og MantisX' tal er ikke nødvendigvis direkte sammenlignelige.
 
-**Første fokus.** Grebet, altså den del af håndtaget, man holder om. Dets bevægelser skal vises meget tydeligere end i den første udgave, hvor de var svære at se. Den 3D-tegnede bue og sigtesporet er ikke vigtige.
+**Første fokus.** Grebet, altså den del af håndsektionen, man holder om. Dets bevægelser skal vises meget tydeligere end i den første udgave, hvor de var svære at se. Den 3D-tegnede bue og sigtesporet er ikke vigtige.
 
 **Kalibrering.** Hvad skal skytten selv kalibrere, og hvad kan appen regne ud af data fra de første skud?
 
@@ -206,7 +206,7 @@ Ud over analysen skal appen kunne styre øvelser. Sensorerne finder selv ud af, 
 - Ved fuldt træk danner skuldre og arme en **trekant/T-form** med pilen.
 - **Trækalbuen skal ligge i linje bag pilen**, både set fra siden og bagfra. Så går trækkraften (*draw force line*) gennem grebets trykpunkt, pilen og trækalbuen. Jo mindre vinklen er mellem knoglerne og kraftlinjen, jo mindre muskelarbejde og jo mere stabilt.
 - **Bueskulderen skal være lav.** Den skal ikke løftes op mod hovedet, og begge skuldre holdes nede gennem træk og fuldt træk.
-- **Buearmen** skal have knoglerne i en lige linje fra hånd til skulder, med let rotation af albuen. For lang trækkelængde giver dårlig alignment og en høj bueskulder.
+- **Buearmen** skal have knoglerne i en lige linje fra hånd til skulder, med let rotation af albuen. For lang træklængde giver dårlig alignment og en høj bueskulder.
 - Et studie (Frontiers 2025) fandt, at eliteskytter havde mindre skulderabduktion (ca. 99° mod 107° hos begyndere) og mindre albuebøjning (ca. 138° mod 144°), mens de sigtede. Det er kun gennemsnit og ikke grænseværdier.
 - Når der skydes op eller ned, skal T-formen bevares ved at **bøje i hoften**, ikke ved at flytte armen.
 
