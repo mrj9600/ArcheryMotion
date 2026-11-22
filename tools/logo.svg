@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- ArcheryMotion logo. Full-bleed artwork; tools/make-icons.mjs derives the rounded and maskable variants. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d4a52"/>
+      <stop offset="1" stop-color="#0a1c22"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0.38" cy="0.3" r="0.75">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="drop" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <!-- bow limbs, centred on the grip at (0, 0) -->
+    <path id="limbs" d="M-118 -186 Q8 -120 0 -16 Q8 88 -118 154" fill="none" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(258 270) scale(0.92) translate(-20 0)">
+    <!-- the bow's movement around the grip: earlier positions -->
+    <g stroke="#3ee08f" fill="none">
+      <use href="#limbs" transform="rotate(16)" stroke-opacity="0.16"/>
+      <use href="#limbs" transform="rotate(8)" stroke-opacity="0.34"/>
+    </g>
+    <g filter="url(#drop)">
+      <!-- string -->
+      <line x1="-118" y1="-186" x2="-118" y2="154" stroke="#f3efe6" stroke-width="5" stroke-opacity="0.85"/>
+      <use href="#limbs" stroke="#f3efe6"/>
+      <!-- riser -->
+      <path d="M-12 -96 Q24 -72 20 -16 Q24 40 -12 64 L-18 -16 Z" fill="#f3efe6"/>
+      <!-- arrow on the rest -->
+      <line x1="-118" y1="-40" x2="128" y2="-40" stroke="#f3efe6" stroke-width="9" stroke-linecap="round"/>
+      <path d="M156 -40 L120 -58 L120 -22 Z" fill="#f3efe6"/>
+      <path d="M-102 -40 L-60 -40 L-80 -62 L-122 -62 Z M-102 -40 L-60 -40 L-80 -18 L-122 -18 Z" fill="#e5463d"/>
+      <!-- sensor on the grip -->
+      <rect x="-20" y="-12" width="50" height="62" rx="12" fill="#f7c843" stroke="#0f1c26" stroke-width="5"/>
+    </g>
+  </g>
+  <rect width="512" height="512" fill="url(#shine)"/>
+</svg>
