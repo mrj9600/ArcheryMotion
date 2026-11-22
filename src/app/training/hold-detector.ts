@@ -4,7 +4,15 @@ import { MotionSample } from '../sensors/sensor.model';
  * Thresholds on the bow's angular speed (deg/s). They are first guesses: the recordings
  * from the field are what they should be tuned against.
  */
-export const HOLD_LIMITS = {
+export interface HoldLimits {
+  move: number;
+  still: number;
+  end: number;
+  settleMs: number;
+  poseTolerance: number;
+}
+
+export const HOLD_LIMITS: HoldLimits = {
   /** Speed that counts as raising/drawing the bow. Needed before a hold can start. */
   move: 20,
   /** Below this the bow counts as still. */
@@ -60,6 +68,8 @@ interface Second {
 export class HoldDetector {
   state: 'waiting' | 'holding' | 'ended' = 'waiting';
 
+  constructor(private readonly limits: HoldLimits = HOLD_LIMITS) {}
+
   /** Smoothed angular speed (deg/s), useful for a live display. */
   speed = 0;
 
@@ -99,21 +109,21 @@ export class HoldDetector {
 
     const events: HoldEvent[] = [];
     if (this.state === 'waiting') {
-      if (this.speed > HOLD_LIMITS.move) this.moved = true;
-      if (this.speed > HOLD_LIMITS.still || !this.inPose(sample)) {
+      if (this.speed > this.limits.move) this.moved = true;
+      if (this.speed > this.limits.still || !this.inPose(sample)) {
         this.stillSince = undefined;
       } else {
         this.stillSince ??= t;
-        if (this.moved && t - this.stillSince >= HOLD_LIMITS.settleMs) {
+        if (this.moved && t - this.stillSince >= this.limits.settleMs) {
           events.push(this.begin(this.stillSince, 'auto'));
         }
       }
     } else if (this.state === 'holding') {
-      if (this.speed > HOLD_LIMITS.end) {
+      if (this.speed > this.limits.end) {
         events.push(this.finish(Math.max(this.lastCalm, this.start), 'auto'));
         return events;
       }
-      if (this.speed < HOLD_LIMITS.still * 1.5) this.lastCalm = t;
+      if (this.speed < this.limits.still * 1.5) this.lastCalm = t;
       this.collect(sample, gyro);
       while (t - this.start >= (this.seconds.length + 1) * 1000) {
         const warning = this.closeSecond();
@@ -192,8 +202,8 @@ export class HoldDetector {
     if (!this.reference || !sample.euler) return true;
     const [roll, pitch] = sample.euler;
     return (
-      Math.abs(roll - this.reference[0]) < HOLD_LIMITS.poseTolerance &&
-      Math.abs(wrap(pitch - this.reference[1])) < HOLD_LIMITS.poseTolerance
+      Math.abs(roll - this.reference[0]) < this.limits.poseTolerance &&
+      Math.abs(wrap(pitch - this.reference[1])) < this.limits.poseTolerance
     );
   }
 

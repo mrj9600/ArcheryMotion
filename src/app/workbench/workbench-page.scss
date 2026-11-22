@@ -1,0 +1,147 @@
+.page.wide {
+  max-width: 1100px;
+}
+
+.open {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+
+  .grow {
+    flex: 1 1 240px;
+  }
+}
+
+.file {
+  input {
+    display: none;
+  }
+  .button {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--border);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 15px;
+  }
+}
+
+.info {
+  margin: 0;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  gap: 6px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.widths {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  button {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+}
+
+.small {
+  font-size: 13px;
+  margin: 0;
+}
+
+.channels {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sensor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  font-size: 14px;
+}
+
+.plot {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.legend .key {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  margin: 0 2px 0 8px;
+  vertical-align: middle;
+
+  &.shot {
+    border-left: 2px solid #e5463d;
+  }
+  &.release {
+    border-left: 2px dashed #2b9fd8;
+  }
+  &.warning {
+    border-left: 2px dotted #d69e2e;
+  }
+  &.hold {
+    background: rgba(62, 224, 143, 0.3);
+  }
+  &.detected {
+    background: rgba(43, 159, 216, 0.3);
+  }
+}
+
+.detect {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+h3 {
+  font-size: 15px;
+  margin: 6px 0 0;
+}
+
+.events {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    text-align: left;
+    padding: 5px 6px;
+    border-top: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  tbody tr {
+    cursor: pointer;
+  }
+  tbody tr:hover {
+    background: var(--border);
+  }
+  .discarded {
+    opacity: 0.5;
+  }
+  .extra {
+    color: var(--accent);
+  }
+}

@@ -1,16 +1,29 @@
 import { Db } from '../data/db';
 import { Session } from '../data/models';
-import { encodeRecording, joinChunks } from './recording-file';
+import { encodeRecording, joinChunks, Recording, RecordingMeta, SensorData } from './recording-file';
 
-/** Builds the export file for a stored session. */
-export async function exportSession(db: Db, session: Session): Promise<{ blob: Blob; filename: string }> {
+/** Collects a stored session: metadata and each sensor's samples as continuous arrays. */
+export async function loadSession(db: Db, session: Session): Promise<{ meta: RecordingMeta; sensors: SensorData[] }> {
   const [shots, archer, setup] = await Promise.all([
     db.shots(session.id),
     db.db.archers.get(session.archerId),
     session.setupId ? db.db.setups.get(session.setupId) : undefined,
   ]);
   const sensors = await Promise.all(session.sensors.map(async (s) => joinChunks(await db.chunks(session.id, s.index))));
-  const blob = await encodeRecording({ session, archer, setup, shots }, sensors);
+  return { meta: { session, archer, setup, shots }, sensors };
+}
+
+/** The same structure as a decoded export file, for a stored session. */
+export async function loadStoredRecording(db: Db, session: Session): Promise<Recording> {
+  const { meta, sensors } = await loadSession(db, session);
+  return { header: { format: 'archery-motion-recording', version: 1, exportedAt: Date.now(), ...meta, streams: [] }, sensors };
+}
+
+/** Builds the export file for a stored session. */
+export async function exportSession(db: Db, session: Session): Promise<{ blob: Blob; filename: string }> {
+  const { meta, sensors } = await loadSession(db, session);
+  const archer = meta.archer;
+  const blob = await encodeRecording(meta, sensors);
   const d = new Date(session.startedAt);
   const pad = (n: number) => String(n).padStart(2, '0');
   const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;

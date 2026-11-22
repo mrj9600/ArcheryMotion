@@ -23,6 +23,7 @@
           </div>
         </div>
         <div class="actions">
+          <a class="button-link" routerLink="/analyse" [queryParams]="{ session: row.session.id }">Analyse</a>
           <button (click)="export(row)" [disabled]="busyId() === row.session.id || isRecording(row.session)">
             {{ busyId() === row.session.id ? 'Pakker…' : 'Eksportér' }}
           </button>

@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Db } from '../data/db';
 import { Archer, EquipmentSetup, Session } from '../data/models';
 import { exportSession, saveFile } from '../recording/export';
@@ -13,7 +14,7 @@ interface Row {
 
 @Component({
   selector: 'app-sessions-page',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './sessions-page.html',
 })
 export class SessionsPage {

@@ -1,0 +1,224 @@
+<div class="page wide">
+  <section class="card">
+    <div class="card-head">
+      <h2>Analysebænk</h2>
+      @if (busy()) {
+        <span class="muted">Indlæser…</span>
+      }
+    </div>
+    <div class="open">
+      <label class="field grow">
+        Optagelse på enheden
+        <select [ngModel]="pickedId()" (ngModelChange)="pickedId.set($event)">
+          @for (s of stored(); track s.id) {
+            <option [value]="s.id">{{ sessionLabel(s) }}</option>
+          }
+        </select>
+      </label>
+      <button (click)="openPicked()" [disabled]="busy() || !pickedId()">Åbn</button>
+      <label class="file">
+        <input type="file" accept=".amrec" (change)="openFile($event)" />
+        <span class="button secondary">Åbn fil…</span>
+      </label>
+    </div>
+    @if (error(); as err) {
+      <p class="error">{{ err }}</p>
+    }
+    @if (header(); as h) {
+      <p class="muted info">
+        <strong>{{ h.archer?.name ?? 'Ukendt skytte' }}</strong>@if (h.setup) {, {{ h.setup.name }}},
+        {{ h.session.startedAt | date: 'd. MMM y, HH:mm' }}@if (h.session.place) {, {{ h.session.place }}},
+        {{ time(wb.fullRange()[1]) }} lang, {{ wb.sensors().length }} sensor{{ wb.sensors().length === 1 ? '' : 'er' }}.
+        Kilde: {{ wb.source() }}
+      </p>
+    }
+  </section>
+
+  @if (header()) {
+    <section class="card sticky">
+      @if (overview(); as ov) {
+        <app-signal-plot
+          [channel]="ov.channel"
+          [t]="ov.t"
+          [range]="wb.fullRange()"
+          [markers]="wb.markers()"
+          [spans]="overviewSpans()"
+          [height]="64"
+          [showLegend]="false"
+          (picked)="wb.show($event, wb.range()[1] - wb.range()[0])"
+        />
+      }
+      <div class="nav">
+        <button class="secondary" (click)="wb.pan(-0.5)" aria-label="Tilbage">◀</button>
+        <div class="widths">
+          @for (w of widths; track w.label) {
+            <button class="plain" (click)="wb.setWidth(w.value)">{{ w.label }}</button>
+          }
+        </div>
+        <button class="secondary" (click)="wb.pan(0.5)" aria-label="Frem">▶</button>
+      </div>
+      <p class="muted small">
+        {{ time(wb.range()[0]) }} – {{ time(wb.range()[1]) }}. Træk i en graf for at flytte, rul eller knib for at zoome, klik i oversigten for at hoppe.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="channels">
+        @for (s of wb.sensors(); track s.index) {
+          <div class="sensor-row">
+            <strong>{{ s.name }}</strong>
+            <span class="muted">{{ s.role }}</span>
+            @for (c of s.channels; track c.key) {
+              <label class="check">
+                <input type="checkbox" [checked]="wb.shown().has(s.index + ':' + c.key)" (change)="wb.toggleShown(s.index + ':' + c.key)" />
+                {{ c.label }}
+              </label>
+            }
+          </div>
+        }
+      </div>
+      @for (s of wb.sensors(); track s.index) {
+        @for (c of s.channels; track c.key) {
+          @if (wb.shown().has(s.index + ':' + c.key)) {
+            <div class="plot">
+              @if (wb.sensors().length > 1) {
+                <div class="muted small">{{ s.name }} ({{ s.role }})</div>
+              }
+              <app-signal-plot
+                [channel]="c"
+                [t]="s.t"
+                [range]="wb.range()"
+                [markers]="wb.markers()"
+                [spans]="wb.spans()"
+                (rangeChange)="wb.setRange($event)"
+              />
+            </div>
+          }
+        }
+      }
+      <p class="muted small legend">
+        <span class="key shot"></span> optaget skud <span class="key release"></span> slip fundet nu <span class="key warning"></span> formen brød
+        sammen <span class="key hold"></span> hold i øvelsen <span class="key detected"></span> hold fundet nu
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Detektion</h2>
+      <p class="muted small">Kører skud- og holdedetektionen igen på optagelsen med de grænser, du vælger her.</p>
+      <div class="detect">
+        <label class="field">
+          Sensor
+          <select [ngModel]="wb.detectSensor()" (ngModelChange)="wb.detectSensor.set(+$event)">
+            @for (s of wb.sensors(); track s.index) {
+              <option [ngValue]="s.index">{{ s.name }} ({{ s.role }})</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          Slip ved
+          <select [ngModel]="wb.threshold()" (ngModelChange)="wb.threshold.set(+$event)">
+            @for (g of thresholds; track g) {
+              <option [ngValue]="g">{{ g }} g</option>
+            }
+          </select>
+        </label>
+        @for (f of limitFields; track f.key) {
+          <label class="field">
+            {{ f.label }}
+            <input type="number" inputmode="decimal" [ngModel]="wb.limits()[f.key]" (ngModelChange)="setLimit(f.key, $event)" />
+          </label>
+        }
+      </div>
+      <div class="actions">
+        <button class="secondary" (click)="wb.resetDetection()">Nulstil til appens grænser</button>
+      </div>
+      <p>
+        <strong>Skud:</strong> {{ found() }} af {{ realShots() }} optagne skud findes nu, plus {{ wb.extraReleases().length }} slip, der ikke er
+        optaget som skud. <strong>Hold:</strong> {{ wb.holds().length }} fundet nu@if (wb.drill(); as d) {, {{ d.results.length }} i øvelsen}.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Skud</h2>
+      @if (wb.shotMatches().length || wb.extraReleases().length) {
+        <table class="events">
+          <thead>
+            <tr><th>#</th><th>Tid</th><th>Mærker</th><th>Fundet nu</th></tr>
+          </thead>
+          <tbody>
+            @for (m of wb.shotMatches(); track m.shot.id) {
+              <tr (click)="showShot(m.shot.releaseTime)" [class.discarded]="m.shot.discarded">
+                <td>{{ m.shot.number }}</td>
+                <td>{{ time(m.shot.releaseTime) }}</td>
+                <td>
+                  {{ targetLabel(m.shot.target) }}@if (m.shot.distance) {, {{ m.shot.distance }} m}@if (m.shot.crawl) {, {{ m.shot.crawl }}}
+                  {{ m.shot.selfRating === 'good' ? '👍' : m.shot.selfRating === 'bad' ? '👎' : '' }}{{ m.shot.trigger === 'manual' ? ' (manuelt)' : '' }}
+                  {{ m.shot.discarded ? ' fejludløsning' : '' }}
+                </td>
+                <td>{{ m.found ? '✓' : '–' }}</td>
+              </tr>
+            }
+            @for (r of wb.extraReleases(); track r) {
+              <tr class="extra" (click)="showShot(r)">
+                <td></td>
+                <td>{{ time(r) }}</td>
+                <td>slip fundet nu, ikke optaget som skud</td>
+                <td>ny</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="muted">Ingen skud i optagelsen.</p>
+      }
+    </section>
+
+    <section class="card">
+      <h2>Hold</h2>
+      @if (wb.drill(); as d) {
+        <h3>I øvelsen ({{ d.reps }} × {{ d.holdSeconds }} s)</h3>
+        <table class="events">
+          <thead>
+            <tr><th>#</th><th>Start</th><th>Holdt</th><th>God form</th><th>Udsving</th><th>Rystelse</th><th>Drift</th></tr>
+          </thead>
+          <tbody>
+            @for (r of d.results; track r.number) {
+              <tr (click)="showHold(r.start, r.end)">
+                <td>{{ r.number }}</td>
+                <td>{{ time(r.start) }}</td>
+                <td>{{ seconds(r.heldMs) }} s</td>
+                <td>{{ seconds(r.goodFormMs) }} s</td>
+                <td>{{ r.sway | number: '1.1-1' }}</td>
+                <td>{{ r.tremor | number: '1.1-1' }}</td>
+                <td>{{ r.drift !== undefined ? (r.drift | number: '1.1-1') + '°' : '–' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      <h3>Fundet nu med grænserne ovenfor</h3>
+      @if (wb.holds().length) {
+        <table class="events">
+          <thead>
+            <tr><th>#</th><th>Start</th><th>Holdt</th><th>God form</th><th>Udsving</th><th>Rystelse</th><th>Drift</th></tr>
+          </thead>
+          <tbody>
+            @for (h of wb.holds(); track h.start; let i = $index) {
+              <tr (click)="showHold(h.start, h.end ?? h.start + h.heldMs)">
+                <td>{{ i + 1 }}</td>
+                <td>{{ time(h.start) }}</td>
+                <td>{{ seconds(h.heldMs) }} s</td>
+                <td>{{ seconds(h.goodFormMs) }} s</td>
+                <td>{{ h.sway | number: '1.1-1' }}</td>
+                <td>{{ h.tremor | number: '1.1-1' }}</td>
+                <td>{{ h.drift !== undefined ? (h.drift | number: '1.1-1') + '°' : '–' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="muted">Ingen hold fundet.</p>
+      }
+    </section>
+  }
+</div>
