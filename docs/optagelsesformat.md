@@ -31,6 +31,23 @@ Hele filen er **gzip-komprimeret**. Udpakket ser den sådan ud:
 - `t` er tidspunktet, hvor mobilen modtog målingen (`performance.now()`). For MantisX er målingerne i en pakke fordelt jævnt bagud fra modtagetidspunktet.
 - `shots[].discarded = true` betyder, at skytten har markeret det som en fejludløsning.
 
+## Holdeøvelse
+
+Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række pr. gentagelse:
+
+```json
+"drill": { "kind": "hold", "holdSeconds": 30, "reps": 5, "restSeconds": 30,
+  "results": [{ "number": 1, "start": 4210, "end": 34890, "heldMs": 30680, "goodFormMs": 24000, "completed": true,
+                "startedBy": "auto", "endedBy": "auto", "sway": 1.8, "tremor": 0.6, "drift": 1.2,
+                "warnings": [28210], "perSecond": { "sway": [3.1, 1.6, 1.5], "tremor": [0.5, 0.4, 0.5] } }] }
+```
+
+- `start`/`end` er sessionstid (ms). Holdet starter, når buen har bevæget sig (løftet og trukket) og derefter ligger roligt i 0,8 s. Det slutter, når buen igen bevæger sig hurtigt (nedtræk eller skud).
+- `sway` (udsving) er den langsomme del af buens vinkelhastighed og `tremor` (rystelse) den hurtige del (over ca. 1,6 Hz), begge i °/s som RMS. `perSecond` har dem for hvert hele sekund af holdet.
+- Sekund 1–2 er skyttens eget udgangspunkt. Bliver udsving eller rystelse tydeligt større to sekunder i træk, bryder formen sammen: `warnings` har tidspunktet, hvor det begyndte, og `goodFormMs` er tiden indtil første gang.
+- `drift` er den største ændring af buens hældning og cant (roll/pitch) i forhold til første sekund, i grader. Mangler, hvis sensoren ikke sender vinkler.
+- Grænserne står i `src/app/training/hold-detector.ts` (`HOLD_LIMITS`) og er første bud. De skal justeres efter rigtige optagelser.
+
 ## Streams
 
 Hver stream er ét array for én sensor. `offset` regnes fra starten af datadelen.

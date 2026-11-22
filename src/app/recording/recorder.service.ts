@@ -92,6 +92,22 @@ export class Recorder {
     await this.db.saveShot(updated);
   }
 
+  /** Converts a sample time (performance.now()) to session time (ms since start). */
+  sessionTime(time: number): number {
+    return time - this.t0;
+  }
+
+  /** Saves changes made to the running session object (e.g. drill results). */
+  async saveSession(): Promise<void> {
+    const session = this.session();
+    if (session) await this.db.saveSession(session);
+  }
+
+  /** The bow sensor used for release detection, if any. */
+  mainBow(): SensorSlot | undefined {
+    return this.manager.slots().find((s) => s.role() === 'bow');
+  }
+
   setThreshold(g: number): void {
     this.threshold.set(g);
     this.detector.threshold = g;
@@ -117,7 +133,7 @@ export class Recorder {
 
   /** Only the first bow sensor detects releases. */
   private isMainBow(slot: SensorSlot): boolean {
-    return this.manager.slots().find((s) => s.role() === 'bow') === slot;
+    return this.mainBow() === slot;
   }
 
   private async addShot(releaseTime: number, trigger: ShotRecord['trigger']): Promise<void> {

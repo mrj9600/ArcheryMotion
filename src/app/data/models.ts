@@ -72,6 +72,41 @@ export interface Session {
   sensors: SessionSensor[];
   shotCount: number;
   sampleCount: number;
+  /** Set when the session was a training drill. */
+  drill?: HoldDrill;
+}
+
+/** Holding drill (Holding SPT): hold full draw for a set time, a number of times. */
+export interface HoldDrill {
+  kind: 'hold';
+  holdSeconds: number;
+  reps: number;
+  restSeconds: number;
+  results: HoldRep[];
+}
+
+export interface HoldRep {
+  number: number;
+  /** Session time (ms) when full draw was detected, and when the hold ended. */
+  start: number;
+  end: number;
+  heldMs: number;
+  /** Time from start until form first broke down (= heldMs if it never did). */
+  goodFormMs: number;
+  /** Held at least the target time. */
+  completed: boolean;
+  /** How the start and end were found. */
+  startedBy: 'auto' | 'manual';
+  endedBy: 'auto' | 'manual';
+  /** Mean sway (slow angular speed, deg/s) and tremor (fast part, deg/s) over the hold. */
+  sway: number;
+  tremor: number;
+  /** Largest change of bow angle (roll/pitch) from the start of the hold, degrees. */
+  drift?: number;
+  /** Session times (ms) where the form began to break down. The warning sounded 2 s later. */
+  warnings: number[];
+  /** Sway and tremor for each whole second of the hold. */
+  perSecond: { sway: number[]; tremor: number[] };
 }
 
 export interface ShotRecord {

@@ -60,3 +60,24 @@ export class ScreenWakeLock {
     if (this.wanted && document.visibilityState === 'visible') void this.acquire();
   };
 }
+
+/** Several tones in a row, e.g. [1320, 1320] for "done". */
+export function beeps(frequencies: number[], durationMs = 120, gapMs = 80): void {
+  frequencies.forEach((f, i) => setTimeout(() => beep(f, durationMs), i * (durationMs + gapMs)));
+}
+
+/** Reads a short text aloud in Danish, if the device has a voice for it. */
+export function speak(text: string): void {
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'da-DK';
+    const voice = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith('da'));
+    if (voice) u.voice = voice;
+    synth.speak(u);
+  } catch {
+    /* no speech available */
+  }
+}

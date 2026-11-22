@@ -1,0 +1,99 @@
+<section class="card drill" [class.alert]="drill.warning() && drill.phase() === 'holding'">
+  <div class="card-head">
+    <h2>Holdeøvelse</h2>
+    <span class="muted">Gentagelse {{ drill.rep() }} af {{ drill.settings().reps }}</span>
+  </div>
+
+  @switch (drill.phase()) {
+    @case ('ready') {
+      <div class="big-status">
+        <div class="headline">Træk op</div>
+        <p class="muted">Tiden starter, når buen ligger roligt i fuldt træk.</p>
+      </div>
+      <button class="big secondary" (click)="drill.startNow()">Start tiden nu</button>
+    }
+    @case ('holding') {
+      <div class="big-status">
+        <div class="timer" [class.reached]="progress() >= 1">
+          {{ seconds(drill.held()) }}<small> / {{ drill.settings().holdSeconds }} s</small>
+        </div>
+        <div class="progress"><div [style.width.%]="progress() * 100"></div></div>
+        @if (progress() >= 1) {
+          <div class="headline ok">Slip ned</div>
+        } @else if (drill.warning()) {
+          <div class="headline bad">Formen bryder sammen</div>
+        }
+        <div class="meter" [attr.data-level]="meterLevel()" aria-label="Bevægelse lige nu">
+          <div [style.width.%]="meter() * 100"></div>
+        </div>
+        <p class="muted">Bevægelse {{ drill.speed() | number: '1.1-1' }} °/s</p>
+      </div>
+      <button class="big secondary" (click)="drill.endNow()">Slut gentagelsen</button>
+    }
+    @case ('rest') {
+      <div class="big-status">
+        <div class="headline">Pause</div>
+        <div class="timer">{{ clock(drill.restLeft()) }}</div>
+      </div>
+      <button class="big secondary" (click)="drill.skipRest()">Spring pausen over</button>
+    }
+    @case ('done') {
+      <div class="big-status">
+        <div class="headline ok">Færdig</div>
+        <p class="muted">Alle {{ drill.settings().reps }} gentagelser er gemt i optagelsen.</p>
+      </div>
+    }
+  }
+
+  @if (last(); as rep) {
+    @if (drill.phase() === 'rest' || drill.phase() === 'done') {
+      <div class="result">
+        <div class="numbers">
+          <div><span class="value">{{ seconds(rep.heldMs) }} s</span><span class="label">holdt {{ rep.completed ? '✓' : '' }}</span></div>
+          <div>
+            <span class="value" [class.bad]="rep.warnings.length">{{ seconds(rep.goodFormMs) }} s</span>
+            <span class="label">god form</span>
+          </div>
+          <div><span class="value">{{ rep.sway | number: '1.1-1' }}</span><span class="label">udsving °/s</span></div>
+        </div>
+        <svg class="bars" [attr.viewBox]="'0 0 ' + (rep.perSecond.sway.length * 6) + ' 42'" preserveAspectRatio="none" aria-label="Udsving pr. sekund">
+          @for (b of bars(rep); track b.x) {
+            <rect [attr.x]="b.x * 6 + 0.5" [attr.y]="42 - b.h" width="5" [attr.height]="b.h" [class.bad]="b.bad" />
+          }
+        </svg>
+        <p class="muted small">
+          Rystelse {{ rep.tremor | number: '1.1-1' }} °/s@if (rep.drift !== undefined) {, buen drev {{ rep.drift | number: '1.1-1' }}°}.
+          Søjlerne er udsving pr. sekund, røde efter formen brød sammen.
+        </p>
+      </div>
+    }
+  }
+
+  @if (drill.results().length) {
+    <table class="reps">
+      <thead>
+        <tr><th>#</th><th>Holdt</th><th>God form</th><th>Udsving</th><th>Rystelse</th><th>Drift</th></tr>
+      </thead>
+      <tbody>
+        @for (r of drill.results(); track r.number) {
+          <tr>
+            <td>{{ r.number }}</td>
+            <td>{{ seconds(r.heldMs) }} s{{ r.completed ? ' ✓' : '' }}</td>
+            <td [class.bad]="r.warnings.length">{{ seconds(r.goodFormMs) }} s</td>
+            <td>{{ r.sway | number: '1.1-1' }}</td>
+            <td>{{ r.tremor | number: '1.1-1' }}</td>
+            <td>{{ r.drift !== undefined ? (r.drift | number: '1.1-1') + '°' : '–' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <div class="actions small">
+    <label class="check">
+      <input type="checkbox" [checked]="drill.speech()" (change)="drill.speech.set($any($event.target).checked)" />
+      Læs resultatet op
+    </label>
+    <button class="danger" (click)="stopped.emit()">{{ drill.phase() === 'done' ? 'Afslut' : 'Stop' }}</button>
+  </div>
+</section>

@@ -74,7 +74,30 @@
     }
   </section>
 
-  @if (recorder.session(); as session) {
+  @if (!recorder.session()) {
+    <section class="card">
+      <h2>Øvelse</h2>
+      <div class="segmented two-way" role="group" aria-label="Øvelse">
+        <button [class.on]="mode() === 'free'" (click)="setMode('free')">Fri skydning</button>
+        <button [class.on]="mode() === 'hold'" (click)="setMode('hold')">Holdeøvelse</button>
+      </div>
+      @if (mode() === 'hold') {
+        <p class="muted">
+          Hold fuldt træk i den valgte tid. Tiden starter, når buen ligger roligt, og et bip fortæller, hvornår du skal slippe ned.
+          Lavt bip betyder, at formen bryder sammen. Kræver en sensor med rollen "Bue".
+        </p>
+        <div class="three">
+          <label class="field">Hold (s) <input type="number" inputmode="numeric" min="3" [ngModel]="drill.settings().holdSeconds" (ngModelChange)="setDrillNumber('holdSeconds', $event)" /></label>
+          <label class="field">Gentagelser <input type="number" inputmode="numeric" min="1" [ngModel]="drill.settings().reps" (ngModelChange)="setDrillNumber('reps', $event)" /></label>
+          <label class="field">Pause (s) <input type="number" inputmode="numeric" min="5" [ngModel]="drill.settings().restSeconds" (ngModelChange)="setDrillNumber('restSeconds', $event)" /></label>
+        </div>
+      }
+    </section>
+  }
+
+  @if (recorder.session() && drill.phase() !== 'idle') {
+    <app-hold-drill-panel (stopped)="stopDrill()" />
+  } @else if (recorder.session(); as session) {
     <section class="card recording">
       <div class="status">
         <span class="rec-dot"></span>
@@ -136,6 +159,8 @@
       }
     </section>
   } @else {
-    <button class="big" (click)="start()" [disabled]="!selection.archerId() || !manager.slots().length">Start optagelse</button>
+    <button class="big" (click)="start()" [disabled]="!selection.archerId() || !manager.slots().length || (mode() === 'hold' && !hasBowSensor())">
+      {{ mode() === 'hold' ? 'Start holdeøvelse' : 'Start optagelse' }}
+    </button>
   }
 </div>

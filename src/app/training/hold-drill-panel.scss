@@ -1,0 +1,147 @@
+.drill.alert {
+  border-color: var(--danger);
+}
+
+.big-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.headline {
+  font-size: 30px;
+  font-weight: 700;
+
+  &.ok {
+    color: var(--ok);
+  }
+  &.bad {
+    color: var(--danger);
+  }
+}
+
+.timer {
+  font-size: 64px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+
+  small {
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  &.reached {
+    color: var(--ok);
+  }
+}
+
+.progress,
+.meter {
+  width: 100%;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--border);
+  overflow: hidden;
+
+  div {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.1s linear;
+  }
+}
+
+.meter {
+  height: 10px;
+
+  &[data-level='ok'] div {
+    background: var(--ok);
+  }
+  &[data-level='warn'] div {
+    background: var(--warn);
+  }
+  &[data-level='bad'] div {
+    background: var(--danger);
+  }
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+
+  .value {
+    display: block;
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+}
+
+.bars {
+  width: 100%;
+  height: 48px;
+
+  rect {
+    fill: var(--accent);
+    &.bad {
+      fill: var(--danger);
+    }
+  }
+}
+
+.bad {
+  color: var(--danger);
+}
+
+.small {
+  font-size: 14px;
+  margin: 0;
+}
+
+.reps {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 4px 2px;
+    text-align: right;
+    border-top: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  th:first-child,
+  td:first-child {
+    text-align: left;
+  }
+}
+
+.actions.small {
+  align-items: center;
+
+  .danger {
+    margin-left: auto;
+  }
+}

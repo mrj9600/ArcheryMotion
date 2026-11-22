@@ -96,6 +96,16 @@
   }
 }
 
+.segmented.two-way {
+  grid-template-columns: 1fr 1fr;
+}
+
+.three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
 .two {
   display: grid;
   grid-template-columns: 1fr 1fr;
