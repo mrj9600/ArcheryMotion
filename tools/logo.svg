@@ -13,27 +13,37 @@
       <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
     </filter>
     <!-- bow limbs, centred on the grip at (0, 0) -->
-    <path id="limbs" d="M-118 -186 Q8 -120 0 -16 Q8 88 -118 154" fill="none" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="limbs" d="M-44 -150 Q30 -90 14 0 Q30 90 -44 150" fill="none" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <g transform="translate(258 270) scale(0.92) translate(-20 0)">
+  <g transform="translate(256 256) scale(0.85) translate(-256 -256)">
     <!-- the bow's movement around the grip: earlier positions -->
-    <g stroke="#3ee08f" fill="none">
-      <use href="#limbs" transform="rotate(16)" stroke-opacity="0.16"/>
-      <use href="#limbs" transform="rotate(8)" stroke-opacity="0.34"/>
+    <g transform="translate(372 232)" stroke="#3ee08f" fill="none">
+      <use href="#limbs" transform="rotate(14)" stroke-opacity="0.16"/>
+      <use href="#limbs" transform="rotate(7)" stroke-opacity="0.34"/>
     </g>
-    <g filter="url(#drop)">
-      <!-- string -->
-      <line x1="-118" y1="-186" x2="-118" y2="154" stroke="#f3efe6" stroke-width="5" stroke-opacity="0.85"/>
-      <use href="#limbs" stroke="#f3efe6"/>
-      <!-- riser -->
-      <path d="M-12 -96 Q24 -72 20 -16 Q24 40 -12 64 L-18 -16 Z" fill="#f3efe6"/>
-      <!-- arrow on the rest -->
-      <line x1="-118" y1="-40" x2="128" y2="-40" stroke="#f3efe6" stroke-width="9" stroke-linecap="round"/>
-      <path d="M156 -40 L120 -58 L120 -22 Z" fill="#f3efe6"/>
-      <path d="M-102 -40 L-60 -40 L-80 -62 L-122 -62 Z M-102 -40 L-60 -40 L-80 -18 L-122 -18 Z" fill="#e5463d"/>
+    <g filter="url(#drop)" stroke="#f3efe6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <!-- string, drawn to the anchor -->
+      <path d="M328 82 L218 197 L328 382" stroke-width="4" stroke-opacity="0.85"/>
+      <!-- legs -->
+      <path d="M186 330 L150 452 M186 330 L226 452" stroke-width="30"/>
+      <!-- body -->
+      <path d="M196 214 L186 330" stroke-width="50"/>
+      <!-- bow arm to the grip -->
+      <path d="M204 216 L368 232" stroke-width="22"/>
+      <!-- draw arm: elbow behind, hand at the anchor -->
+      <path d="M190 218 L112 178 L210 198" stroke-width="20"/>
+      <circle cx="214" cy="198" r="14" fill="#f3efe6" stroke="none"/>
+      <!-- head -->
+      <circle cx="206" cy="152" r="32" fill="#f3efe6" stroke="none"/>
+      <!-- bow -->
+      <use href="#limbs" transform="translate(372 232)"/>
+      <!-- arrow -->
+      <path d="M218 196 L448 196" stroke-width="7"/>
+      <path d="M474 196 L442 180 L442 212 Z" fill="#f3efe6" stroke="none"/>
+      <path d="M262 196 L292 196 L280 180 L250 180 Z M262 196 L292 196 L280 212 L250 212 Z" fill="#e5463d" stroke="none"/>
       <!-- sensor on the grip -->
-      <rect x="-20" y="-12" width="50" height="62" rx="12" fill="#f7c843" stroke="#0f1c26" stroke-width="5"/>
+      <rect x="370" y="218" width="36" height="46" rx="9" fill="#f7c843" stroke="#0f1c26" stroke-width="4"/>
     </g>
   </g>
   <rect width="512" height="512" fill="url(#shine)"/>
