@@ -26,7 +26,7 @@ export type SensorStatus = 'connecting' | 'connected' | 'disconnected';
 export type SensorRole = 'bow' | 'head' | 'torso' | 'bowArm' | 'drawArm' | 'other';
 
 export const SENSOR_ROLES: { value: SensorRole; label: string }[] = [
-  { value: 'bow', label: 'Bue' },
+  { value: 'bow', label: 'Bue (greb)' },
   { value: 'head', label: 'Hoved' },
   { value: 'torso', label: 'Overkrop' },
   { value: 'bowArm', label: 'Buearm' },

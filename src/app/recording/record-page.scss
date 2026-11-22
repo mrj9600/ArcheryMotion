@@ -1,0 +1,145 @@
+.sensor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+}
+
+.sensor-name {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.badge {
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--border);
+
+  &.ok {
+    background: var(--ok);
+    color: var(--on-strong);
+  }
+  &.bad {
+    background: var(--danger);
+    color: var(--on-strong);
+  }
+}
+
+.recording {
+  border-color: var(--danger);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+
+.rec-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.count {
+  margin-left: auto;
+  font-size: 40px;
+  font-weight: 700;
+
+  small {
+    font-size: 16px;
+    font-weight: 400;
+  }
+}
+
+.tags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+
+  button {
+    padding: 14px 0;
+    font-size: 18px;
+    background: var(--border);
+    color: var(--text);
+
+    &.on {
+      background: var(--accent);
+      color: var(--on-strong);
+    }
+  }
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.small {
+  align-items: center;
+  font-size: 14px;
+
+  .danger {
+    margin-left: auto;
+  }
+}
+
+.shot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+
+  &.discarded {
+    opacity: 0.45;
+    text-decoration: line-through;
+  }
+}
+
+.num {
+  font-weight: 700;
+  font-size: 18px;
+  min-width: 2ch;
+}
+
+.grow {
+  flex: 1;
+}
+
+.icon {
+  padding: 6px 10px;
+  background: var(--border);
+  color: var(--text);
+
+  &.on {
+    background: var(--accent);
+  }
+}

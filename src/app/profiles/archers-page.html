@@ -1,0 +1,103 @@
+<div class="page">
+  <section class="card">
+    <div class="card-head">
+      <h2>Skytter</h2>
+      <button (click)="newArcher()">Ny skytte</button>
+    </div>
+    @for (a of selection.archers(); track a.id) {
+      <div class="item" [class.selected]="a.id === selection.archerId()">
+        <button class="plain grow" (click)="selection.selectArcher(a.id)">
+          <strong>{{ a.name }}</strong>
+          <span class="muted">{{ bowTypeLabel(a.bowType) }}, {{ a.handedness === 'right' ? 'højrehåndet' : 'venstrehåndet' }}</span>
+        </button>
+        <button class="secondary" (click)="editArcher.set({ ...a })">Ret</button>
+      </div>
+    } @empty {
+      <p class="muted">Ingen skytter endnu. Opret den første.</p>
+    }
+  </section>
+
+  @if (editArcher(); as a) {
+    <section class="card">
+      <h2>{{ a.name || 'Ny skytte' }}</h2>
+      <label class="field">Navn <input [(ngModel)]="a.name" autocomplete="off" /></label>
+      <label class="field">
+        Buetype
+        <select [(ngModel)]="a.bowType">
+          @for (b of bowTypes; track b.value) {
+            <option [value]="b.value">{{ b.label }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        Skyder
+        <select [(ngModel)]="a.handedness">
+          <option value="right">Højrehåndet (buen i venstre hånd)</option>
+          <option value="left">Venstrehåndet (buen i højre hånd)</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button (click)="saveArcher(a)" [disabled]="!a.name.trim()">Gem</button>
+        <button class="secondary" (click)="editArcher.set(undefined)">Annullér</button>
+        @if (isSavedArcher(a)) {
+          <button class="danger" (click)="deleteArcher(a)">Slet</button>
+        }
+      </div>
+    </section>
+  }
+
+  @if (selection.archer(); as archer) {
+    <section class="card">
+      <div class="card-head">
+        <h2>Udstyr for {{ archer.name }}</h2>
+        <button (click)="newSetup()">Nyt udstyr</button>
+      </div>
+      @for (s of selection.setups(); track s.id) {
+        <div class="item" [class.selected]="s.id === selection.setupId()">
+          <button class="plain grow" (click)="selection.setupId.set(s.id)">
+            <strong>{{ s.name }}</strong>
+            <span class="muted">
+              {{ bowTypeLabel(s.bowType) }}@if (s.drawWeight) {, {{ s.drawWeight }} lbs}@if (s.weights) {, {{ s.weights }}}
+            </span>
+          </button>
+          <button class="secondary" (click)="editSetup.set({ ...s })">Ret</button>
+          <button class="secondary" (click)="copySetup(s)">Kopiér</button>
+        </div>
+      } @empty {
+        <p class="muted">Intet udstyr endnu. Opret fx din nuværende bue.</p>
+      }
+    </section>
+  }
+
+  @if (editSetup(); as s) {
+    <section class="card">
+      <h2>{{ s.name || 'Nyt udstyr' }}</h2>
+      <label class="field">Navn <input [(ngModel)]="s.name" placeholder="Fx Barebow, 2 vægte forneden" autocomplete="off" /></label>
+      <label class="field">
+        Buetype
+        <select [(ngModel)]="s.bowType">
+          @for (b of bowTypes; track b.value) {
+            <option [value]="b.value">{{ b.label }}</option>
+          }
+        </select>
+      </label>
+      <div class="two">
+        <label class="field">Trækvægt (lbs) <input type="number" inputmode="decimal" [(ngModel)]="s.drawWeight" /></label>
+        <label class="field">Trækkelængde (tommer) <input type="number" inputmode="decimal" [(ngModel)]="s.drawLength" /></label>
+      </div>
+      <label class="field">Håndtag <input [(ngModel)]="s.riser" autocomplete="off" /></label>
+      <label class="field">Ben <input [(ngModel)]="s.limbs" autocomplete="off" /></label>
+      <label class="field">Vægte og stabilisatorer (og hvor de sidder) <textarea rows="2" [(ngModel)]="s.weights"></textarea></label>
+      <label class="field">Pile <input [(ngModel)]="s.arrows" autocomplete="off" /></label>
+      <label class="field">Tiller <input [(ngModel)]="s.tiller" autocomplete="off" /></label>
+      <label class="field">Noter <textarea rows="2" [(ngModel)]="s.notes"></textarea></label>
+      <div class="actions">
+        <button (click)="saveSetup(s)" [disabled]="!s.name.trim()">Gem</button>
+        <button class="secondary" (click)="editSetup.set(undefined)">Annullér</button>
+        @if (isSavedSetup(s)) {
+          <button class="danger" (click)="archiveSetup(s)">Skjul</button>
+        }
+      </div>
+    </section>
+  }
+</div>

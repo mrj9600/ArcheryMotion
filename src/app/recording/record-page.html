@@ -1,0 +1,141 @@
+<div class="page">
+  @if (recorder.error(); as err) {
+    <p class="error">{{ err }}</p>
+  }
+
+  @if (!recorder.session()) {
+    <section class="card">
+      <h2>Skytte og udstyr</h2>
+      @if (selection.archers().length) {
+        <label class="field">
+          Skytte
+          <select [ngModel]="selection.archerId()" (ngModelChange)="selection.selectArcher($event)">
+            @for (a of selection.archers(); track a.id) {
+              <option [value]="a.id">{{ a.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          Udstyr
+          <select [ngModel]="selection.setupId()" (ngModelChange)="selection.setupId.set($event)">
+            @for (s of selection.setups(); track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+            <option [ngValue]="undefined">Ikke angivet</option>
+          </select>
+        </label>
+        <label class="field">Sted (valgfrit) <input [ngModel]="place()" (ngModelChange)="place.set($event)" placeholder="Fx klubbens feltbane" /></label>
+      } @else {
+        <p>Opret først en skytte under <a routerLink="/skytter">Skytter</a>.</p>
+      }
+    </section>
+  }
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Sensorer</h2>
+      <div class="actions">
+        <button (click)="connect()" [disabled]="busy() || !manager.bluetoothAvailable">{{ busy() ? 'Forbinder…' : 'Forbind' }}</button>
+        <button class="secondary" (click)="manager.addSimulated()">Simuleret</button>
+      </div>
+    </div>
+    <label class="check">
+      <input type="checkbox" [checked]="showAllDevices()" (change)="showAllDevices.set($any($event.target).checked)" />
+      Vis alle Bluetooth-enheder
+    </label>
+    @if (!manager.bluetoothAvailable) {
+      <p class="warn">Web Bluetooth er ikke tilgængelig. Brug Chrome på Android eller PC via https eller localhost.</p>
+    }
+    @if (error(); as err) {
+      <p class="error">{{ err }}</p>
+    }
+    @for (slot of manager.slots(); track slot.sensor.id) {
+      <div class="sensor">
+        <div class="sensor-name">
+          <strong>{{ slot.sensor.name }}</strong>
+          <span class="badge" [class.ok]="slot.sensor.status() === 'connected'" [class.bad]="slot.sensor.status() === 'disconnected'">
+            {{ slot.sensor.status() === 'connected' ? slot.rate() + ' Hz' : slot.sensor.status() === 'connecting' ? 'Forbinder' : 'Afbrudt' }}
+          </span>
+        </div>
+        <select [ngModel]="slot.role()" (ngModelChange)="setRole(slot, $event)">
+          @for (r of roles; track r.value) {
+            <option [value]="r.value">{{ r.label }}</option>
+          }
+        </select>
+        @if (!recorder.session()) {
+          <button class="secondary" (click)="manager.remove(slot)">Fjern</button>
+        }
+      </div>
+    } @empty {
+      <p class="muted">Ingen sensorer forbundet.</p>
+    }
+    @if (manager.slots().length && !hasBowSensor()) {
+      <p class="warn">Ingen sensor har rollen "Bue", så skud findes ikke automatisk.</p>
+    }
+  </section>
+
+  @if (recorder.session(); as session) {
+    <section class="card recording">
+      <div class="status">
+        <span class="rec-dot"></span>
+        <span>Optager {{ elapsed() }}</span>
+        <span class="count">{{ session.shotCount }} <small>skud</small></span>
+      </div>
+
+      <div class="tags">
+        <div class="segmented" role="group" aria-label="Målets højde">
+          @for (t of targets; track t.value) {
+            <button [class.on]="recorder.target() === t.value" (click)="recorder.target.set(t.value)">{{ t.label }}</button>
+          }
+        </div>
+        <div class="two">
+          <label class="field">
+            Afstand (m)
+            <input inputmode="decimal" [ngModel]="recorder.distance() ?? ''" (ngModelChange)="setDistance($event)" />
+          </label>
+          <label class="field">
+            Greb / crawl
+            <input [ngModel]="recorder.crawl()" (ngModelChange)="recorder.crawl.set($event)" autocomplete="off" />
+          </label>
+        </div>
+      </div>
+
+      <button class="big" (click)="recorder.markShot()">Skud nu</button>
+
+      <div class="actions small">
+        <label class="check">
+          Slip ved
+          <select [ngModel]="recorder.threshold()" (ngModelChange)="recorder.setThreshold(+$event)">
+            @for (g of thresholds; track g) {
+              <option [ngValue]="g">{{ g }} g</option>
+            }
+          </select>
+        </label>
+        <label class="check">
+          <input type="checkbox" [checked]="recorder.sound()" (change)="recorder.sound.set($any($event.target).checked)" />
+          Lyd ved skud
+        </label>
+        <button class="danger" (click)="stop()">Stop</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Skud</h2>
+      @for (shot of recorder.shots(); track shot.id) {
+        <div class="shot" [class.discarded]="shot.discarded">
+          <span class="num">{{ shot.number }}</span>
+          <span class="muted grow">
+            {{ targetLabel(shot.target) }}@if (shot.distance) {, {{ shot.distance }} m}@if (shot.crawl) {, {{ shot.crawl }}}@if (shot.trigger === 'manual') {, manuelt}
+          </span>
+          <button class="icon" [class.on]="shot.selfRating === 'good'" (click)="rate(shot, 'good')" aria-label="Godt skud">👍</button>
+          <button class="icon" [class.on]="shot.selfRating === 'bad'" (click)="rate(shot, 'bad')" aria-label="Dårligt skud">👎</button>
+          <button class="icon" [class.on]="shot.discarded" (click)="recorder.updateShot(shot, { discarded: !shot.discarded })" aria-label="Ikke et skud">✕</button>
+        </div>
+      } @empty {
+        <p class="muted">Skud dukker op her, når de bliver fundet. Brug "Skud nu", hvis et skud ikke bliver fundet.</p>
+      }
+    </section>
+  } @else {
+    <button class="big" (click)="start()" [disabled]="!selection.archerId() || !manager.slots().length">Start optagelse</button>
+  }
+</div>

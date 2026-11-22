@@ -1,10 +1,13 @@
 <header class="topbar">
-  <span class="logo">🏹 ArcheryMotion</span>
   <nav>
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Live</a>
-    <a routerLink="/skud" routerLinkActive="active">Skud</a>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Optag</a>
+    <a routerLink="/skytter" routerLinkActive="active">Skytter</a>
+    <a routerLink="/optagelser" routerLinkActive="active">Optagelser</a>
     <a routerLink="/ble" routerLinkActive="active">BLE</a>
   </nav>
+  <button class="theme" (click)="toggleTheme()" [attr.aria-label]="light() ? 'Mørkt tema' : 'Lyst tema til udendørs'">
+    {{ light() ? '🌙' : '☀️' }}
+  </button>
 </header>
 <main>
   <router-outlet />

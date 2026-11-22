@@ -7,31 +7,36 @@
 .topbar {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 0 16px;
+  gap: 8px;
+  padding: 0 8px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
 }
 
-.logo {
-  font-weight: 600;
-}
-
 nav {
   display: flex;
-  gap: 4px;
+  flex: 1;
+  gap: 2px;
+  overflow-x: auto;
 
   a {
-    padding: 10px 12px;
+    padding: 14px 10px;
     color: var(--muted);
     text-decoration: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
 
     &.active {
       color: var(--text);
       border-bottom-color: var(--accent);
     }
   }
+}
+
+.theme {
+  background: transparent;
+  font-size: 20px;
+  padding: 6px;
 }
 
 main {

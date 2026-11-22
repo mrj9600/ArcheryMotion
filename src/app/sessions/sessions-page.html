@@ -1,0 +1,33 @@
+<div class="page">
+  <section class="card">
+    <h2>Optagelser</h2>
+    @if (storage(); as s) {
+      <p class="muted">{{ s }}</p>
+    }
+    @if (error(); as err) {
+      <p class="error">{{ err }}</p>
+    }
+    @for (row of rows(); track row.session.id) {
+      <div class="list-row">
+        <div>
+          <strong>{{ row.session.startedAt | date: 'd. MMM y, HH:mm' }}</strong>
+          <div class="muted">
+            {{ row.archer?.name ?? 'Ukendt skytte' }}@if (row.setup) {, {{ row.setup.name }}}@if (row.session.place) {, {{ row.session.place }}}
+          </div>
+          <div class="muted">
+            {{ row.session.shotCount }} skud, {{ isRecording(row.session) ? 'optager nu' : duration(row.session) }},
+            {{ row.session.sensors.length }} sensor{{ row.session.sensors.length === 1 ? '' : 'er' }}
+          </div>
+        </div>
+        <div class="actions">
+          <button (click)="export(row)" [disabled]="busyId() === row.session.id || isRecording(row.session)">
+            {{ busyId() === row.session.id ? 'Pakker…' : 'Eksportér' }}
+          </button>
+          <button class="danger" (click)="delete(row)" [disabled]="isRecording(row.session)">Slet</button>
+        </div>
+      </div>
+    } @empty {
+      <p class="muted">Ingen optagelser endnu.</p>
+    }
+  </section>
+</div>

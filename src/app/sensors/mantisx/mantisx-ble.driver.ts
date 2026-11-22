@@ -14,6 +14,10 @@ const LOCATION = `6e40000d${SUFFIX}`;
 const DEVICE_INFO = '0000180a-0000-1000-8000-00805f9b34fb';
 const FIRMWARE_REVISION = '00002a26-0000-1000-8000-00805f9b34fb';
 
+/** Plausible time between samples (ms); packet gaps outside this (lost packets) are ignored. */
+const MIN_SAMPLE_MS = 1000 / 450;
+const MAX_SAMPLE_MS = 1000 / 250;
+
 /**
  * MantisX sensor (e.g. "mantis674"). Sends pitch and roll computed in the sensor,
  * gyro x/z and the size of the dynamic acceleration at ~400 Hz. No yaw/heading.
@@ -66,6 +70,9 @@ class MantisXBleSensor implements MotionSensor {
   readonly samples = this._samples.asObservable();
 
   private data?: BluetoothRemoteGATTCharacteristic;
+  private lastPacket?: number;
+  /** Running estimate of the time between samples (ms); measured ~340 Hz. */
+  private sampleMs = 1000 / 340;
 
   constructor(
     private readonly device: BluetoothDevice,
@@ -121,14 +128,19 @@ class MantisXBleSensor implements MotionSensor {
     if (!v) return;
     const packet = parseMantisPacket(new Uint8Array(v.buffer, v.byteOffset, v.byteLength), this.hardwareVersion);
     if (!packet) return;
+    // A packet carries several samples; spread them evenly back from the arrival time
     const time = performance.now();
-    for (const s of packet.samples) {
+    const n = packet.samples.length;
+    const measured = this.lastPacket === undefined ? NaN : (time - this.lastPacket) / n;
+    this.lastPacket = time;
+    if (measured >= MIN_SAMPLE_MS && measured <= MAX_SAMPLE_MS) this.sampleMs += 0.05 * (measured - this.sampleMs);
+    packet.samples.forEach((s, i) => {
       this._samples.next({
-        time,
+        time: time - (n - 1 - i) * this.sampleMs,
         euler: mantisEuler(s),
         gyro: [s.gyroX, 0, s.gyroZ],
         accMagnitude: s.accMagnitude,
       });
-    }
+    });
   };
 }
