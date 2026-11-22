@@ -4,7 +4,11 @@ En app til at analysere bueskytters form: bevægelser, timing og alignment, mål
 
 **Status:** Feltoptager v1. Den har skytteprofiler og udstyr, optager rådata fra 1–4 sensorer over Web Bluetooth, finder skud automatisk, lader dig mærke hvert skud (op/lige/ned, afstand, greb/crawl, selvvurdering) og eksporterer som `.amrec` ([format](docs/optagelsesformat.md)). Prototypen med 3D-bue og sigtespor ligger i git-tagget `v0-prototype`.
 
-## Kør
+## Brug på mobilen
+
+Appen ligger på **https://mrj9600.github.io/ArcheryMotion/** og opdateres automatisk ved hvert push til `main`. Åbn den i Chrome på Android og vælg *Installér app* / *Føj til startskærm*. Derefter virker den også uden net i felten.
+
+## Kør lokalt
 
 ```bash
 npm install
