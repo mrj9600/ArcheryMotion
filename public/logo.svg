@@ -34,6 +34,8 @@
       <!-- draw arm: elbow behind, hand at the anchor -->
       <path d="M190 218 L112 178 L210 198" stroke-width="20"/>
       <circle cx="214" cy="198" r="14" fill="#f3efe6" stroke="none"/>
+      <!-- sensor on the draw elbow -->
+      <rect x="-17" y="-14" width="34" height="28" rx="8" transform="translate(128 186) rotate(27)" fill="#f7c843" stroke="#0f1c26" stroke-width="4"/>
       <!-- head -->
       <circle cx="206" cy="152" r="32" fill="#f3efe6" stroke="none"/>
       <!-- bow -->
