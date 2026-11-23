@@ -44,8 +44,8 @@
       <path d="M218 196 L448 196" stroke-width="7"/>
       <path d="M474 196 L442 180 L442 212 Z" fill="#f3efe6" stroke="none"/>
       <path d="M262 196 L292 196 L280 180 L250 180 Z M262 196 L292 196 L280 212 L250 212 Z" fill="#e5463d" stroke="none"/>
-      <!-- sensor on the grip -->
-      <rect x="370" y="218" width="36" height="46" rx="9" fill="#f7c843" stroke="#0f1c26" stroke-width="4"/>
+      <!-- sensor on the riser, just above the arrow -->
+      <rect x="-12" y="-16" width="24" height="32" rx="7" transform="translate(389 166) rotate(-11)" fill="#f7c843" stroke="#0f1c26" stroke-width="4"/>
     </g>
   </g>
   <rect width="512" height="512" fill="url(#shine)"/>
