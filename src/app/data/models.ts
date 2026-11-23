@@ -79,8 +79,17 @@ export interface Session {
   focus?: SessionFocus;
   /** Periods where no data was saved (bow put down, or the pause button). */
   pauses?: RecordingPause[];
+  /** Periods where a sensor had lost the connection and the app was connecting again. */
+  dropouts?: RecordingDropout[];
   /** The app version that made the recording (missing in recordings before it was saved). */
   app?: BuildInfo;
+}
+
+export interface RecordingDropout {
+  /** The sensor (SessionSensor.index) and session times (ms); `end` missing if never back. */
+  sensorIndex: number;
+  start: number;
+  end?: number;
 }
 
 export interface RecordingPause {

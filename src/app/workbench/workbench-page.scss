@@ -106,6 +106,9 @@
   &.pause {
     background: rgba(128, 128, 128, 0.35);
   }
+  &.lost {
+    background: rgba(229, 62, 62, 0.3);
+  }
 }
 
 .detect {

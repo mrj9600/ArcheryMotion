@@ -9,7 +9,7 @@ export interface Marker {
 export interface Span {
   start: number;
   end: number;
-  kind: 'hold' | 'detected' | 'window' | 'pause';
+  kind: 'hold' | 'detected' | 'window' | 'pause' | 'lost';
 }
 
 const PAD = { left: 46, right: 8, top: 6, bottom: 18 };
@@ -251,8 +251,8 @@ export class SignalPlot implements OnDestroy {
         ctx.strokeStyle = textColor;
         ctx.lineWidth = 1.5;
         ctx.strokeRect(a, PAD.top, b - a, h);
-      } else if (span.kind === 'pause') {
-        ctx.fillStyle = 'rgba(128, 128, 128, 0.22)';
+      } else if (span.kind === 'pause' || span.kind === 'lost') {
+        ctx.fillStyle = span.kind === 'pause' ? 'rgba(128, 128, 128, 0.22)' : 'rgba(229, 62, 62, 0.16)';
         ctx.fillRect(a, PAD.top, b - a, h);
       } else {
         ctx.fillStyle = span.kind === 'hold' ? 'rgba(62, 224, 143, 0.18)' : 'rgba(43, 159, 216, 0.16)';

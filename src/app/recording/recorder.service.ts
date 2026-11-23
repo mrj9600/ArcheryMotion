@@ -1,8 +1,8 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { BUILD_INFO } from '../build-info';
 import { Db, newId } from '../data/db';
-import { SampleChunk, Session, ShotRecord, TargetElevation } from '../data/models';
+import { RecordingDropout, SampleChunk, Session, ShotRecord, TargetElevation } from '../data/models';
 import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
 import { ChunkBuffer } from './chunk-buffer';
 import { beep, ScreenWakeLock, vibrate } from './cues';
@@ -51,6 +51,19 @@ export class Recorder {
   private subscription?: Subscription;
   private readonly wakeLock = new ScreenWakeLock();
   private writes: Promise<unknown> = Promise.resolve();
+  /** Open dropouts by sensor. */
+  private readonly lost = new Map<SensorSlot, RecordingDropout>();
+
+  constructor() {
+    // Notes when a sensor loses the connection and when it is back
+    effect(() => {
+      if (!this.session()) return;
+      for (const slot of this.manager.slots()) {
+        const lost = slot.status() === 'reconnecting';
+        untracked(() => this.noteConnection(slot, lost));
+      }
+    });
+  }
 
   async start(archerId: string, setupId: string | undefined, place?: string): Promise<void> {
     if (this.session()) return;
@@ -69,6 +82,7 @@ export class Recorder {
     };
     this.t0 = performance.now();
     this.tracks.clear();
+    this.lost.clear();
     this.detector = new ReleaseDetector(this.threshold());
     this.pauseDetector = new PauseDetector();
     this.paused.set(undefined);
@@ -156,6 +170,26 @@ export class Recorder {
     if (pause && pause.end === undefined) pause.end = Math.max(pause.start, from);
     void this.db.saveSession(session);
     beep(880, 80);
+  }
+
+  private noteConnection(slot: SensorSlot, lost: boolean): void {
+    const session = this.session();
+    const track = this.tracks.get(slot);
+    if (!session || !track) return;
+    const open = this.lost.get(slot);
+    const now = performance.now() - this.t0;
+    if (lost && !open) {
+      const dropout: RecordingDropout = { sensorIndex: track.index, start: now };
+      (session.dropouts ??= []).push(dropout);
+      this.lost.set(slot, dropout);
+    } else if (!lost && open) {
+      open.end = now;
+      this.lost.delete(slot);
+      if (this.sound()) beep(990, 60);
+    } else {
+      return;
+    }
+    void this.db.saveSession(session);
   }
 
   setThreshold(g: number): void {

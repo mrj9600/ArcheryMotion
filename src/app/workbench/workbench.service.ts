@@ -95,6 +95,7 @@ export class Workbench {
   ]);
 
   readonly spans = computed<Span[]>(() => [
+    ...(this.recording()?.header.session.dropouts ?? []).map((d) => ({ start: d.start, end: d.end ?? this.fullRange()[1], kind: 'lost' as const })),
     ...(this.recording()?.header.session.pauses ?? []).map((p) => ({ start: p.start, end: p.end ?? this.fullRange()[1], kind: 'pause' as const })),
     ...(this.drill()?.results.map((r) => ({ start: r.start, end: r.end, kind: 'hold' as const })) ?? []),
     ...this.holds().map((h) => ({ start: h.start, end: h.end ?? h.start + h.heldMs, kind: 'detected' as const })),

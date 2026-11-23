@@ -34,8 +34,8 @@
   @if (recorder.session()) {
     <div class="links" aria-label="Sensorer">
       @for (slot of manager.slots(); track slot.sensor.id) {
-        <span class="link" [class.ok]="slot.sensor.status() === 'connected'" [class.bad]="slot.sensor.status() !== 'connected'">
-          {{ roleLabel(slot.role()) }} {{ slot.sensor.status() === 'connected' ? '✓' : slot.sensor.status() === 'connecting' ? '…' : '✕' }}
+        <span class="link" [class.ok]="slot.status() === 'connected'" [class.bad]="slot.status() !== 'connected'">
+          {{ roleLabel(slot.role()) }} {{ slot.status() === 'connected' ? '✓' : slot.status() === 'reconnecting' ? 'genforbinder…' : '✕' }}
         </span>
       }
       @if (!hasBowSensor()) {
@@ -65,8 +65,8 @@
       <div class="sensor">
         <div class="sensor-name">
           <strong>{{ slot.sensor.name }}</strong>
-          <span class="badge" [class.ok]="slot.sensor.status() === 'connected'" [class.bad]="slot.sensor.status() === 'disconnected'">
-            {{ slot.sensor.status() === 'connected' ? slot.rate() + ' Hz' : slot.sensor.status() === 'connecting' ? 'Forbinder' : 'Afbrudt' }}
+          <span class="badge" [class.ok]="slot.status() === 'connected'" [class.bad]="slot.status() !== 'connected'">
+            {{ slot.status() === 'connected' ? slot.rate() + ' Hz' : slot.status() === 'reconnecting' ? 'Genforbinder…' : 'Afbrudt' }}
           </span>
         </div>
         <select [ngModel]="slot.role()" (ngModelChange)="setRole(slot, $event)">
