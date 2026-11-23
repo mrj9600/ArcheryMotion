@@ -20,6 +20,28 @@
   }
 }
 
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.link {
+  font-size: 13px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: var(--border);
+
+  &.ok {
+    background: var(--ok);
+    color: var(--on-strong);
+  }
+  &.bad {
+    background: var(--danger);
+    color: var(--on-strong);
+  }
+}
+
 .badge {
   font-size: 13px;
   padding: 2px 8px;

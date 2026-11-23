@@ -81,11 +81,6 @@ export class Recorder {
     this.session.set(undefined);
   }
 
-  /** Marks "now" as a release, e.g. when the automatic detection missed it. */
-  markShot(): void {
-    if (this.session()) void this.addShot(performance.now() - this.t0, 'manual');
-  }
-
   async updateShot(shot: ShotRecord, changes: Partial<ShotRecord>): Promise<void> {
     const updated = { ...shot, ...changes };
     this.shots.update((list) => list.map((s) => (s.id === shot.id ? updated : s)));

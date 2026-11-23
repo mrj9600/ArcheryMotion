@@ -46,6 +46,12 @@ export class RecordPage implements OnDestroy {
 
   readonly hasBowSensor = computed(() => this.manager.slots().some((s) => s.role() === 'bow'));
 
+  /** Short name of a role for the compact status during recording, e.g. "Bue". */
+  roleLabel(role: SensorRole): string {
+    const label = this.roles.find((r) => r.value === role)?.label ?? role;
+    return label.replace(/\s*\(.*\)/, '');
+  }
+
   ngOnDestroy(): void {
     clearInterval(this.timer);
   }

@@ -31,6 +31,18 @@
     </section>
   }
 
+  @if (recorder.session()) {
+    <div class="links" aria-label="Sensorer">
+      @for (slot of manager.slots(); track slot.sensor.id) {
+        <span class="link" [class.ok]="slot.sensor.status() === 'connected'" [class.bad]="slot.sensor.status() !== 'connected'">
+          {{ roleLabel(slot.role()) }} {{ slot.sensor.status() === 'connected' ? '✓' : slot.sensor.status() === 'connecting' ? '…' : '✕' }}
+        </span>
+      }
+      @if (!hasBowSensor()) {
+        <span class="link bad">Ingen bue</span>
+      }
+    </div>
+  } @else {
   <section class="card">
     <div class="card-head">
       <h2>Sensorer</h2>
@@ -62,9 +74,7 @@
             <option [value]="r.value">{{ r.label }}</option>
           }
         </select>
-        @if (!recorder.session()) {
-          <button class="secondary" (click)="manager.remove(slot)">Fjern</button>
-        }
+        <button class="secondary" (click)="manager.remove(slot)">Fjern</button>
       </div>
     } @empty {
       <p class="muted">Ingen sensorer forbundet.</p>
@@ -73,6 +83,7 @@
       <p class="warn">Ingen sensor har rollen "Bue", så skud findes ikke automatisk.</p>
     }
   </section>
+  }
 
   @if (!recorder.session()) {
     <section class="card">
@@ -123,8 +134,6 @@
         </div>
       </div>
 
-      <button class="big" (click)="recorder.markShot()">Skud nu</button>
-
       <div class="actions small">
         <label class="check">
           Slip ved
@@ -155,7 +164,7 @@
           <button class="icon" [class.on]="shot.discarded" (click)="recorder.updateShot(shot, { discarded: !shot.discarded })" aria-label="Ikke et skud">✕</button>
         </div>
       } @empty {
-        <p class="muted">Skud dukker op her, når de bliver fundet. Brug "Skud nu", hvis et skud ikke bliver fundet.</p>
+        <p class="muted">Skud dukker op her, når de bliver fundet.</p>
       }
     </section>
   } @else {
