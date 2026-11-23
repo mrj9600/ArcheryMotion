@@ -126,8 +126,8 @@ Det vigtigste valgkriterium er **Web Bluetooth**. Det findes kun i Chrome og Edg
 | Gyroens nulpunkt | Måles automatisk, når sensoren ligger stille (og i stille perioder før skud) | Nej |
 | Accelerometer | Fabrikskalibreringen er god nok | Nej |
 | Magnetometer | Bruges ikke | Nej |
-| **Sensorens montering**: hvilken vej peger den på buen? | **Op** = tyngdekraftens retning mens man holder. **Sideaksen** = den akse buen drejer om mellem skud mod mål i forskellig højde (felt/3D), eller under neddrejningen fra opsætningen. Efter få skud kan appen altså selv finde buens akser. | Nej, men én gang "bue lodret med vaterpas" giver en absolut cant |
-| Cant og vinkler | Måles relativt til ens egen normale stilling (gennemsnit af skud). Det er konsistens, der betyder noget for formen | Nej |
+| **Sensorens montering**: hvilken vej peger den på buen? | **Op** = tyngdekraftens retning mens man holder. **Sideaksen** = den akse buen drejer om mellem skud mod mål i forskellig højde (felt/3D), eller under neddrejningen fra opsætningen. Efter få skud kan appen altså selv finde buens akser. | Nej, men én gang "bue lodret med vaterpas" gør den absolutte cant sikker |
+| Cant og vinkler | Måles **absolut**: buens akser (sideaksen fra skud i forskellig højde, pilens akse fra rekylen i slippet) sammen med tyngdekraften giver den rigtige cant, også retningen. Det er nødvendigt, fordi nogle retninger altid er fejl (se afsnit 5). Derudover måles spredningen omkring skyttens egen normale stilling | Nej (vaterpas valgfrit) |
 | Kropssensorer (hoved, overkrop) | En kort referencestilling ("stå rank, kig på målet"), og derefter vinkler *mellem* segmenter (hoved i forhold til overkrop), så monteringen betyder mindre | Ja, kort |
 | Tidsforskel mellem sensorer | Slippet ses i alle sensorer og bruges som fælles nulpunkt | Nej |
 
@@ -165,7 +165,16 @@ Grebets bevægelse kan fx vises sådan:
 - Udvikling i løbet af en session (træthed: ændrer formen sig de sidste pile?) og over tid.
 
 **Forslag til forbedringer og fokuspunkter**
-- **Sammenlign med dig selv, ikke med et ideal.** Appen lærer skyttens egen normale form ud fra mange skud og peger på det, der afviger: "holdetiden var 1,2 s længere på de sidste 6 pile", "cant varierer dobbelt så meget, når målet står lavt".
+- **Arbejd hen mod en god form, ikke bare din egen.** Konsistens er vigtig, men en form, der gentages konsekvent forkert, er stadig forkert. Nogle bevægelser er også nemmere at gentage end andre. Feedbacken har derfor to lag:
+  - *Teknikregler* gælder for alle skytter. De beskriver den form, man skal arbejde hen imod, og et brud på dem er en fejl, også selvom det sker hver gang. Eksempler:
+    - Ingen cant mod pilens side (øverste ben til venstre for en højrehåndsskytte), for så stiger risikoen for, at pilen falder af hylden.
+    - Intet collapse i slippet: trækket skal fortsætte bagud gennem slippet, ikke give efter fremad.
+    - Ingen creep under hold.
+    - Buen må ikke falde mod skytten i follow-through.
+    - Trækalbuen ligger i linje bag pilen (afsnit 7).
+  - *Konsistens* gælder inden for det, reglerne tillader. Appen lærer skyttens egen normale form ud fra mange skud og peger på det, der afviger: "holdetiden var 1,2 s længere på de sidste 6 pile", "cant varierer dobbelt så meget, når målet står lavt".
+  - Brud på teknikreglerne kommer før konsistens. Skyttens nuværende form er udgangspunktet, og den gode form er målet, man flytter sig hen imod trin for trin.
+  - Reglerne tager højde for skytteprofilen (højre- eller venstrehånd) og buetypen. Grænserne skal kunne justeres, og hvor der er et frit valg (fx hvor meget cant væk fra pilen), sætter skytten eller træneren selv målet.
 - **Mønster → mulige årsager → øvelse.** Et lille katalog (som SCATT's fejlkatalog), der kobler et målt mønster til mulige årsager og en øvelse. Eksempel: buen falder til venstre i slippet → måske skævt tryk i grebet → øvelse med fokus på grebet. Formuleres som *mulige* årsager, ikke som en dom.
 - **Ét fokuspunkt ad gangen.** Appen foreslår det vigtigste punkt for næste session, og en øvelse kan have et målbart mål (fx "cant inden for ±1° på 8 af 10 pile").
 - **Lyd-feedback live** (som HackMotion), valgfrit: bip når holdetiden bliver for lang, eller når cant er uden for området. Nyttigt i felten, hvor man ikke kigger på skærmen.
@@ -197,7 +206,7 @@ Ud over analysen skal appen kunne styre øvelser. Sensorerne finder selv ud af, 
 | **Ekspansion / klikker** (World Archery) | Gennem klikkeren, ekspander, nulstil og gentag | En sensor på trækarmen viser, om trækket fortsætter bagud eller stopper/kryber frem. Virker også uden klikker (barebow) |
 | **Elastikbånd hjemme** | Holde- og trækøvelser med elastikbånd | Sensorer på armene måler hold og bane uden bue |
 | **Op/ned ad bakke** (felt/3D) | Skyd mod mål i forskellig højde | Med sensorer på overkrop og bue: **bøjer du i hoften og holder T-formen** (overkrop og bue drejer lige meget), eller løfter/sænker du armen? Specielt for felt |
-| **Cant-øvelse** | Hold buen på din egen normale cant | Lyd-feedback, når cant er uden for ±1° |
+| **Cant-øvelse** | Hold buen på en valgt cant (lodret eller en lille cant væk fra pilen, aldrig mod pilen) | Lyd-feedback, når cant er uden for ±1° af målet, og en tydelig advarsel ved cant mod pilens side |
 | **Træthedstest** | Fx 30–60 pile | Viser formen pil for pil: hvornår begynder den at ændre sig? |
 
 ## 7. Alignment
@@ -236,7 +245,7 @@ Ud over analysen skal appen kunne styre øvelser. Sensorerne finder selv ud af, 
 4. **Analysebænk offline** (PC-browser): indlæs optagelser, se rå signaler, find skud og synkronisér sensorerne. Her udvikles resten.
 5. **Kalibrering og montering** ud fra data som beskrevet i afsnit 3, testet på dine optagelser.
 6. **Visning af grebets bevægelse** som beskrevet i afsnit 4, med faser, tempo og koordinationsdiagram fra afsnit 5.
-7. **Første feedback:** din egen normale form ud fra optagelserne, afvigelser, højde-analyse og et lille katalog over mønstre, årsager og øvelser.
+7. **Første feedback:** først teknikreglerne (cant mod pilen, collapse i slippet, creep), derefter din egen normale form ud fra optagelserne, afvigelser, højde-analyse og et lille katalog over mønstre, årsager og øvelser.
 8. **Flere træningsmoduler** (afsnit 6): lukkede øjne, follow-through, tempo og op/ned ad bakke.
 9. **Alignment** (afsnit 7): sensor på trækarmen, derefter video med pose-estimering.
 10. **Senere:** analyse af kropssensorer, video fra ArcherFormReplay, markører og evt. integration med ArrowPlot.
