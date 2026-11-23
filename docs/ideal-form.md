@@ -109,20 +109,20 @@ Skytten påvirker kun pilen, så længe pilen rører strengen eller buen. **[Fys
 - Pilen forlader strengen ca. **15–20 ms** efter, at slippet begynder. **[Flere studier]** Park 2012 henviser til to tidligere studier med samme resultat ([Park 2012](https://www.researchgate.net/publication/258178764_High-speed_video_analysis_of_arrow_behaviour_during_the_power_stroke_of_a_recurve_archery_bow)), og et nyere studie angiver under 16 ms ([arXiv 2402.12389](https://arxiv.org/pdf/2402.12389)). Mit overslag nedenfor giver det samme. **[Fysik]**
 - Pilens kontakt med plungeren slutter inden for ca. 8 ms. **[Ét studie]** (Park 2012)
 
-**Overslag for en barebow-skytte. [Fysik]** Med fx 71 cm træklængde og 22 cm brace height (afstand fra strengen til grebets dybeste punkt) bliver trækslaget ca. 49 cm:
+**Overslag for en barebow-skytte. [Fysik]** Med fx 71 cm træklængde og 22 cm strenghøjde (brace height: afstand fra strengen til grebets dybeste punkt) bliver trækslaget ca. 49 cm:
 - Pilen når fx 55 m/s og har gennemsnitligt omkring halv fart under trækslaget. Det giver ca. 0,49 / 27,5 ≈ **18 ms** på strengen.
-- Nocken skal derefter ca. en brace height (22 cm) frem for at komme forbi hylden. Det tager ca. **4 ms**.
+- Nocken skal derefter ca. en strenghøjde (22 cm) frem for at komme forbi hylden. Det tager ca. **4 ms**.
 - **Pilen er helt fri af buen ca. 20–25 ms efter, at slippet begynder.** Mest tid ved lav trækvægt, kort træklængde og tunge pile.
 
 **Hvad det betyder for appen:**
 - **Det afgørende vindue er de sidste ca. 50 ms før og de første ca. 25 ms efter slippet.** **[Fysik]** Hvor langt vinduet går tilbage, er **[Gæt]**.
-- **Det store ryk i buens accelerometer kommer, når benene stopper ved brace height**, omtrent når pilen forlader strengen. **[Fysik]** Appens slip-tidspunkt ligger derfor ca. 15–20 ms efter, at fingrene åbner sig. Den første lille fremadgående acceleration før rykket er det egentlige slip. Det skal bekræftes i rigtige optagelser.
+- **Det store ryk i buens accelerometer kommer, når benene stopper ved strenghøjden**, omtrent når pilen forlader strengen. **[Fysik]** Appens slip-tidspunkt ligger derfor ca. 15–20 ms efter, at fingrene åbner sig. Den første lille fremadgående acceleration før rykket er det egentlige slip. Det skal bekræftes i rigtige optagelser.
 - **Sensorernes hastighed:**
   - MantisX måler ved ca. 340 Hz (3 ms mellem målinger), så vinduet dækkes af 7–8 målinger.
   - WitMotion kører typisk ved 100–200 Hz (5–10 ms), så vinduet dækkes kun af 2–5 målinger.
   - Til at se, hvad der sker *i* vinduet, er MantisX på buen bedst. Tidsstemplerne fra BLE har en usikkerhed på flere millisekunder.
 - **Follow-through er et forstørrelsesglas på slippet.** **[Fysik]** En drejning eller et collapse, der ses 50–200 ms efter slippet, er startet af kræfter, der virkede i vinduet.
-- **Udstyret bestemmer tiden.** Brace height og pilens vægt eller hastighed bør tilføjes til udstyrsopsætningen, så vinduet kan regnes ud pr. bue.
+- **Udstyret bestemmer tiden.** Strenghøjde og pilens vægt eller hastighed bør tilføjes til udstyrsopsætningen, så vinduet kan regnes ud pr. bue.
 
 ## Teknikregler, som appen kan tjekke
 
