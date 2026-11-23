@@ -88,3 +88,23 @@ describe('recording file', () => {
     expect(rec.sensors[0].quat).toBeUndefined();
   });
 });
+
+describe('splitSensor', () => {
+  it('splits continuous arrays into chunks that join back to the same data', async () => {
+    const { splitSensor } = await import('./import');
+    const n = 2500;
+    const data = {
+      t: Float64Array.from({ length: n }, (_, i) => i * 3),
+      gyro: Float32Array.from({ length: n * 3 }, (_, i) => i),
+      accMagnitude: Float32Array.from({ length: n }, (_, i) => i / 10),
+    };
+    const chunks = splitSensor('s', 2, data);
+    expect(chunks.map((c) => c.t.length)).toEqual([1000, 1000, 500]);
+    expect(chunks.map((c) => c.seq)).toEqual([0, 1, 2]);
+    expect(chunks[1].sensorIndex).toBe(2);
+    const back = joinChunks(chunks);
+    expect(Array.from(back.t)).toEqual(Array.from(data.t));
+    expect(Array.from(back.gyro!)).toEqual(Array.from(data.gyro));
+    expect(back.euler).toBeUndefined();
+  });
+});

@@ -1,6 +1,22 @@
 <div class="page">
   <section class="card">
-    <h2>Optagelser</h2>
+    <div class="card-head">
+      <h2>Optagelser</h2>
+      <label class="button-link import">
+        {{ importing() ? 'Importerer…' : 'Importér…' }}
+        <input
+          type="file"
+          multiple
+          accept=".amrec,.txt,.gz,application/gzip,application/octet-stream,text/plain"
+          [disabled]="importing()"
+          (change)="importFiles($event)"
+          hidden
+        />
+      </label>
+    </div>
+    @if (importMessage(); as msg) {
+      <p class="muted">{{ msg }}</p>
+    }
     @if (storage(); as s) {
       <p class="muted">{{ s }}</p>
     }

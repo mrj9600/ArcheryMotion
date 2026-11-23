@@ -4,6 +4,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Db } from '../data/db';
 import { Archer, EquipmentSetup, Session, ShotRecord } from '../data/models';
+import { importRecording } from '../recording/import';
 import { canShareFile, download, exportSession, shareableFile, shareFile } from '../recording/export';
 import { Recorder } from '../recording/recorder.service';
 
@@ -28,6 +29,8 @@ export class SessionsPage {
   readonly busyId = signal<string | undefined>(undefined);
   readonly error = signal<string | undefined>(undefined);
   readonly storage = signal<string | undefined>(undefined);
+  readonly importing = signal(false);
+  readonly importMessage = signal<string | undefined>(undefined);
   /** A packed file waiting for a second tap to open the share sheet. */
   readonly ready = signal<{ id: string; file: File } | undefined>(undefined);
 
@@ -85,6 +88,35 @@ export class SessionsPage {
     } finally {
       this.busyId.set(undefined);
     }
+  }
+
+  /** Imports exported recordings (several at once); ones already here are skipped. */
+  async importFiles(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    if (!files.length) return;
+    this.importing.set(true);
+    this.error.set(undefined);
+    this.importMessage.set(undefined);
+    let imported = 0;
+    let existing = 0;
+    const failed: string[] = [];
+    for (const file of files) {
+      try {
+        const r = await importRecording(this.db, file);
+        if (r.status === 'imported') imported++;
+        else existing++;
+      } catch (e) {
+        failed.push(`${file.name}: ${e instanceof Error ? e.message : e}`);
+      }
+    }
+    const parts = [`${imported} optagelse${imported === 1 ? '' : 'r'} importeret`];
+    if (existing) parts.push(`${existing} fandtes allerede`);
+    this.importMessage.set(parts.join(', ') + '.');
+    if (failed.length) this.error.set(`Kunne ikke importere ${failed.join('; ')}`);
+    this.importing.set(false);
+    await this.load();
   }
 
   /** Second tap: the file is packed, so the share sheet opens at once. */

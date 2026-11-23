@@ -178,7 +178,9 @@ textarea {
 }
 
 /* A link that looks like a secondary button */
-a.button-link {
+a.button-link,
+label.button-link {
+  cursor: pointer;
   display: inline-block;
   padding: 10px 14px;
   border-radius: 8px;
