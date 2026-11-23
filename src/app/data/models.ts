@@ -101,7 +101,7 @@ export type FocusKey = 'release' | 'expansion' | 'cant' | 'bowArm' | 'anchor' | 
 /** Focus areas, from the good form (docs/ideal-form.md). */
 export const FOCUS_AREAS: { value: FocusKey; label: string; hint: string }[] = [
   { value: 'release', label: 'Slip og follow-through', hint: 'Afslappede fingre, trækhånden bagud langs halsen, buearmen oppe' },
-  { value: 'expansion', label: 'Ekspansion og rygspænding', hint: 'Fortsæt bagud fra ryggen gennem slippet, ingen creep eller collapse' },
+  { value: 'expansion', label: 'Ekspansion gennem slippet', hint: 'Trækalbuen fortsætter roligt bagud gennem slippet, ingen creep eller collapse' },
   { value: 'cant', label: 'Fast cant', hint: 'Buen hælder det samme fra anker til slip' },
   { value: 'bowArm', label: 'Buearm og bueskulder', hint: 'Stærk, stille buearm og lav bueskulder' },
   { value: 'anchor', label: 'Anker', hint: 'Samme anker hver gang, trækalbuen på linje med pilen' },

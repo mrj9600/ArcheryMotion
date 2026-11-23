@@ -23,6 +23,10 @@ Hver påstand er mærket med sit grundlag:
 
 Forskningen giver mest retninger ("mindre er bedre", "bagud, ikke frem") og meget få grænseværdier. Næsten alle tal i reglerne er derfor **[Gæt]**.
 
+## Bevægelser, ikke muskelspænding
+
+Appen beskriver den gode form som **bevægelser og stillinger**, aldrig som muskelspænding. **[Skytten]** At fokusere på at spænde musklerne kan få skytten til at spænde for meget. Når BEST/KSL taler om fx rygspænding, oversætter appen det til den bevægelse eller stilling, det giver: trækalbuen fortsætter bagud, trækskulderbladet går mod rygsøjlen, trækhånden bliver bag nakken. Det passer også med, hvad sensorerne kan måle: bevægelser, ikke spænding.
+
 ## Akser
 
 For at reglerne giver mening, skal sensorernes data regnes om til buens akser (afsnit 3 i planen):
@@ -85,7 +89,7 @@ Pilens side er venstre for en højrehåndsskytte og højre for en venstrehåndss
 ### 4. Follow-through
 
 - **Buearmen holdes oppe, stabil og stærk.** **[BEST]** Hvor meget den må falde, er **[Gæt]**.
-- **Rygspændingen holdes 1–2 s efter slippet.** **[BEST]** (KSL)
+- **Stillingen holdes 1–2 s efter slippet**: trækhånden bliver bag nakken og buearmen oppe. **[BEST]** (KSL kalder det at holde rygspændingen; se "Bevægelser, ikke muskelspænding".)
 - **Trækhånden må ikke falde ned mod skulderen**, for så falder albuen for langt. **[BEST]** (KSL)
 - **Follow-through er en indikator for, hvor rigtigt skuddet blev udført.** **[BEST]** Det passer med, at bevægelserne efter slippet viser de kræfter, der virkede i slippet.
 - **Jævn bevægelse efter slippet er vigtigere end at holde helt stille.** **[Ét studie]**, og kun for compound ([Kim m.fl. 2025](https://pubmed.ncbi.nlm.nih.gov/39998444)). Ét andet studie fandt, at stabiliteten efter slippet betyder mere for recurve end for compound ([MDPI 2025](https://www.mdpi.com/2075-4663/13/9/310)). Bruges ikke, før det er bekræftet.
