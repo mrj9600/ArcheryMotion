@@ -110,6 +110,8 @@ Det vigtigste valgkriterium er **Web Bluetooth**. Det findes kun i Chrome og Edg
 
   Ulemper: kun 6 akser (vi bruger ikke magnetometeret alligevel), vi skal selv lave orienteringsberegningen, og der skal skrives firmware.
 
+  **Besluttet (2026-11-23):** vi kommer så langt som muligt med MantisX og WitMotion. Først når der skal bruges flere end to sensorer, vælges mellem flere WitMotion og XIAO. Skytten hælder til XIAO, men kun hvis den højere hastighed (forventet ~1000 Hz, op mod 3× MantisX) og de præcise tidsstempler giver noget, vi kan se i data. Afgøres fx af, om slippets forløb (10–20 ms) er for groft ved 339 Hz. Forventningen om nøjagtigheden: på niveau med de andre; monteringen betyder mere end chippen.
+
 **Magnetometer.** Regn ikke med kompasset (yaw ud fra magnetfelt). Stabilisatorvægte, sigter og jord i felten forstyrrer det. Vi bruger gyro og accelerometer og regner højre/venstre *relativt* over det enkelte skud. Det gør MantisX også.
 
 ### Markører og kameraer
