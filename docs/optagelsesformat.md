@@ -1,6 +1,6 @@
 # Optagelsesformat (.amrec)
 
-En session eksporteres som én fil, `archerymotion_<skytte>_<dato>_<tid>.amrec`. Formatet er lavet til at kunne læses offline (analysebænken, Python osv.).
+En session eksporteres som én fil, `archerymotion_<skytte>_<dato>_<tid>.amrec`. Når den deles fra telefonen, hedder den `.amrec.txt`, fordi Androids delingsmenu kun tager visse filtyper. Indholdet er det samme. Formatet er lavet til at kunne læses offline (analysebænken, Python osv.).
 
 Hele filen er **gzip-komprimeret**. Udpakket ser den sådan ud:
 

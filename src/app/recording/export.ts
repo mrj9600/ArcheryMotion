@@ -31,17 +31,37 @@ export async function exportSession(db: Db, session: Session): Promise<{ blob: B
   return { blob, filename: `archerymotion_${who}_${stamp}.amrec` };
 }
 
-/** Shares the file (Android share sheet) or falls back to a download. */
-export async function saveFile(blob: Blob, filename: string): Promise<void> {
-  const file = new File([blob], filename, { type: 'application/octet-stream' });
-  if (navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: filename });
-      return;
-    } catch (e) {
-      if ((e as DOMException).name === 'AbortError') return;
-    }
+/**
+ * The file as it is shared. Android's share sheet only takes some file types (images,
+ * PDF, text, ...), so the .amrec file is shared as ".amrec.txt"; the contents are the same,
+ * and Analyse opens both.
+ */
+export function shareableFile(blob: Blob, filename: string): File {
+  return new File([blob], `${filename}.txt`, { type: 'text/plain' });
+}
+
+export function canShareFile(file: File): boolean {
+  return !!navigator.canShare?.({ files: [file] });
+}
+
+/**
+ * Opens the share sheet. 'needsTap' means the browser wants a fresh tap first (packing
+ * the file took too long after the tap on Eksportér).
+ */
+export async function shareFile(file: File): Promise<'shared' | 'cancelled' | 'needsTap'> {
+  try {
+    await navigator.share({ files: [file], title: file.name });
+    return 'shared';
+  } catch (e) {
+    const name = (e as DOMException).name;
+    if (name === 'AbortError') return 'cancelled';
+    if (name === 'NotAllowedError') return 'needsTap';
+    throw e;
   }
+}
+
+/** Saves the file to Downloads. */
+export function download(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

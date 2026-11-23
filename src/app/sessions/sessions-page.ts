@@ -4,7 +4,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Db } from '../data/db';
 import { Archer, EquipmentSetup, Session, ShotRecord } from '../data/models';
-import { exportSession, saveFile } from '../recording/export';
+import { canShareFile, download, exportSession, shareableFile, shareFile } from '../recording/export';
 import { Recorder } from '../recording/recorder.service';
 
 interface Row {
@@ -28,6 +28,8 @@ export class SessionsPage {
   readonly busyId = signal<string | undefined>(undefined);
   readonly error = signal<string | undefined>(undefined);
   readonly storage = signal<string | undefined>(undefined);
+  /** A packed file waiting for a second tap to open the share sheet. */
+  readonly ready = signal<{ id: string; file: File } | undefined>(undefined);
 
   readonly version = (app: BuildInfo) => versionLabel(app);
 
@@ -72,11 +74,28 @@ export class SessionsPage {
     this.error.set(undefined);
     try {
       const { blob, filename } = await exportSession(this.db, row.session);
-      await saveFile(blob, filename);
+      const file = shareableFile(blob, filename);
+      if (!canShareFile(file)) {
+        download(blob, filename);
+        return;
+      }
+      if ((await shareFile(file)) === 'needsTap') this.ready.set({ id: row.session.id, file });
     } catch (e) {
       this.error.set(`Eksport fejlede: ${e}`);
     } finally {
       this.busyId.set(undefined);
+    }
+  }
+
+  /** Second tap: the file is packed, so the share sheet opens at once. */
+  async share(): Promise<void> {
+    const ready = this.ready();
+    if (!ready) return;
+    this.ready.set(undefined);
+    try {
+      await shareFile(ready.file);
+    } catch (e) {
+      this.error.set(`Deling fejlede: ${e}`);
     }
   }
 
