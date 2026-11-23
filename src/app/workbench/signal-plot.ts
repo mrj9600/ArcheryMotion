@@ -9,11 +9,14 @@ export interface Marker {
 export interface Span {
   start: number;
   end: number;
-  kind: 'hold' | 'detected' | 'window';
+  kind: 'hold' | 'detected' | 'window' | 'pause';
 }
 
 const PAD = { left: 46, right: 8, top: 6, bottom: 18 };
 const TICK_STEPS = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600];
+/** A longer time between two samples is a gap (pause or lost connection), not drawn (ms). */
+const GAP_MS = 500;
+
 const MARKER_COLORS: Record<Marker['kind'], string> = { shot: '#e5463d', release: '#2b9fd8', warning: '#d69e2e' };
 
 /**
@@ -248,6 +251,9 @@ export class SignalPlot implements OnDestroy {
         ctx.strokeStyle = textColor;
         ctx.lineWidth = 1.5;
         ctx.strokeRect(a, PAD.top, b - a, h);
+      } else if (span.kind === 'pause') {
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.22)';
+        ctx.fillRect(a, PAD.top, b - a, h);
       } else {
         ctx.fillStyle = span.kind === 'hold' ? 'rgba(62, 224, 143, 0.18)' : 'rgba(43, 159, 216, 0.16)';
         const top = span.kind === 'hold' ? PAD.top : PAD.top + h * 0.85;
@@ -316,6 +322,12 @@ export class SignalPlot implements OnDestroy {
         ctx.lineTo(col, y(last));
       };
       for (let i = i0; i < i1; i++) {
+        // Do not draw a line across a pause in the recording
+        if (i > i0 && t[i] - t[i - 1] > GAP_MS) {
+          flush();
+          col = NaN;
+          started = false;
+        }
         const v = s.values[i];
         if (Number.isNaN(v)) continue;
         const c = Math.round(x(t[i]) * 2) / 2;

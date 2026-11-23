@@ -45,6 +45,8 @@ Hvert skud kan senere få `arrow` (pilens nummer eller navn) og `impact`, hvor p
 - `score` er point eller zone som skrevet ned. `targetSize` er skivens eller dræbezonens størrelse i cm.
 - Alle felter er valgfrie. Skuddets `releaseTime` binder placeringen sammen med sensordata.
 
+`session.pauses` er perioder, hvor der ikke blev gemt data: `{ "start": 151200, "end": 190300, "by": "auto" }` (sessionstid i ms). `auto` betyder, at buen havde ligget helt stille i 10 s (sat fra sig); optagelsen fortsatte, da buen blev taget op, og de sidste 2 s før blev gemt med. `manual` er pauseknappen. Under en pause findes der heller ingen skud.
+
 Har skytten valgt et fokus for sessionen, står det i `session.focus`, fx `{ "key": "release", "label": "Slip og follow-through" }`. Nøglerne er `release`, `expansion`, `cant`, `bowArm`, `anchor`, `tempo`, `slope` og `other` (så er `label` skyttens egen tekst). Skuddenes `selfRating` (`good`/`bad`) er skyttens vurdering af, om fokuspunktet lykkedes i skuddet, ikke hvor pilen ramte.
 
 Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række pr. gentagelse:

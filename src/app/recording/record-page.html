@@ -131,8 +131,8 @@
   } @else if (recorder.session(); as session) {
     <section class="card recording">
       <div class="status">
-        <span class="rec-dot"></span>
-        <span>Optager {{ elapsed() }}</span>
+        <span class="rec-dot" [class.paused]="recorder.paused()"></span>
+        <span>{{ recorder.paused() ? 'Pause' : 'Optager' }} {{ elapsed() }}</span>
         <span class="count">{{ session.shotCount }} <small>skud</small></span>
       </div>
       @if (session.focus; as focus) {
@@ -173,8 +173,18 @@
           <input type="checkbox" [checked]="recorder.sound()" (change)="recorder.sound.set($any($event.target).checked)" />
           Lyd ved skud
         </label>
+        @if (recorder.paused()) {
+          <button (click)="recorder.resume()">Fortsæt</button>
+        } @else {
+          <button class="secondary" (click)="recorder.pause()">Pause</button>
+        }
         <button class="danger" (click)="stop()">Stop</button>
       </div>
+      @if (recorder.paused() === 'auto') {
+        <p class="muted small">Buen har ligget stille, så optagelsen holder pause. Den fortsætter, når du tager buen op.</p>
+      } @else if (recorder.paused() === 'manual') {
+        <p class="muted small">Optagelsen holder pause, til du trykker Fortsæt.</p>
+      }
     </section>
 
     <section class="card">

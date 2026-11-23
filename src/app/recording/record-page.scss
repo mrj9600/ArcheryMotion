@@ -82,6 +82,11 @@
   border-radius: 50%;
   background: var(--danger);
   animation: pulse 1.2s infinite;
+
+  &.paused {
+    background: var(--warn, #d69e2e);
+    animation: none;
+  }
 }
 
 @keyframes pulse {

@@ -103,6 +103,9 @@
   &.detected {
     background: rgba(43, 159, 216, 0.3);
   }
+  &.pause {
+    background: rgba(128, 128, 128, 0.35);
+  }
 }
 
 .detect {

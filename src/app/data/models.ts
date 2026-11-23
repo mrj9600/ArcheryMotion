@@ -76,6 +76,15 @@ export interface Session {
   drill?: HoldDrill;
   /** What the archer trains in this session; the shots' self-rating is on this. */
   focus?: SessionFocus;
+  /** Periods where no data was saved (bow put down, or the pause button). */
+  pauses?: RecordingPause[];
+}
+
+export interface RecordingPause {
+  /** Session times (ms). `end` is missing if the session ended while paused. */
+  start: number;
+  end?: number;
+  by: 'auto' | 'manual';
 }
 
 /** Training focus of a session. `label` is the text shown (free text for 'other'). */

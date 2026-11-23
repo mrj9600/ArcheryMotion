@@ -250,7 +250,7 @@ Ud over analysen skal appen kunne styre øvelser. Sensorerne finder selv ud af, 
 8. **Flere træningsmoduler** (afsnit 6): lukkede øjne, follow-through, tempo og op/ned ad bakke.
 9. **Alignment** (afsnit 7): sensor på trækarmen, derefter video med pose-estimering.
 10. **Senere:** analyse af kropssensorer, video fra ArcherFormReplay, markører og evt. integration med ArrowPlot.
-11. **Læringstilstand: hvad gør du, når pilen sidder rigtigt?** Pilens placering markeres pr. skud (eller hentes fra ArrowPlot), og appen sammenligner sensordata for skud i midten med skud, der sidder fx til højre eller lavt: "når pilen går til højre, drejer buen mere i slippet". Datamodellen er klar (`ShotRecord.impact` og `arrow`, se [optagelsesformat.md](optagelsesformat.md)), men der er ingen indtastning endnu.
+11. **Læringstilstand: hvad gør du, når pilen sidder rigtigt?** Pilens placering markeres pr. skud (eller hentes fra ArrowPlot), og appen sammenligner sensordata for skud i midten med skud, der sidder fx til højre eller lavt: "når pilen går til højre, drejer buen mere i slippet". Datamodellen er klar (`ShotRecord.impact` og `arrow`, se [optagelsesformat.md](optagelsesformat.md)), men der er ingen indtastning endnu. Når det skal laves: integrér eller kopiér koden fra ArrowPlot, eller lav én fælles app, der kan begge dele.
 
 Ved siden af: **mere fra MantisX-appen**. Her skal du nævne, hvad du gerne vil vide (fx andre samplingstilstande med gyro y, hvordan den finder slippet, eller flere mål).
 
