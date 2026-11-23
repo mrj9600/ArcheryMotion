@@ -44,7 +44,13 @@ Pilens side er venstre for en højrehåndsskytte og højre for en venstrehåndss
 ### 1. Opsætning og træk
 
 - **Cant sættes før trækket og ændres ikke under trækket.** **[Trænere]** Cant er ikke nævnt i BEST/KSL.
-- Buen og buearmen løftes, ikke skuldrene. Buearmen må være lidt over målet under trækket. **[BEST]**
+- **Den lave bueskulder kommer af bevægelser, ikke af at holde skulderen nede.** **[BEST]**
+  - Løft armen, ikke skulderen: kun armen bevæger sig i skulderleddet, når buen løftes.
+  - Hæv buen lidt over målet under trækket, og sænk den ned på målet. BEST: det gør det lettere at få skulderen ned.
+  - Buearmen rækker frem mod målet.
+  - Tjek af stillingen, ikke noget at gøre: der ses en lille fordybning øverst på skulderen (BEST).
+  - BEST beder også skytten "mærke" bestemte muskler. Det bruger appen ikke (se "Bevægelser, ikke muskelspænding").
+  - I data: buesensorens pitch skal gå lidt over målet under trækket og falde roligt ned til sigtet. Kan ses med den sensor, du har nu.
 - Trækket er at "åbne buen" ved at dreje kroppen om bueskulderen, med kraften fordelt 50/50 mellem bue- og trækside. **[BEST]**
 - Hovedet må ikke bevæge sig under træk og anker. **[BEST]** Kræver en hovedsensor.
 - Overgangen fra anker til hold (*transfer/loading*) tager ca. 0,5 s. **[BEST]** (KSL)
@@ -88,7 +94,7 @@ Pilens side er venstre for en højrehåndsskytte og højre for en venstrehåndss
 
 ### 4. Follow-through
 
-- **Buearmen holdes oppe, stabil og stærk.** **[BEST]** Hvor meget den må falde, er **[Gæt]**.
+- **Buearmen bliver oppe og peger mod målet.** **[BEST]** Hvor meget den må falde, er **[Gæt]**.
 - **Stillingen holdes 1–2 s efter slippet**: trækhånden bliver bag nakken og buearmen oppe. **[BEST]** (KSL kalder det at holde rygspændingen; se "Bevægelser, ikke muskelspænding".)
 - **Trækhånden må ikke falde ned mod skulderen**, for så falder albuen for langt. **[BEST]** (KSL)
 - **Follow-through er en indikator for, hvor rigtigt skuddet blev udført.** **[BEST]** Det passer med, at bevægelserne efter slippet viser de kræfter, der virkede i slippet.

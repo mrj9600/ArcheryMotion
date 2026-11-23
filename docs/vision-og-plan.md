@@ -217,7 +217,7 @@ Ud over analysen skal appen kunne styre øvelser. Sensorerne finder selv ud af, 
 **Hvad er god alignment?** Kilderne er trænermateriale og enkelte studier. Ordlyden varierer, men indholdet stemmer overens:
 - Ved fuldt træk danner skuldre og arme en **trekant/T-form** med pilen.
 - **Trækalbuen skal ligge i linje bag pilen**, både set fra siden og bagfra. Så går trækkraften (*draw force line*) gennem grebets trykpunkt, pilen og trækalbuen. Jo mindre vinklen er mellem knoglerne og kraftlinjen, jo mindre muskelarbejde og jo mere stabilt.
-- **Bueskulderen skal være lav.** Den skal ikke løftes op mod hovedet, og begge skuldre holdes nede gennem træk og fuldt træk.
+- **Bueskulderen skal være lav.** Den skal ikke løftes op mod hovedet. Det opnås med bevægelser, ikke ved at holde skulderen nede: løft armen, ikke skulderen, og hæv buen lidt over målet under trækket og sænk den ned på målet (BEST, se [ideal-form.md](ideal-form.md)).
 - **Buearmen** skal have knoglerne i en lige linje fra hånd til skulder, med let rotation af albuen. For lang træklængde giver dårlig alignment og en høj bueskulder.
 - Et studie (Frontiers 2025) fandt, at eliteskytter havde mindre skulderabduktion (ca. 99° mod 107° hos begyndere) og mindre albuebøjning (ca. 138° mod 144°), mens de sigtede. Det er kun gennemsnit og ikke grænseværdier.
 - Når der skydes op eller ned, skal T-formen bevares ved at **bøje i hoften**, ikke ved at flytte armen.

@@ -112,7 +112,7 @@ export const FOCUS_AREAS: { value: FocusKey; label: string; hint: string }[] = [
   { value: 'release', label: 'Slip og follow-through', hint: 'Afslappede fingre, trækhånden bagud langs halsen, buearmen oppe' },
   { value: 'expansion', label: 'Ekspansion gennem slippet', hint: 'Trækalbuen fortsætter roligt bagud gennem slippet, ingen creep eller collapse' },
   { value: 'cant', label: 'Fast cant', hint: 'Buen hælder det samme fra anker til slip' },
-  { value: 'bowArm', label: 'Buearm og bueskulder', hint: 'Stærk, stille buearm og lav bueskulder' },
+  { value: 'bowArm', label: 'Buearm og bueskulder', hint: 'Løft armen, ikke skulderen. Hæv buen lidt over målet under trækket, og sænk den ned på målet' },
   { value: 'anchor', label: 'Anker', hint: 'Samme anker hver gang, trækalbuen på linje med pilen' },
   { value: 'tempo', label: 'Tempo', hint: 'Fra hold til slip på 1–3 s, samme rytme hver gang' },
   { value: 'slope', label: 'Op/ned ad bakke', hint: 'Bøj i hoften og behold T-formen' },
