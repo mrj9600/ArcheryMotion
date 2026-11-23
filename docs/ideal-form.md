@@ -76,6 +76,31 @@ Slippet er det vigtigste øjeblik for de fleste teknikregler. Her ses den størs
 - **T-formen bevares ved at bøje i hoften.** Uden sensor på overkroppen ses det indirekte: cant og trækalbuens højde i forhold til buen skal være de samme, uanset om målet står højt eller lavt.
 - **Cant ændrer sig ikke med målets højde.** Mange skytter kanter mere, når de skyder ned ad bakke. Det fanger højde-analysen.
 
+## Hvornår er pilen fri af buen?
+
+Skytten påvirker kun pilen, så længe pilen rører strengen eller buen. Bevægelser senere kan ikke ændre pilens flugt. De er stadig vigtige, fordi de viser, hvilke kræfter der virkede i slippet, og fordi en god follow-through giver et godt slip.
+
+**Hvad målingerne siger (recurve, højhastighedsvideo):**
+- Pilen forlader strengen ca. **15–20 ms** efter, at slippet begynder, både for recurve og compound ([Park 2012](https://www.researchgate.net/publication/258178764_High-speed_video_analysis_of_arrow_behaviour_during_the_power_stroke_of_a_recurve_archery_bow)). Et studie af trænede skytter angiver under 16 ms kontakt mellem streng og pil ([arXiv 2402.12389](https://arxiv.org/pdf/2402.12389)).
+- Hurtigste måling blandt 16 skytter var 7,5 ms fra slippet begyndte (Park 2012).
+- Pilens kontakt med plungeren var slut inden for ca. **8 ms** (Park 2012), fordi pilen bøjer sig rundt om buen (*archer's paradox*).
+
+**Overslag for en barebow-skytte.** Med fx 71 cm træklængde og 22 cm stavhøjde bliver trækslaget ca. 49 cm:
+- Pilen når fx 55 m/s (ca. 180 fps) og har gennemsnitligt halv fart under trækslaget. Det giver ca. 0,49 / 27,5 ≈ **18 ms** på strengen, altså samme størrelse som målingerne.
+- Når nocken forlader strengen, er den stadig ca. en stavhøjde bag grebet. Den skal tilbagelægge ca. 22 cm mere for at komme forbi hylden. Med 55 m/s tager det ca. **4 ms**.
+- **Pilen er helt fri af buen ca. 20–25 ms efter, at slippet begynder.** Mest tid ved lav trækvægt, kort træklængde og tunge pile.
+
+**Hvad det betyder for appen:**
+- **Det afgørende vindue er de sidste ca. 50 ms før og de første ca. 25 ms efter slippet.** Bevægelser i dette vindue påvirker pilen direkte. Reglen "ingen bevægelse før slippet" (sidste 0,2 s) fanger det, der fører op til vinduet.
+- **Det store ryk i buens accelerometer kommer, når benene stopper ved stavhøjden.** Det er omtrent der, pilen forlader strengen. Appens slip-tidspunkt ligger derfor ca. 15–20 ms *efter*, at fingrene åbner sig. Buen begynder allerede at bevæge sig fremad, når fingrene slipper, fordi buearmens tryk ikke længere modsvares af strengen. Den første lille fremadgående acceleration før rykket er altså det egentlige slip.
+- **Sensorernes hastighed:**
+  - MantisX måler ved ca. 340 Hz (3 ms mellem målinger), så vinduet dækkes af 7–8 målinger.
+  - WitMotion kører typisk ved 100–200 Hz (5–10 ms), så vinduet dækkes kun af 2–5 målinger.
+  - Til at se hvad der sker *i* vinduet er MantisX på buen bedst. WitMotion rækker til før og efter.
+  - Tidsstemplerne fra BLE har desuden en usikkerhed på flere millisekunder. Det er nok til at se bevægelser omkring vinduet, men ikke til at sige præcist, hvornår i vinduet de sker.
+- **Hvad follow-through fortæller:** en drejning af buen eller et collapse, der ses 50–200 ms efter slippet, er startet af kræfter, der virkede i vinduet. Follow-through er altså et forstørrelsesglas på slippet.
+- **Udstyret bestemmer tiden.** Når appen kender træklængde, trækvægt, stavhøjde og pilens vægt (eller målt pilhastighed), kan den regne vinduet ud pr. opsætning. Stavhøjde og pilens vægt/hastighed bør derfor tilføjes til udstyrsopsætningen.
+
 ## Teknikregler, som appen kan tjekke
 
 Reglerne gælder for alle skytter. Et brud er en fejl, også hvis det sker hver gang. Grænserne er startværdier.
