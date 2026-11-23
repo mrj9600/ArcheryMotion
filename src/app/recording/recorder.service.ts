@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { BUILD_INFO } from '../build-info';
 import { Db, newId } from '../data/db';
 import { SampleChunk, Session, ShotRecord, TargetElevation } from '../data/models';
 import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
@@ -64,6 +65,7 @@ export class Recorder {
       sensors: [],
       shotCount: 0,
       sampleCount: 0,
+      app: BUILD_INFO,
     };
     this.t0 = performance.now();
     this.tracks.clear();

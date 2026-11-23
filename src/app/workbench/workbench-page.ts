@@ -1,3 +1,4 @@
+import { BuildInfo, versionLabel } from '../build-info.model';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -72,6 +73,8 @@ export class WorkbenchPage {
     const shots = this.wb.shots().filter((s) => !s.discarded);
     return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
   });
+
+  readonly version = (app: BuildInfo | undefined) => versionLabel(app);
 
   constructor() {
     void this.loadStored();

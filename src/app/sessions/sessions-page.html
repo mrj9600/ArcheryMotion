@@ -19,6 +19,9 @@
               Fokus: {{ focus.label }}@if (row.ratings; as r) {, lykkedes i {{ r.good }} af {{ r.good + r.bad }} vurderede skud}
             </div>
           }
+          @if (row.session.app; as app) {
+            <div class="muted">App-version {{ version(app) }}</div>
+          }
           @if (row.session.drill; as drill) {
             <div class="muted">Holdeøvelse, {{ drill.results.length }} af {{ drill.reps }} × {{ drill.holdSeconds }} s</div>
           }

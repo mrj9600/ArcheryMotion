@@ -11,6 +11,13 @@
     {{ light() ? '🌙' : '☀️' }}
   </button>
 </header>
+@if (updateReady()) {
+  <div class="update" role="status">
+    Der er en ny version af appen.
+    <button (click)="reload()">Genindlæs</button>
+  </div>
+}
 <main>
   <router-outlet />
+  <footer class="version muted">ArcheryMotion version {{ version }}@if (date) {, {{ date | date: 'd. MMM y, HH:mm' }}}</footer>
 </main>

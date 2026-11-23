@@ -1,3 +1,4 @@
+import { BuildInfo, versionLabel } from '../build-info.model';
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -27,6 +28,8 @@ export class SessionsPage {
   readonly busyId = signal<string | undefined>(undefined);
   readonly error = signal<string | undefined>(undefined);
   readonly storage = signal<string | undefined>(undefined);
+
+  readonly version = (app: BuildInfo) => versionLabel(app);
 
   constructor() {
     void this.load();

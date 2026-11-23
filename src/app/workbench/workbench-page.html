@@ -29,7 +29,7 @@
         <strong>{{ h.archer?.name ?? 'Ukendt skytte' }}</strong>@if (h.setup) {, {{ h.setup.name }}},
         {{ h.session.startedAt | date: 'd. MMM y, HH:mm' }}@if (h.session.place) {, {{ h.session.place }}},
         {{ time(wb.fullRange()[1]) }} lang, {{ wb.sensors().length }} sensor{{ wb.sensors().length === 1 ? '' : 'er' }}.
-        Kilde: {{ wb.source() }}
+        Kilde: {{ wb.source() }}. Optaget med app-version {{ version(h.session.app) }}.
       </p>
       @if (h.session.focus; as focus) {
         <p class="muted info">

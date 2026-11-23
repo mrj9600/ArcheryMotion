@@ -47,6 +47,8 @@ Hvert skud kan senere få `arrow` (pilens nummer eller navn) og `impact`, hvor p
 
 `session.pauses` er perioder, hvor der ikke blev gemt data: `{ "start": 151200, "end": 190300, "by": "auto" }` (sessionstid i ms). `auto` betyder, at buen havde ligget helt stille i 10 s (sat fra sig); optagelsen fortsatte, da buen blev taget op, og de sidste 2 s før blev gemt med. `manual` er pauseknappen. Under en pause findes der heller ingen skud.
 
+`session.app` er den app-version, der lavede optagelsen: `{ "build": 27, "commit": "a1b2c3d", "date": "2026-11-23T10:05:00+01:00" }`. `build` er antallet af commits og stiger for hver ny version; `0` betyder en lokal udviklingsbygning. Mangler feltet, er optagelsen lavet før versionen blev gemt.
+
 Har skytten valgt et fokus for sessionen, står det i `session.focus`, fx `{ "key": "release", "label": "Slip og follow-through" }`. Nøglerne er `release`, `expansion`, `cant`, `bowArm`, `anchor`, `tempo`, `slope` og `other` (så er `label` skyttens egen tekst). Skuddenes `selfRating` (`good`/`bad`) er skyttens vurdering af, om fokuspunktet lykkedes i skuddet, ikke hvor pilen ramte.
 
 Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række pr. gentagelse:

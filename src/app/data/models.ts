@@ -1,3 +1,4 @@
+import { BuildInfo } from '../build-info.model';
 import { SensorRole } from '../sensors/sensor.model';
 
 export type BowType = 'recurve' | 'barebow' | 'compound' | 'longbow' | 'traditional';
@@ -78,6 +79,8 @@ export interface Session {
   focus?: SessionFocus;
   /** Periods where no data was saved (bow put down, or the pause button). */
   pauses?: RecordingPause[];
+  /** The app version that made the recording (missing in recordings before it was saved). */
+  app?: BuildInfo;
 }
 
 export interface RecordingPause {
