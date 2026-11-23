@@ -5,7 +5,7 @@ import { SampleChunk, Session, ShotRecord, TargetElevation } from '../data/model
 import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
 import { ChunkBuffer } from './chunk-buffer';
 import { beep, ScreenWakeLock, vibrate } from './cues';
-import { ReleaseDetector } from './release-detector';
+import { RELEASE_G, ReleaseDetector } from './release-detector';
 
 interface Track {
   index: number;
@@ -32,7 +32,7 @@ export class Recorder {
   readonly distance = signal<number | undefined>(undefined);
   readonly crawl = signal<string>('');
   /** Release threshold in g. */
-  readonly threshold = signal(0.5);
+  readonly threshold = signal(RELEASE_G);
   readonly sound = signal(true);
 
   private t0 = 0;

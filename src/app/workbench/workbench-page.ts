@@ -39,7 +39,7 @@ export class WorkbenchPage {
   readonly session = input<string>();
 
   readonly widths = WIDTHS;
-  readonly thresholds = [0.2, 0.3, 0.5, 0.8, 1.2, 2, 3];
+  readonly thresholds = [0.5, 1, 2, 3, 4, 6, 8];
   readonly targets = TARGET_ELEVATIONS;
   readonly stored = signal<Session[]>([]);
   readonly pickedId = signal<string | undefined>(undefined);

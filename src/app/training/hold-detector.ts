@@ -1,8 +1,10 @@
 import { MotionSample } from '../sensors/sensor.model';
 
 /**
- * Thresholds on the bow's angular speed (deg/s). They are first guesses: the recordings
- * from the field are what they should be tuned against.
+ * Thresholds on the bow's angular speed (deg/s). Tuned on the first field recordings
+ * (barebow, MantisX on the bow, 2026-11-23): at full draw the bow turns about 1–1.6 deg/s
+ * on average, and lowering it onto the target from the set-up position peaks around
+ * 12–18 deg/s (smoothed), so the old 20 deg/s missed the draw.
  */
 export interface HoldLimits {
   move: number;
@@ -14,16 +16,26 @@ export interface HoldLimits {
 
 export const HOLD_LIMITS: HoldLimits = {
   /** Speed that counts as raising/drawing the bow. Needed before a hold can start. */
-  move: 20,
+  move: 10,
   /** Below this the bow counts as still. */
   still: 8,
-  /** Above this the hold has ended (let-down or shot). */
-  end: 25,
+  /** Above this the hold has ended (let-down). A shot ends it too, see release(). */
+  end: 12,
   /** How long the bow must be still before the hold counts as started (ms). */
   settleMs: 800,
-  /** Max change of roll/pitch from the reference full-draw pose (degrees). */
-  poseTolerance: 20,
+  /**
+   * Max change of roll/pitch (degrees) from the full-draw pose found at shots, for a new
+   * hold to start, and from the hold's own start, for it to go on. Between shots the bow
+   * often rests 15–35° higher and just as still as at full draw.
+   */
+  poseTolerance: 10,
 };
+
+/**
+ * After a shot, the bow swings in the sling and is lowered; none of that may count as
+ * the movement before a new hold (ms).
+ */
+const AFTER_SHOT_MS = 3000;
 
 /** Time constants (s): state speed, and the split between slow sway and fast tremor. */
 const SPEED_TAU = 0.2;
@@ -32,7 +44,10 @@ const SWAY_TAU = 0.1;
 export type HoldEvent =
   | { type: 'start'; time: number; by: 'auto' | 'manual' }
   | { type: 'warning'; time: number }
-  | { type: 'end'; time: number; by: 'auto' | 'manual' };
+  | { type: 'end'; time: number; by: HoldEndedBy };
+
+/** How a hold ended: the bow moved (let-down), by hand, or the archer shot. */
+export type HoldEndedBy = 'auto' | 'manual' | 'shot';
 
 export interface HoldStats {
   start: number;
@@ -58,7 +73,8 @@ interface Second {
  *
  * A hold starts when the bow has moved (raised and drawn) and then stays still for a
  * moment; from the second hold on, the bow must also point roughly like it did in the
- * first one. It ends when the bow moves fast again (let-down or shot).
+ * first one. It ends when the bow moves fast again (let-down) or at a shot. Letting down
+ * without shooting is the usual way to end a hold in the drill, but archers may shoot.
  *
  * The angular speed is split into slow *sway* (aiming movement) and fast *tremor*
  * (shaking, typically fatigue). Each whole second of the hold gets both values. Seconds
@@ -79,6 +95,8 @@ export class HoldDetector {
   private stillSince?: number;
   private lastCalm = 0;
   private reference?: [number, number];
+  private lastShot = -Infinity;
+  private startPose?: [number, number];
 
   private start = 0;
   private end?: number;
@@ -109,17 +127,22 @@ export class HoldDetector {
 
     const events: HoldEvent[] = [];
     if (this.state === 'waiting') {
-      if (this.speed > this.limits.move) this.moved = true;
-      if (this.speed > this.limits.still || !this.inPose(sample)) {
+      const afterShot = t - this.lastShot < AFTER_SHOT_MS;
+      if (this.speed > this.limits.move && !afterShot) this.moved = true;
+      if (afterShot || this.speed > this.limits.still || !this.inPose(sample)) {
         this.stillSince = undefined;
       } else {
         this.stillSince ??= t;
         if (this.moved && t - this.stillSince >= this.limits.settleMs) {
-          events.push(this.begin(this.stillSince, 'auto'));
+          events.push(this.begin(this.stillSince, 'auto', sample.euler));
         }
       }
     } else if (this.state === 'holding') {
       if (this.speed > this.limits.end) {
+        events.push(this.finish(Math.max(this.lastCalm, this.start), 'auto'));
+        return events;
+      }
+      if (this.drifted(sample)) {
         events.push(this.finish(Math.max(this.lastCalm, this.start), 'auto'));
         return events;
       }
@@ -140,6 +163,20 @@ export class HoldDetector {
 
   endManual(time: number): HoldEvent | undefined {
     return this.state === 'holding' ? this.finish(time, 'manual') : undefined;
+  }
+
+  /**
+   * Tells the detector that the archer shot (found by the release detection). A running
+   * hold ends at the release, and a new hold needs a new movement after the bow has
+   * settled from the shot. The bow's angles at the release are a sure full-draw pose, so
+   * they become the reference that later holds must be near.
+   */
+  release(time: number, euler?: [number, number, number]): HoldEvent | undefined {
+    this.lastShot = time;
+    if (euler) this.reference = [euler[0], euler[1]];
+    this.moved = false;
+    this.stillSince = undefined;
+    return this.state === 'holding' ? this.finish(Math.max(time, this.start), 'shot') : undefined;
   }
 
   /** Statistics of the running or last hold. */
@@ -177,8 +214,9 @@ export class HoldDetector {
     return this.seconds.at(-1)?.sway;
   }
 
-  private begin(time: number, by: 'auto' | 'manual'): HoldEvent {
+  private begin(time: number, by: 'auto' | 'manual', euler?: [number, number, number]): HoldEvent {
     this.state = 'holding';
+    this.startPose = euler ? [euler[0], euler[1]] : undefined;
     this.start = time;
     this.end = undefined;
     this.lastCalm = time;
@@ -189,13 +227,23 @@ export class HoldDetector {
     return { type: 'start', time, by };
   }
 
-  private finish(time: number, by: 'auto' | 'manual'): HoldEvent {
+  private finish(time: number, by: HoldEndedBy): HoldEvent {
     this.state = 'ended';
     this.end = time;
     // Remember how the bow points at full draw, to recognise the next hold
     const pose = this.seconds[0]?.pose;
-    if (pose && !this.reference && time - this.start > 2000) this.reference = pose;
+    if (pose && !this.reference && by !== 'shot' && time - this.start > 2000) this.reference = pose;
     return { type: 'end', time, by };
+  }
+
+  /** The bow has moved away from where the hold started (slowly, so the speed did not end it). */
+  private drifted(sample: MotionSample): boolean {
+    if (!this.startPose || !sample.euler) return false;
+    const [roll, pitch] = sample.euler;
+    return (
+      Math.abs(wrap(roll - this.startPose[0])) > this.limits.poseTolerance ||
+      Math.abs(wrap(pitch - this.startPose[1])) > this.limits.poseTolerance
+    );
   }
 
   private inPose(sample: MotionSample): boolean {

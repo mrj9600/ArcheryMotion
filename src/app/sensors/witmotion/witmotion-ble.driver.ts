@@ -17,6 +17,10 @@ const PACKET_LEN = 20;
 const REG_RATE = 0x03;
 const REG_QUAT = 0x51;
 
+/** Accepted range for the measured time between samples (ms): 1–500 Hz. */
+const MIN_SAMPLE_MS = 2;
+const MAX_SAMPLE_MS = 1000;
+
 /** Output rate (Hz) -> register value. */
 const RATE_CODES: Record<number, number> = { 1: 0x03, 2: 0x04, 5: 0x05, 10: 0x06, 20: 0x07, 50: 0x08, 100: 0x09, 200: 0x0b };
 
@@ -59,6 +63,13 @@ class WitMotionBleSensor implements MotionSensor {
 
   private buffer = new Uint8Array(0);
   private lastQuat?: MotionSample['quat'];
+  /**
+   * A notification often carries several motion packets (5–8 at 200 Hz). They are spread
+   * evenly back from the arrival time, using a running estimate of the sample interval.
+   */
+  private sampleMs?: number;
+  private lastNotify?: number;
+  private lastTime = -Infinity;
 
   constructor(
     private readonly device: BluetoothDevice,
@@ -92,6 +103,7 @@ class WitMotionBleSensor implements MotionSensor {
     await this.command(0x69, 0x88, 0xb5); // unlock
     await this.command(REG_RATE, code, 0x00);
     await this.command(0x00, 0x00, 0x00); // save
+    this.sampleMs = 1000 / hz;
   }
 
   /** Ask the sensor for its quaternion registers (reply arrives as a 0x71 packet). */
@@ -129,6 +141,7 @@ class WitMotionBleSensor implements MotionSensor {
   private parse(): void {
     let offset = 0;
     const buf = this.buffer;
+    const motion: DataView[] = [];
     while (buf.length - offset >= PACKET_LEN) {
       if (buf[offset] !== 0x55) {
         offset++;
@@ -137,7 +150,7 @@ class WitMotionBleSensor implements MotionSensor {
       const type = buf[offset + 1];
       const view = new DataView(buf.buffer, buf.byteOffset + offset, PACKET_LEN);
       if (type === 0x61) {
-        this.emitMotion(view);
+        motion.push(view);
         offset += PACKET_LEN;
       } else if (type === 0x71) {
         this.handleRegisters(view);
@@ -147,12 +160,34 @@ class WitMotionBleSensor implements MotionSensor {
       }
     }
     this.buffer = buf.slice(offset);
+    if (motion.length) this.emitMotion(motion);
   }
 
-  private emitMotion(v: DataView): void {
+  private emitMotion(packets: DataView[]): void {
+    const now = performance.now();
+    const n = packets.length;
+    if (this.lastNotify !== undefined) {
+      const measured = (now - this.lastNotify) / n;
+      // Skip pauses (dropped notifications) once there is an estimate
+      const plausible = this.sampleMs === undefined || measured < this.sampleMs * 3;
+      if (measured >= MIN_SAMPLE_MS && measured <= MAX_SAMPLE_MS && plausible) {
+        this.sampleMs = this.sampleMs === undefined ? measured : this.sampleMs + 0.05 * (measured - this.sampleMs);
+      }
+    }
+    this.lastNotify = now;
+    const step = this.sampleMs ?? 0;
+    packets.forEach((v, i) => {
+      // Never go back in time, even if the estimate is a little too long
+      const time = Math.max(now - (n - 1 - i) * step, this.lastTime + 0.01);
+      this.lastTime = time;
+      this.emitSample(v, time);
+    });
+  }
+
+  private emitSample(v: DataView, time: number): void {
     const s = (i: number) => v.getInt16(2 + i * 2, true) / 32768;
     this._samples.next({
-      time: performance.now(),
+      time,
       acc: [s(0) * 16, s(1) * 16, s(2) * 16],
       gyro: [s(3) * 2000, s(4) * 2000, s(5) * 2000],
       euler: [s(6) * 180, s(7) * 180, s(8) * 180],

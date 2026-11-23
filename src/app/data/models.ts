@@ -97,7 +97,8 @@ export interface HoldRep {
   completed: boolean;
   /** How the start and end were found. */
   startedBy: 'auto' | 'manual';
-  endedBy: 'auto' | 'manual';
+  /** 'shot': the archer shot instead of letting down. */
+  endedBy: 'auto' | 'manual' | 'shot';
   /** Mean sway (slow angular speed, deg/s) and tremor (fast part, deg/s) over the hold. */
   sway: number;
   tremor: number;

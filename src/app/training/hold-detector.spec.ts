@@ -70,6 +70,29 @@ describe('HoldDetector', () => {
     expect(d.stats().drift).toBeGreaterThan(2.5);
   });
 
+  it('ends the hold at a shot and ignores the bow settling after it', () => {
+    const d = new HoldDetector();
+    run(d, 0, 1, () => [40, 0, 0]);
+    run(d, 1, 5, sway(1));
+    const end = d.release(6000, [0, 0, 0]);
+    expect(end).toEqual({ type: 'end', time: 6000, by: 'shot' });
+    expect(d.stats().heldMs).toBeGreaterThan(4500);
+    d.arm();
+    // The bow swings in the sling and comes to rest: no new hold
+    const after = [...run(d, 6, 1, () => [60, 0, 0]), ...run(d, 7, 4, sway(0.5))];
+    expect(after.some((e) => e.type === 'start')).toBe(false);
+  });
+
+  it('ends a hold when the bow slowly moves far from where it started', () => {
+    const d = new HoldDetector();
+    run(d, 0, 1, () => [40, 0, 0]);
+    const events = run(d, 1, 12, sway(1), () => 0);
+    expect(events.some((e) => e.type === 'start')).toBe(true);
+    // Raised 15° over 3 s, slower than the end speed
+    const drift = run(d, 13, 3, sway(1), () => 0).concat(run(d, 16, 3, sway(1), () => 15));
+    expect(drift.some((e) => e.type === 'end')).toBe(true);
+  });
+
   it('only starts the next hold near the first full-draw pose', () => {
     const d = new HoldDetector();
     run(d, 0, 1, () => [40, 0, 0]);

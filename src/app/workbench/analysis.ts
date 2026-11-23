@@ -1,6 +1,6 @@
 import { MotionSample, Vec3 } from '../sensors/sensor.model';
 import { SensorData } from '../recording/recording-file';
-import { ReleaseDetector } from '../recording/release-detector';
+import { RELEASE_G, ReleaseDetector } from '../recording/release-detector';
 import { HoldDetector, HoldLimits, HoldStats } from '../training/hold-detector';
 
 /** One curve: a value per sample of a sensor. */
@@ -100,13 +100,17 @@ export function detectReleases(data: SensorData, threshold: number): number[] {
 
 /**
  * Runs the hold detection over a whole recording, looking for a new hold right after
- * each one ends (live, the drill only looks during its "ready" phase).
+ * each one ends (live, the drill only looks during its "ready" phase). Shots found with
+ * the release threshold end a hold, as in the drill.
  */
-export function detectHolds(data: SensorData, limits: HoldLimits): HoldStats[] {
+export function detectHolds(data: SensorData, limits: HoldLimits, releaseThreshold = RELEASE_G): HoldStats[] {
   const detector = new HoldDetector(limits);
+  const releases = new ReleaseDetector(releaseThreshold);
   const out: HoldStats[] = [];
   for (let i = 0; i < data.t.length; i++) {
-    for (const e of detector.feed(sampleAt(data, i))) {
+    const sample = sampleAt(data, i);
+    const events = releases.feed(sample) ? [detector.release(sample.time, sample.euler)].filter((e) => !!e) : detector.feed(sample);
+    for (const e of events) {
       if (e.type === 'end') {
         out.push(detector.stats());
         detector.arm();

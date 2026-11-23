@@ -23,7 +23,7 @@ export class RecordPage implements OnDestroy {
 
   readonly roles = SENSOR_ROLES;
   readonly targets = TARGET_ELEVATIONS;
-  readonly thresholds = [0.3, 0.5, 0.8, 1.2, 2];
+  readonly thresholds = [0.5, 1, 2, 3, 4, 6, 8];
 
   readonly busy = signal(false);
   readonly error = signal<string | undefined>(undefined);

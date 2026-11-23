@@ -4,7 +4,8 @@ import { HoldDrill, HoldRep } from '../data/models';
 import { beep, beeps, speak, vibrate } from '../recording/cues';
 import { Recorder } from '../recording/recorder.service';
 import { SensorManager } from '../sensors/sensor-manager.service';
-import { HoldDetector, HoldEvent } from './hold-detector';
+import { ReleaseDetector } from '../recording/release-detector';
+import { HoldDetector, HoldEndedBy, HoldEvent } from './hold-detector';
 
 export type HoldPhase = 'idle' | 'ready' | 'holding' | 'rest' | 'done';
 
@@ -43,6 +44,7 @@ export class HoldDrillRunner {
   readonly results = signal<HoldRep[]>([]);
 
   private detector = new HoldDetector();
+  private releases = new ReleaseDetector();
   private subscription?: Subscription;
   private timer?: ReturnType<typeof setInterval>;
   private restEnd = 0;
@@ -70,11 +72,19 @@ export class HoldDrillRunner {
     await this.recorder.saveSession();
 
     this.detector = new HoldDetector();
+    this.releases = new ReleaseDetector(this.recorder.threshold());
     this.results.set([]);
     this.subscription = this.manager.sampleEvents.subscribe(({ slot, sample }) => {
       if (slot !== this.recorder.mainBow()) return;
       this.lastSampleTime = sample.time;
+      this.releases.threshold = this.recorder.threshold();
+      const shot = this.releases.feed(sample);
       if (this.phase() !== 'ready' && this.phase() !== 'holding') return;
+      if (shot) {
+        const event = this.detector.release(sample.time, sample.euler);
+        if (event) this.onEvent(event);
+        return;
+      }
       for (const event of this.detector.feed(sample)) this.onEvent(event);
     });
     this.timer = setInterval(() => this.tick(), 100);
@@ -152,7 +162,7 @@ export class HoldDrillRunner {
     }
   }
 
-  private async finishRep(endedBy: 'auto' | 'manual'): Promise<void> {
+  private async finishRep(endedBy: HoldEndedBy): Promise<void> {
     const stats = this.detector.stats();
     const target = this.settings().holdSeconds * 1000;
     const result: HoldRep = {

@@ -42,11 +42,12 @@ Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række 
                 "warnings": [28210], "perSecond": { "sway": [3.1, 1.6, 1.5], "tremor": [0.5, 0.4, 0.5] } }] }
 ```
 
-- `start`/`end` er sessionstid (ms). Holdet starter, når buen har bevæget sig (løftet og trukket) og derefter ligger roligt i 0,8 s. Det slutter, når buen igen bevæger sig hurtigt (nedtræk eller skud).
+- `start`/`end` er sessionstid (ms). Holdet starter, når buen har bevæget sig (løftet og trukket) og derefter ligger roligt i 0,8 s. Efter første skud skal buen også pege inden for 10° af stillingen ved skuddet. Holdet slutter, når buen igen bevæger sig hurtigt eller langsomt flytter sig mere end 10° (nedtræk), eller ved et skud.
+- `endedBy` er `auto` (nedtræk), `manual` (knappen) eller `shot` (skytten skød i stedet for at tage ned).
 - `sway` (udsving) er den langsomme del af buens vinkelhastighed og `tremor` (rystelse) den hurtige del (over ca. 1,6 Hz), begge i °/s som RMS. `perSecond` har dem for hvert hele sekund af holdet.
 - Sekund 1–2 er skyttens eget udgangspunkt. Bliver udsving eller rystelse tydeligt større to sekunder i træk, bryder formen sammen: `warnings` har tidspunktet, hvor det begyndte, og `goodFormMs` er tiden indtil første gang.
 - `drift` er den største ændring af buens hældning og cant (roll/pitch) i forhold til første sekund, i grader. Mangler, hvis sensoren ikke sender vinkler.
-- Grænserne står i `src/app/training/hold-detector.ts` (`HOLD_LIMITS`) og er første bud. De skal justeres efter rigtige optagelser.
+- Grænserne står i `src/app/training/hold-detector.ts` (`HOLD_LIMITS`). De er sat efter de første optagelser fra banen (barebow med MantisX på buen, 23. november 2026).
 
 ## Streams
 

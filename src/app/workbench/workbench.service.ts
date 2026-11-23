@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Recording } from '../recording/recording-file';
 import { HOLD_LIMITS, HoldLimits } from '../training/hold-detector';
+import { RELEASE_G } from '../recording/release-detector';
 import { SENSOR_ROLES } from '../sensors/sensor.model';
 import { Channel, channelsOf, detectHolds, detectReleases } from './analysis';
 import { Marker, Span } from './signal-plot';
@@ -32,7 +33,7 @@ export class Workbench {
   /** Sensor the detection runs on. */
   readonly detectSensor = signal(0);
 
-  readonly threshold = signal(0.5);
+  readonly threshold = signal(RELEASE_G);
   readonly limits = signal<HoldLimits>({ ...HOLD_LIMITS });
 
   readonly sensors = computed<SensorView[]>(() => {
@@ -67,7 +68,7 @@ export class Workbench {
 
   readonly holds = computed(() => {
     const data = this.recording()?.sensors[this.detectSensor()];
-    return data ? detectHolds(data, this.limits()) : [];
+    return data ? detectHolds(data, this.limits(), this.threshold()) : [];
   });
 
   /** Recorded shots compared with the releases found now. */
@@ -151,7 +152,7 @@ export class Workbench {
   }
 
   resetDetection(): void {
-    this.threshold.set(0.5);
+    this.threshold.set(RELEASE_G);
     this.limits.set({ ...HOLD_LIMITS });
   }
 }

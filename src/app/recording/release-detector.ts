@@ -1,5 +1,13 @@
 import { MotionSample } from '../sensors/sensor.model';
 
+/**
+ * Default release threshold (g). In the first field recordings (MantisX on a 42 lb
+ * barebow) every shot gave 14.6–16 g, while swinging and lowering the bow after a shot
+ * gave up to 1.8 g, which the old 0.5 g counted as shots. Not yet checked with a
+ * WitMotion sensor on the bow.
+ */
+export const RELEASE_G = 4;
+
 /** Minimum time between two detected releases (ms). */
 const COOLDOWN_MS = 3000;
 /** Time constant of the running mean the release is detected against (s). */
@@ -16,7 +24,7 @@ export class ReleaseDetector {
   private lastRelease = -Infinity;
   private baseline?: { acc: [number, number, number]; time: number };
 
-  constructor(public threshold = 0.5) {}
+  constructor(public threshold = RELEASE_G) {}
 
   /** Returns true if this sample is a release. */
   feed(sample: MotionSample): boolean {
