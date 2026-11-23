@@ -14,6 +14,11 @@
           <div class="muted">
             {{ row.archer?.name ?? 'Ukendt skytte' }}@if (row.setup) {, {{ row.setup.name }}}@if (row.session.place) {, {{ row.session.place }}}
           </div>
+          @if (row.session.focus; as focus) {
+            <div class="muted">
+              Fokus: {{ focus.label }}@if (row.ratings; as r) {, lykkedes i {{ r.good }} af {{ r.good + r.bad }} vurderede skud}
+            </div>
+          }
           @if (row.session.drill; as drill) {
             <div class="muted">Holdeøvelse, {{ drill.results.length }} af {{ drill.reps }} × {{ drill.holdSeconds }} s</div>
           }

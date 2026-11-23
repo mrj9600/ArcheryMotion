@@ -20,6 +20,13 @@
   }
 }
 
+.focus {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .links {
   display: flex;
   flex-wrap: wrap;

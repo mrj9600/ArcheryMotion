@@ -74,7 +74,29 @@ export interface Session {
   sampleCount: number;
   /** Set when the session was a training drill. */
   drill?: HoldDrill;
+  /** What the archer trains in this session; the shots' self-rating is on this. */
+  focus?: SessionFocus;
 }
+
+/** Training focus of a session. `label` is the text shown (free text for 'other'). */
+export interface SessionFocus {
+  key: FocusKey;
+  label: string;
+}
+
+export type FocusKey = 'release' | 'expansion' | 'cant' | 'bowArm' | 'anchor' | 'tempo' | 'slope' | 'other';
+
+/** Focus areas, from the good form (docs/ideal-form.md). */
+export const FOCUS_AREAS: { value: FocusKey; label: string; hint: string }[] = [
+  { value: 'release', label: 'Slip og follow-through', hint: 'Afslappede fingre, trækhånden bagud langs halsen, buearmen oppe' },
+  { value: 'expansion', label: 'Ekspansion og rygspænding', hint: 'Fortsæt bagud fra ryggen gennem slippet, ingen creep eller collapse' },
+  { value: 'cant', label: 'Fast cant', hint: 'Buen hælder det samme fra anker til slip' },
+  { value: 'bowArm', label: 'Buearm og bueskulder', hint: 'Stærk, stille buearm og lav bueskulder' },
+  { value: 'anchor', label: 'Anker', hint: 'Samme anker hver gang, trækalbuen på linje med pilen' },
+  { value: 'tempo', label: 'Tempo', hint: 'Fra hold til slip på 1–3 s, samme rytme hver gang' },
+  { value: 'slope', label: 'Op/ned ad bakke', hint: 'Bøj i hoften og behold T-formen' },
+  { value: 'other', label: 'Andet', hint: '' },
+];
 
 /** Holding drill (Holding SPT): hold full draw for a set time, a number of times. */
 export interface HoldDrill {
@@ -123,6 +145,7 @@ export interface ShotRecord {
   distance?: number;
   /** Crawl or grip on the string (barebow), free text, e.g. "3 sting". */
   crawl?: string;
+  /** The archer's own verdict: did the session's focus succeed in this shot? */
   selfRating?: SelfRating;
   note?: string;
   /** Marked as not a real shot (false trigger). */

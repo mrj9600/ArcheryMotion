@@ -33,6 +33,8 @@ Hele filen er **gzip-komprimeret**. Udpakket ser den sådan ud:
 
 ## Holdeøvelse
 
+Har skytten valgt et fokus for sessionen, står det i `session.focus`, fx `{ "key": "release", "label": "Slip og follow-through" }`. Nøglerne er `release`, `expansion`, `cant`, `bowArm`, `anchor`, `tempo`, `slope` og `other` (så er `label` skyttens egen tekst). Skuddenes `selfRating` (`good`/`bad`) er skyttens vurdering af, om fokuspunktet lykkedes i skuddet, ikke hvor pilen ramte.
+
 Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række pr. gentagelse:
 
 ```json

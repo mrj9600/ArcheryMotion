@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ShotRecord, TARGET_ELEVATIONS } from '../data/models';
+import { FOCUS_AREAS, FocusKey, SessionFocus, ShotRecord, TARGET_ELEVATIONS } from '../data/models';
 import { Selection } from '../data/selection.service';
 import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
 import { SENSOR_ROLES, SensorRole } from '../sensors/sensor.model';
@@ -31,6 +31,16 @@ export class RecordPage implements OnDestroy {
   readonly place = signal('');
   /** What the next recording is: free shooting or the holding drill. */
   readonly mode = signal<'free' | 'hold'>(loadMode());
+  readonly focusAreas = FOCUS_AREAS;
+  /** Focus of the next free-shooting session (remembered between sessions). */
+  readonly focusKey = signal<FocusKey | ''>(loadFocus().key);
+  readonly focusText = signal(loadFocus().text);
+  readonly focusHint = computed(() => FOCUS_AREAS.find((f) => f.value === this.focusKey())?.hint ?? '');
+  /** Good/bad counts for the running session's focus. */
+  readonly ratings = computed(() => {
+    const shots = this.recorder.shots().filter((s) => !s.discarded);
+    return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
+  });
 
   /** Ticks every second so the elapsed time updates. */
   private readonly now = signal(Date.now());
@@ -90,8 +100,45 @@ export class RecordPage implements OnDestroy {
   async start(): Promise<void> {
     const archerId = this.selection.archerId();
     if (!archerId) return;
-    if (this.mode() === 'hold') await this.drill.start(archerId, this.selection.setupId(), this.place());
-    else await this.recorder.start(archerId, this.selection.setupId(), this.place());
+    if (this.mode() === 'hold') {
+      await this.drill.start(archerId, this.selection.setupId(), this.place());
+      return;
+    }
+    await this.recorder.start(archerId, this.selection.setupId(), this.place());
+    const focus = this.chosenFocus();
+    const session = this.recorder.session();
+    if (focus && session) {
+      session.focus = focus;
+      await this.recorder.saveSession();
+    }
+  }
+
+  setFocus(key: FocusKey | ''): void {
+    this.focusKey.set(key);
+    this.saveFocus();
+  }
+
+  setFocusText(text: string): void {
+    this.focusText.set(text);
+    this.saveFocus();
+  }
+
+  private chosenFocus(): SessionFocus | undefined {
+    const key = this.focusKey();
+    if (!key) return undefined;
+    if (key === 'other') {
+      const text = this.focusText().trim();
+      return text ? { key, label: text } : undefined;
+    }
+    return { key, label: FOCUS_AREAS.find((f) => f.value === key)!.label };
+  }
+
+  private saveFocus(): void {
+    try {
+      localStorage.setItem(FOCUS_KEY, JSON.stringify({ key: this.focusKey(), text: this.focusText() }));
+    } catch {
+      /* storage not available */
+    }
   }
 
   async stop(): Promise<void> {
@@ -119,6 +166,17 @@ export class RecordPage implements OnDestroy {
 }
 
 const MODE_KEY = 'archery-motion.record-mode';
+const FOCUS_KEY = 'archery-motion.focus';
+
+function loadFocus(): { key: FocusKey | ''; text: string } {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FOCUS_KEY) ?? '{}');
+    const key = FOCUS_AREAS.some((f) => f.value === saved.key) ? (saved.key as FocusKey) : '';
+    return { key, text: typeof saved.text === 'string' ? saved.text : '' };
+  } catch {
+    return { key: '', text: '' };
+  }
+}
 
 function loadMode(): 'free' | 'hold' {
   try {

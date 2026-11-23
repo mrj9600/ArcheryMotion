@@ -92,6 +92,26 @@
         <button [class.on]="mode() === 'free'" (click)="setMode('free')">Fri skydning</button>
         <button [class.on]="mode() === 'hold'" (click)="setMode('hold')">Holdeøvelse</button>
       </div>
+      @if (mode() === 'free') {
+        <label class="field">
+          Fokus i dag
+          <select [ngModel]="focusKey()" (ngModelChange)="setFocus($event)">
+            <option value="">Intet fokus</option>
+            @for (f of focusAreas; track f.value) {
+              <option [value]="f.value">{{ f.label }}</option>
+            }
+          </select>
+        </label>
+        @if (focusKey() === 'other') {
+          <label class="field">Hvad vil du arbejde med? <input [ngModel]="focusText()" (ngModelChange)="setFocusText($event)" placeholder="Fx stille hoved i slippet" /></label>
+        }
+        <p class="muted">
+          @if (focusHint(); as hint) {
+            {{ hint }}.
+          }
+          Efter hvert skud vurderer du med 👍 eller 👎, om fokuspunktet lykkedes. Det handler ikke om, hvor pilen ramte.
+        </p>
+      }
       @if (mode() === 'hold') {
         <p class="muted">
           Hold fuldt træk i den valgte tid. Tiden starter, når buen ligger roligt, og et bip fortæller, hvornår du skal slippe ned.
@@ -115,6 +135,12 @@
         <span>Optager {{ elapsed() }}</span>
         <span class="count">{{ session.shotCount }} <small>skud</small></span>
       </div>
+      @if (session.focus; as focus) {
+        <div class="focus">
+          <span>Fokus: <strong>{{ focus.label }}</strong></span>
+          <span class="muted">👍 {{ ratings().good }} · 👎 {{ ratings().bad }}</span>
+        </div>
+      }
 
       <div class="tags">
         <div class="segmented" role="group" aria-label="Målets højde">
@@ -159,8 +185,8 @@
           <span class="muted grow">
             {{ targetLabel(shot.target) }}@if (shot.distance) {, {{ shot.distance }} m}@if (shot.crawl) {, {{ shot.crawl }}}@if (shot.trigger === 'manual') {, manuelt}
           </span>
-          <button class="icon" [class.on]="shot.selfRating === 'good'" (click)="rate(shot, 'good')" aria-label="Godt skud">👍</button>
-          <button class="icon" [class.on]="shot.selfRating === 'bad'" (click)="rate(shot, 'bad')" aria-label="Dårligt skud">👎</button>
+          <button class="icon" [class.on]="shot.selfRating === 'good'" (click)="rate(shot, 'good')" [attr.aria-label]="recorder.session()?.focus ? 'Fokus lykkedes' : 'Godt skud'">👍</button>
+          <button class="icon" [class.on]="shot.selfRating === 'bad'" (click)="rate(shot, 'bad')" [attr.aria-label]="recorder.session()?.focus ? 'Fokus lykkedes ikke' : 'Dårligt skud'">👎</button>
           <button class="icon" [class.on]="shot.discarded" (click)="recorder.updateShot(shot, { discarded: !shot.discarded })" aria-label="Ikke et skud">✕</button>
         </div>
       } @empty {

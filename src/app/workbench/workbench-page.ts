@@ -67,6 +67,11 @@ export class WorkbenchPage {
   readonly overviewSpans = computed(() => [...this.wb.spans(), { start: this.wb.range()[0], end: this.wb.range()[1], kind: 'window' as const }]);
   readonly found = computed(() => this.wb.shotMatches().filter((m) => m.found && !m.shot.discarded).length);
   readonly realShots = computed(() => this.wb.shots().filter((s) => !s.discarded).length);
+  /** The archer's own rating of the session's focus. */
+  readonly rated = computed(() => {
+    const shots = this.wb.shots().filter((s) => !s.discarded);
+    return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
+  });
 
   constructor() {
     void this.loadStored();

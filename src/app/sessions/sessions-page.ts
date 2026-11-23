@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Db } from '../data/db';
-import { Archer, EquipmentSetup, Session } from '../data/models';
+import { Archer, EquipmentSetup, Session, ShotRecord } from '../data/models';
 import { exportSession, saveFile } from '../recording/export';
 import { Recorder } from '../recording/recorder.service';
 
@@ -10,6 +10,8 @@ interface Row {
   session: Session;
   archer?: Archer;
   setup?: EquipmentSetup;
+  /** How the session's focus went, by the archer's own rating of the shots. */
+  ratings?: { good: number; bad: number; shots: number };
 }
 
 @Component({
@@ -33,11 +35,14 @@ export class SessionsPage {
   async load(): Promise<void> {
     const [sessions, archers, setups] = await Promise.all([this.db.sessions(), this.db.db.archers.toArray(), this.db.db.setups.toArray()]);
     this.rows.set(
-      sessions.map((session) => ({
-        session,
-        archer: archers.find((a) => a.id === session.archerId),
-        setup: setups.find((s) => s.id === session.setupId),
-      })),
+      await Promise.all(
+        sessions.map(async (session) => ({
+          session,
+          archer: archers.find((a) => a.id === session.archerId),
+          setup: setups.find((s) => s.id === session.setupId),
+          ratings: session.focus ? ratingsOf(await this.db.shots(session.id)) : undefined,
+        })),
+      ),
     );
     try {
       const est = await navigator.storage?.estimate?.();
@@ -78,4 +83,13 @@ export class SessionsPage {
     await this.db.deleteSession(row.session.id);
     await this.load();
   }
+}
+
+function ratingsOf(shots: ShotRecord[]): Row['ratings'] {
+  const real = shots.filter((s) => !s.discarded);
+  return {
+    good: real.filter((s) => s.selfRating === 'good').length,
+    bad: real.filter((s) => s.selfRating === 'bad').length,
+    shots: real.length,
+  };
 }
