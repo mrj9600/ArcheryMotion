@@ -99,7 +99,7 @@ Pilens side er venstre for en højrehåndsskytte og højre for en venstrehåndss
 
 ### 6. Op og ned ad bakke (felt og 3D)
 
-- **T-formen bevares ved at bøje i hoften.** **[Trænere]** Ikke nævnt i BEST/KSL, som er skrevet til skiveskydning på flad bane. Uden sensor på overkroppen ses det indirekte: cant og trækalbuens højde i forhold til buen skal være de samme, uanset målets højde.
+- **T-formen bevares ved at bøje i hoften.** **[Skytten]** **[Trænere]** T-formen i skulderled og overkrop bevares. Ikke nævnt i BEST/KSL, som er skrevet til skiveskydning på flad bane. Uden sensor på overkroppen ses det indirekte: cant og trækalbuens højde i forhold til buen skal være de samme, uanset målets højde.
 
 ## Hvornår er pilen fri af buen?
 
@@ -152,7 +152,7 @@ Albuens retning "bagud" kan appen selv finde: under trækket bevæger albuen sig
 
 ## Det, vi ikke ved endnu
 
-- **Cant og op/ned ad bakke er ikke dækket af BEST/KSL.** Reglen om cant bygger på din vurdering og fysikken. Reglen om at bøje i hoften står kun på **[Trænere]**. World Archery's Coach's Manual blev ikke læst: filen er for stor til mit værktøj, og kapitlet om recurve-form kunne ikke hentes for sig. Det kan stadig tjekkes, hvis du har den.
+- **Cant og op/ned ad bakke er ikke dækket af BEST/KSL.** Reglen om cant bygger på din vurdering og fysikken. Reglen om at bøje i hoften er bekræftet af dig. World Archery's Coach's Manual blev ikke læst: filen er for stor til mit værktøj, og kapitlet om recurve-form kunne ikke hentes for sig. Det kan stadig tjekkes, hvis du har den.
 - **BEST og KSL er samme skole.** BEST bygger på Kisik Lee's metode, så de to er ikke uafhængige kilder. Du har godkendt materialet som pålideligt.
 - **Ingen absolutte grænser fra forskningen** for buens udsving i grader eller °/s. Studierne sammenligner grupper. Grænserne må findes på dine egne optagelser og senere på andre skytter.
 - **Buens bevægelse i slippet afhænger af udstyret**: stabilisatorer, vægte, buesling og trækvægt.
@@ -161,6 +161,6 @@ Albuens retning "bagud" kan appen selv finde: under trækket bevæger albuen sig
 ## Næste skridt
 
 1. Find buens akser i optagelserne (afsnit 3 i planen), så cant, op/ned og venstre/højre kan regnes ud.
-2. Få bekræftet de to regler, der kun er mærket **[Trænere]**: stabil cant under hold og at bøje i hoften op og ned ad bakke.
+2. Få bekræftet reglen om stabil cant under hold, som kun er mærket **[Trænere]**.
 3. Vis reglerne i analysebænken på rigtige optagelser, og sæt grænserne ud fra dem.
 4. Hvis du har adgang til en skytte eller træner med god form, vil optagelser med begge sensorer være meget værdifulde som reference.
