@@ -53,7 +53,7 @@ Pilens side er venstre for en højrehåndsskytte og højre for en venstrehåndss
 - Begyndere har mest variation i lodret retning. **[Ét studie]** ([PMC11235681](https://pmc.ncbi.nlm.nih.gov/articles/PMC11235681))
 - Grænser for udsving og rysten. **[Gæt]**
 - **Aldrig cant mod pilens side.** **[Skytten]** **[Fysik]** Hylden hælder så væk fra buen, og pilen kan falde af. Lodret eller en lille, fast cant væk fra pilens side er et frit valg.
-- **Stabil cant og ingen drift under holdet.** **[Trænere]** Grænserne på ±1° er **[Gæt]**.
+- **Cant ligger fast fra anker til slip.** **[Skytten]** **[Trænere]** 1° er målet for den perfekte form. Det er svært at holde, så appen viser, hvor langt man er fra målet, og skytten kan sætte et personligt delmål (fx 3°), der strammes efterhånden. Mindre bevægelse er altid bedre.
 
 **Trækalbuen:**
 - **Ekspansionen er lille og indvendig.** **[BEST]**
@@ -131,7 +131,7 @@ Reglerne gælder for alle skytter. Et brud er en fejl, også hvis det sker hver 
 | Regel | Grundlag | Sensor | Fejl når (startværdi) | Kræver |
 |-------|----------|--------|-----------------------|--------|
 | Ingen cant mod pilens side | Skytten, fysik | Bue | Cant > 1° mod pilens side under holdet | Buens akser, håndethed |
-| Stabil cant under hold | Trænere | Bue | Ændring > 1° fra anker til slip | Buens akser |
+| Stabil cant under hold | Skytten, trænere | Bue | Ændring > 1° fra anker til slip | Buens akser |
 | Ingen bevægelse før slippet (intet skub, ingen foregribelse) | BEST | Bue | Op/ned, venstre/højre eller fremad ændrer sig over grænse i de sidste 0,2 s | Buens akser |
 | Buen frem i slippet, i pilens plan | BEST, fysik | Bue | Under ca. 70 % af den første acceleration er langs pilens akse | Buens akser |
 | Ingen torque i slippet | Fysik, BEST | Bue | Rotation om håndsektionens akse eller cant-ryk over grænse (sættes fra data) | Buens akser |
@@ -152,7 +152,7 @@ Albuens retning "bagud" kan appen selv finde: under trækket bevæger albuen sig
 
 ## Det, vi ikke ved endnu
 
-- **Cant og op/ned ad bakke er ikke dækket af BEST/KSL.** Reglen om cant bygger på din vurdering og fysikken. Reglen om at bøje i hoften er bekræftet af dig. World Archery's Coach's Manual blev ikke læst: filen er for stor til mit værktøj, og kapitlet om recurve-form kunne ikke hentes for sig. Det kan stadig tjekkes, hvis du har den.
+- **Cant og op/ned ad bakke er ikke dækket af BEST/KSL.** Reglerne om cant bygger på din vurdering og fysikken. Reglen om at bøje i hoften er bekræftet af dig. World Archery's Coach's Manual blev ikke læst: filen er for stor til mit værktøj, og kapitlet om recurve-form kunne ikke hentes for sig. Det kan stadig tjekkes, hvis du har den.
 - **BEST og KSL er samme skole.** BEST bygger på Kisik Lee's metode, så de to er ikke uafhængige kilder. Du har godkendt materialet som pålideligt.
 - **Ingen absolutte grænser fra forskningen** for buens udsving i grader eller °/s. Studierne sammenligner grupper. Grænserne må findes på dine egne optagelser og senere på andre skytter.
 - **Buens bevægelse i slippet afhænger af udstyret**: stabilisatorer, vægte, buesling og trækvægt.
@@ -161,6 +161,6 @@ Albuens retning "bagud" kan appen selv finde: under trækket bevæger albuen sig
 ## Næste skridt
 
 1. Find buens akser i optagelserne (afsnit 3 i planen), så cant, op/ned og venstre/højre kan regnes ud.
-2. Få bekræftet reglen om stabil cant under hold, som kun er mærket **[Trænere]**.
+2. Tjek om MantisX' vinkler er præcise nok til at måle cant på 1°.
 3. Vis reglerne i analysebænken på rigtige optagelser, og sæt grænserne ud fra dem.
 4. Hvis du har adgang til en skytte eller træner med god form, vil optagelser med begge sensorer være meget værdifulde som reference.
