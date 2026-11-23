@@ -172,6 +172,7 @@ Grebets bevægelse kan fx vises sådan:
     - Ingen creep under hold.
     - Buen må ikke falde mod skytten i follow-through.
     - Trækalbuen ligger i linje bag pilen (afsnit 7).
+    - Hvordan den gode form ser ud i sensordata, fase for fase, og en liste over regler med startgrænser står i [ideal-form.md](ideal-form.md).
   - *Konsistens* gælder inden for det, reglerne tillader. Appen lærer skyttens egen normale form ud fra mange skud og peger på det, der afviger: "holdetiden var 1,2 s længere på de sidste 6 pile", "cant varierer dobbelt så meget, når målet står lavt".
   - Brud på teknikreglerne kommer før konsistens. Skyttens nuværende form er udgangspunktet, og den gode form er målet, man flytter sig hen imod trin for trin.
   - Reglerne tager højde for skytteprofilen (højre- eller venstrehånd) og buetypen. Grænserne skal kunne justeres, og hvor der er et frit valg (fx hvor meget cant væk fra pilen), sætter skytten eller træneren selv målet.
