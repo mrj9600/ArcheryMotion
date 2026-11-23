@@ -93,6 +93,15 @@ describe('HoldDetector', () => {
     expect(drift.some((e) => e.type === 'end')).toBe(true);
   });
 
+  it('uses a given holding level from the start', () => {
+    const d = new HoldDetector();
+    d.setReference([0, 0, 0]);
+    run(d, 0, 1, () => [40, 0, 0], () => 30);
+    expect(run(d, 1, 3, sway(1), () => 30)).toEqual([]); // bow resting 30° higher
+    run(d, 4, 1, () => [40, 0, 0], () => 5);
+    expect(run(d, 5, 2, sway(1), () => 5).some((e) => e.type === 'start')).toBe(true);
+  });
+
   it('only starts the next hold near the first full-draw pose', () => {
     const d = new HoldDetector();
     run(d, 0, 1, () => [40, 0, 0]);

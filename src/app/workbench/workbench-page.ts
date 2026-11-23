@@ -52,6 +52,7 @@ export class WorkbenchPage {
     { key: 'end', label: 'Slut over (°/s)' },
     { key: 'settleMs', label: 'Roligt i (ms)' },
     { key: 'poseTolerance', label: 'Samme stilling (±°)' },
+    { key: 'driftLimit', label: 'Flyt under hold (°)' },
   ];
 
   readonly header = computed(() => this.wb.recording()?.header);

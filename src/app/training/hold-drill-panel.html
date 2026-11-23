@@ -5,6 +5,14 @@
   </div>
 
   @switch (drill.phase()) {
+    @case ('level') {
+      <div class="big-status">
+        <div class="headline">Hæv buen</div>
+        <p class="muted">Hæv buen til det niveau, du skal holde i, og hold den stille et øjeblik. Du behøver ikke trække.</p>
+      </div>
+      <button class="big secondary" (click)="drill.levelNow()">Brug stillingen nu</button>
+      <button class="plain" (click)="drill.skipLevel()">Spring over</button>
+    }
     @case ('ready') {
       <div class="big-status">
         <div class="headline">Træk op</div>

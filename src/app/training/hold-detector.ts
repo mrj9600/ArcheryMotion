@@ -12,6 +12,7 @@ export interface HoldLimits {
   end: number;
   settleMs: number;
   poseTolerance: number;
+  driftLimit: number;
 }
 
 export const HOLD_LIMITS: HoldLimits = {
@@ -24,11 +25,16 @@ export const HOLD_LIMITS: HoldLimits = {
   /** How long the bow must be still before the hold counts as started (ms). */
   settleMs: 800,
   /**
-   * Max change of roll/pitch (degrees) from the full-draw pose found at shots, for a new
-   * hold to start, and from the hold's own start, for it to go on. Between shots the bow
-   * often rests 15–35° higher and just as still as at full draw.
+   * Max difference of roll/pitch (degrees) from the full-draw pose for a new hold to
+   * start. The pose comes from the archer raising the bow to the holding level before the
+   * drill, or from a shot.
    */
-  poseTolerance: 10,
+  poseTolerance: 20,
+  /**
+   * Max change of roll/pitch (degrees) from where the hold started, for it to go on.
+   * Between shots the bow often rests 15–35° higher and just as still as at full draw.
+   */
+  driftLimit: 10,
 };
 
 /**
@@ -179,6 +185,11 @@ export class HoldDetector {
     return this.state === 'holding' ? this.finish(Math.max(time, this.start), 'shot') : undefined;
   }
 
+  /** Sets the full-draw pose (roll, pitch) that a new hold must be near. */
+  setReference(euler: [number, number, number]): void {
+    this.reference = [euler[0], euler[1]];
+  }
+
   /** Statistics of the running or last hold. */
   stats(now?: number): HoldStats {
     const end = this.end ?? now ?? this.lastTime ?? this.start;
@@ -241,8 +252,8 @@ export class HoldDetector {
     if (!this.startPose || !sample.euler) return false;
     const [roll, pitch] = sample.euler;
     return (
-      Math.abs(wrap(roll - this.startPose[0])) > this.limits.poseTolerance ||
-      Math.abs(wrap(pitch - this.startPose[1])) > this.limits.poseTolerance
+      Math.abs(wrap(roll - this.startPose[0])) > this.limits.driftLimit ||
+      Math.abs(wrap(pitch - this.startPose[1])) > this.limits.driftLimit
     );
   }
 

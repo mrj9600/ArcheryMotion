@@ -7,7 +7,12 @@ import { SensorManager } from '../sensors/sensor-manager.service';
 import { ReleaseDetector } from '../recording/release-detector';
 import { HoldDetector, HoldEndedBy, HoldEvent } from './hold-detector';
 
-export type HoldPhase = 'idle' | 'ready' | 'holding' | 'rest' | 'done';
+/**
+ * 'level': before the first hold, the archer raises the bow to the level it will be held
+ * at, so the drill knows the full-draw pose and does not take the bow resting higher (or
+ * the set-up before the draw) for a hold.
+ */
+export type HoldPhase = 'idle' | 'level' | 'ready' | 'holding' | 'rest' | 'done';
 
 export interface HoldSettings {
   holdSeconds: number;
@@ -51,6 +56,7 @@ export class HoldDrillRunner {
   private targetReached = false;
   private startedBy: 'auto' | 'manual' = 'auto';
   private lastSampleTime = 0;
+  private lastEuler?: [number, number, number];
 
   setSettings(changes: Partial<HoldSettings>): void {
     const next = { ...this.settings(), ...changes };
@@ -77,8 +83,14 @@ export class HoldDrillRunner {
     this.subscription = this.manager.sampleEvents.subscribe(({ slot, sample }) => {
       if (slot !== this.recorder.mainBow()) return;
       this.lastSampleTime = sample.time;
+      if (sample.euler) this.lastEuler = sample.euler;
       this.releases.threshold = this.recorder.threshold();
       const shot = this.releases.feed(sample);
+      if (this.phase() === 'level') {
+        // A "hold" here is the bow raised to the level and kept still
+        if (this.detector.feed(sample).some((e) => e.type === 'start')) this.levelFound(sample.euler);
+        return;
+      }
       if (this.phase() !== 'ready' && this.phase() !== 'holding') return;
       if (shot) {
         const event = this.detector.release(sample.time, sample.euler);
@@ -89,7 +101,31 @@ export class HoldDrillRunner {
     });
     this.timer = setInterval(() => this.tick(), 100);
     this.rep.set(1);
-    this.ready();
+    this.lastEuler = undefined;
+    this.detector.arm();
+    this.phase.set('level');
+    if (this.speech()) speak('Hæv buen til det niveau, du skal holde i, og hold den stille.');
+  }
+
+  /** Uses the bow's angles now as the holding level (when the automatic step misses it). */
+  levelNow(): void {
+    if (this.phase() === 'level') this.levelFound(this.lastEuler);
+  }
+
+  /** Starts without a holding level; the first shot will give it. */
+  skipLevel(): void {
+    if (this.phase() === 'level') this.startFirstRep();
+  }
+
+  private levelFound(euler: [number, number, number] | undefined): void {
+    if (euler) this.detector.setReference(euler);
+    beeps([660, 990]);
+    vibrate(100);
+    this.startFirstRep();
+  }
+
+  private startFirstRep(): void {
+    this.ready(); // arm() keeps the reference pose
   }
 
   /** Stops the drill (the recording is stopped by the caller). */
