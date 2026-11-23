@@ -33,6 +33,18 @@ Hele filen er **gzip-komprimeret**. Udpakket ser den sådan ud:
 
 ## Holdeøvelse
 
+Hvert skud kan senere få `arrow` (pilens nummer eller navn) og `impact`, hvor pilen sad. Det kan endnu ikke indtastes i appen, men formatet er klar:
+
+```json
+"impact": { "x": 4.5, "y": -2, "direction": "downRight", "score": "8", "missed": false, "targetSize": 40, "markedAt": 1795420000000 }
+```
+
+- `x`/`y` er afstanden i cm fra det punkt, skytten sigtede på, set fra skytten: `x` positiv til højre, `y` positiv op. Sammen med `distance` giver det vinklen, pilen ramte ved siden af, og den kan sammenlignes direkte med sensorernes vinkler.
+- `face` er placeringen på skiven som i ArrowPlot og MyTargets (i forhold til skivens radius, `x` til højre, `y` ned), og `ring` er zonen (0 = inderst, -1 = forbi). De gør det muligt at hente placeringer fra ArrowPlot. Sigter skytten ikke på midten (gap eller point-on), er `face` ikke det samme som `x`/`y`.
+- `direction` er en grov retning (`center`, `up`, `down`, `left`, `right`, `upLeft`, `upRight`, `downLeft`, `downRight`), når den præcise placering ikke er sat.
+- `score` er point eller zone som skrevet ned. `targetSize` er skivens eller dræbezonens størrelse i cm.
+- Alle felter er valgfrie. Skuddets `releaseTime` binder placeringen sammen med sensordata.
+
 Har skytten valgt et fokus for sessionen, står det i `session.focus`, fx `{ "key": "release", "label": "Slip og follow-through" }`. Nøglerne er `release`, `expansion`, `cant`, `bowArm`, `anchor`, `tempo`, `slope` og `other` (så er `label` skyttens egen tekst). Skuddenes `selfRating` (`good`/`bad`) er skyttens vurdering af, om fokuspunktet lykkedes i skuddet, ikke hvor pilen ramte.
 
 Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række pr. gentagelse:

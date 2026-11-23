@@ -150,7 +150,46 @@ export interface ShotRecord {
   note?: string;
   /** Marked as not a real shot (false trigger). */
   discarded?: boolean;
+  /** Which arrow was shot (its number or name), to spot an arrow that flies differently. */
+  arrow?: string;
+  /** Where the arrow hit. Not entered in the app yet; see ShotImpact. */
+  impact?: ShotImpact;
 }
+
+/**
+ * Where an arrow hit the target, so a shot's sensor data can be compared with the result
+ * (later: "what you do when the arrow goes right"). The shot's releaseTime is the link to
+ * the sensor data. All fields are optional, so a hit can be marked roughly or exactly.
+ */
+export interface ShotImpact {
+  /**
+   * Position relative to the point the archer aimed at (cm), as the archer sees the
+   * target: x positive to the right, y positive up. With the distance this gives the
+   * angle the arrow was off, which is what the sensors can be compared with.
+   */
+  x?: number;
+  y?: number;
+  /**
+   * Position on the face as ArrowPlot (and MyTargets) store it: relative to the face
+   * radius (1 = outer edge), x to the right, y down. Lets hits be imported from ArrowPlot.
+   * Not the same as x/y above when the archer aims off the centre (gap or point-on aiming).
+   */
+  face?: { x: number; y: number };
+  /** Zone index as in ArrowPlot: 0 = innermost, -1 = miss. */
+  ring?: number;
+  /** Rough direction when the exact position is not marked. */
+  direction?: ImpactDirection;
+  /** Score or zone as written down, e.g. "10", "X", "M", or a 3D zone like "11" or "kill". */
+  score?: string;
+  /** The arrow missed the target. */
+  missed?: boolean;
+  /** Size of the face or the animal's kill zone (cm), to judge how big a miss is. */
+  targetSize?: number;
+  /** Epoch ms when the impact was entered (often after walking to the target). */
+  markedAt?: number;
+}
+
+export type ImpactDirection = 'center' | 'up' | 'down' | 'left' | 'right' | 'upLeft' | 'upRight' | 'downLeft' | 'downRight';
 
 /**
  * A block of samples from one sensor. Arrays are column-wise; vectors are interleaved
