@@ -1,12 +1,12 @@
 import { MotionSample } from '../sensors/sensor.model';
 
 /**
- * Default release threshold (g). In the first field recordings (MantisX on a 42 lb
- * barebow) every shot gave 14.6–16 g, while swinging and lowering the bow after a shot
- * gave up to 1.8 g, which the old 0.5 g counted as shots. Not yet checked with a
- * WitMotion sensor on the bow.
+ * Default release threshold (g). In the field recordings (MantisX on a 42 lb barebow,
+ * 2026-11-23/24) every shot gave 9.1–16 g, while swinging and lowering the bow after a
+ * shot gave up to 1.8 g, and a knock on the bow between shots 4.5 g, which the old 4 g
+ * counted as a shot. Not yet checked with a WitMotion sensor on the bow.
  */
-export const RELEASE_G = 4;
+export const RELEASE_G = 6;
 
 /** Minimum time between two detected releases (ms). */
 const COOLDOWN_MS = 3000;

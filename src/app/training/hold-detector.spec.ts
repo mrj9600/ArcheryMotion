@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MotionSample, Vec3 } from '../sensors/sensor.model';
 import { HoldDetector, HoldEvent } from './hold-detector';
+import { isFalseStart } from './hold-drill.service';
 
 /** Feeds `seconds` of 100 Hz samples whose gyro is given by `gyro(t)` (t in s since t0). */
 function run(d: HoldDetector, from: number, seconds: number, gyro: (t: number) => Vec3, pitch = () => 0): HoldEvent[] {
@@ -112,5 +113,25 @@ describe('HoldDetector', () => {
     expect(run(d, 8, 3, sway(1), () => -50)).toEqual([]); // bow pointing down, resting
     run(d, 11, 1, () => [40, 0, 0], () => 0);
     expect(run(d, 12, 2, sway(1), () => 0).some((e) => e.type === 'start')).toBe(true);
+  });
+
+  it('does not take the set-up (bow higher than full draw) for a hold', () => {
+    const d = new HoldDetector();
+    d.setReference([0, 0, 0]);
+    d.arm();
+    run(d, 0, 1, () => [40, 0, 0]);
+    expect(run(d, 1, 3, sway(1), () => 18)).toEqual([]); // set-up, 18° above
+    const events = run(d, 4, 3, sway(1), () => -15); // lower than the level step's pose is fine
+    expect(events.some((e) => e.type === 'start')).toBe(true);
+  });
+});
+
+describe('isFalseStart', () => {
+  it('drops short holds that ended by themselves, not shots or manual starts', () => {
+    expect(isFalseStart('auto', 'auto', 1500, 5000)).toBe(true);
+    expect(isFalseStart('auto', 'auto', 3000, 5000)).toBe(false);
+    expect(isFalseStart('auto', 'auto', 2000, 3000)).toBe(false); // at most half the target
+    expect(isFalseStart('shot', 'auto', 1500, 5000)).toBe(false);
+    expect(isFalseStart('auto', 'manual', 1500, 5000)).toBe(false);
   });
 });

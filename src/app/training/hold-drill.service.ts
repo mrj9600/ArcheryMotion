@@ -5,7 +5,7 @@ import { beep, beeps, speak, vibrate } from '../recording/cues';
 import { Recorder } from '../recording/recorder.service';
 import { SensorManager } from '../sensors/sensor-manager.service';
 import { ReleaseDetector } from '../recording/release-detector';
-import { HoldDetector, HoldEndedBy, HoldEvent } from './hold-detector';
+import { HOLD_LIMITS, HoldDetector, HoldEndedBy, HoldEvent } from './hold-detector';
 
 /**
  * 'level': before the first hold, the archer raises the bow to the level it will be held
@@ -22,6 +22,32 @@ export interface HoldSettings {
 
 /** Wait after a hold before the result is read aloud: time to feel the hold yourself. */
 const SPEAK_DELAY_MS = 1500;
+
+/**
+ * A hold that ends by itself (let-down or drift) within this time was not a hold at full
+ * draw but the bow held still for a moment while being raised or set up. It does not use
+ * up a repetition (ms; at most half the target time). Field test 2026-11-24: the bow held
+ * still at set-up started a "hold" that ended 1.5 s later when the archer drew.
+ */
+const FALSE_START_MS = 2500;
+
+/**
+ * Before the first hold the bow must be still longer than at full draw, so picking up the
+ * bow does not count as the holding level (ms).
+ */
+const LEVEL_SETTLE_MS = 2000;
+
+/** The spoken instruction for the level step is about this long; the bow is not raised yet (ms). */
+const LEVEL_INSTRUCTION_MS = 4000;
+
+/**
+ * A hold that ends by itself before the target time is kept back this long (ms). If the
+ * bow settles again in that time, the first "hold" was the set-up before the draw (which
+ * is higher, as in BEST, and can be still for 3 s); the new hold replaces it in the same
+ * repetition. After a real let-down the bow is lowered and does not settle at full draw
+ * again so soon.
+ */
+const SETUP_WINDOW_MS = 4000;
 
 /**
  * Runs the holding drill (Holding SPT) on top of a recording: hold full draw for the
@@ -49,6 +75,7 @@ export class HoldDrillRunner {
   readonly results = signal<HoldRep[]>([]);
 
   private detector = new HoldDetector();
+  private levelDetector = new HoldDetector({ ...HOLD_LIMITS, settleMs: LEVEL_SETTLE_MS });
   private releases = new ReleaseDetector();
   private subscription?: Subscription;
   private timer?: ReturnType<typeof setInterval>;
@@ -57,6 +84,9 @@ export class HoldDrillRunner {
   private startedBy: 'auto' | 'manual' = 'auto';
   private lastSampleTime = 0;
   private lastEuler?: [number, number, number];
+  private levelFrom = 0;
+  /** A hold that ended early, waiting to see whether it was only the set-up. */
+  private pending?: { result: HoldRep; until: number; endedAt: number };
 
   setSettings(changes: Partial<HoldSettings>): void {
     const next = { ...this.settings(), ...changes };
@@ -78,6 +108,7 @@ export class HoldDrillRunner {
     await this.recorder.saveSession();
 
     this.detector = new HoldDetector();
+    this.levelDetector = new HoldDetector({ ...HOLD_LIMITS, settleMs: LEVEL_SETTLE_MS });
     this.releases = new ReleaseDetector(this.recorder.threshold());
     this.results.set([]);
     this.subscription = this.manager.sampleEvents.subscribe(({ slot, sample }) => {
@@ -88,7 +119,8 @@ export class HoldDrillRunner {
       const shot = this.releases.feed(sample);
       if (this.phase() === 'level') {
         // A "hold" here is the bow raised to the level and kept still
-        if (this.detector.feed(sample).some((e) => e.type === 'start')) this.levelFound(sample.euler);
+        if (performance.now() < this.levelFrom) return;
+        if (this.levelDetector.feed(sample).some((e) => e.type === 'start')) this.levelFound(sample.euler);
         return;
       }
       if (this.phase() !== 'ready' && this.phase() !== 'holding') return;
@@ -102,7 +134,10 @@ export class HoldDrillRunner {
     this.timer = setInterval(() => this.tick(), 100);
     this.rep.set(1);
     this.lastEuler = undefined;
+    this.pending = undefined;
     this.detector.arm();
+    this.levelDetector.arm();
+    this.levelFrom = performance.now() + (this.speech() ? LEVEL_INSTRUCTION_MS : 0);
     this.phase.set('level');
     if (this.speech()) speak('Hæv buen til det niveau, du skal holde i, og hold den stille.');
   }
@@ -130,6 +165,12 @@ export class HoldDrillRunner {
 
   /** Stops the drill (the recording is stopped by the caller). */
   stop(): void {
+    if (this.pending) {
+      // Keep the last hold even if the drill is stopped while it waits
+      const { result, endedAt } = this.pending;
+      this.pending = undefined;
+      this.commit(result, endedAt);
+    }
     this.subscription?.unsubscribe();
     clearInterval(this.timer);
     this.phase.set('idle');
@@ -160,6 +201,8 @@ export class HoldDrillRunner {
   private onEvent(event: HoldEvent): void {
     switch (event.type) {
       case 'start':
+        // The early end just before was the set-up, not a hold
+        this.pending = undefined;
         this.phase.set('holding');
         this.startedBy = event.by;
         this.targetReached = false;
@@ -180,6 +223,11 @@ export class HoldDrillRunner {
 
   private tick(): void {
     this.speed.set(this.detector.speed);
+    if (this.pending && performance.now() >= this.pending.until) {
+      const { result, endedAt } = this.pending;
+      this.pending = undefined;
+      this.commit(result, endedAt);
+    }
     if (this.phase() === 'holding') {
       const held = performance.now() - this.detector.stats().start;
       this.held.set(Math.max(0, held));
@@ -201,6 +249,12 @@ export class HoldDrillRunner {
   private async finishRep(endedBy: HoldEndedBy): Promise<void> {
     const stats = this.detector.stats();
     const target = this.settings().holdSeconds * 1000;
+    if (isFalseStart(endedBy, this.startedBy, stats.heldMs, target)) {
+      // Not counted: wait for the real hold in the same repetition
+      beep(440, 120);
+      this.ready();
+      return;
+    }
     const result: HoldRep = {
       number: this.rep(),
       start: this.recorder.sessionTime(stats.start),
@@ -217,6 +271,17 @@ export class HoldDrillRunner {
       perSecond: { sway: stats.perSecond.sway.map((v) => round(v, 2)), tremor: stats.perSecond.tremor.map((v) => round(v, 2)) },
     };
     this.held.set(stats.heldMs);
+    if (endedBy === 'auto' && this.startedBy === 'auto' && !result.completed) {
+      // Maybe only the set-up: wait a moment for a real hold in the same repetition
+      const now = performance.now();
+      this.pending = { result, until: now + SETUP_WINDOW_MS, endedAt: now };
+      this.ready();
+      return;
+    }
+    this.commit(result, performance.now());
+  }
+
+  private commit(result: HoldRep, endedAt: number): void {
     this.results.update((list) => [...list, result]);
     this.recorder.session()?.drill?.results.push(result);
     void this.recorder.saveSession();
@@ -228,8 +293,8 @@ export class HoldDrillRunner {
       setTimeout(() => beeps([660, 880, 1320], 150), this.speech() ? 0 : 300);
     } else {
       this.phase.set('rest');
-      this.restEnd = performance.now() + this.settings().restSeconds * 1000;
-      this.restLeft.set(this.settings().restSeconds * 1000);
+      this.restEnd = endedAt + this.settings().restSeconds * 1000;
+      this.restLeft.set(Math.max(0, this.restEnd - performance.now()));
     }
   }
 
@@ -262,6 +327,11 @@ function loadSettings(): HoldSettings {
 function round(v: number, decimals: number): number {
   const f = 10 ** decimals;
   return Math.round(v * f) / f;
+}
+
+/** A short hold that ended by itself was the bow held still while being raised, not a hold. */
+export function isFalseStart(endedBy: HoldEndedBy, startedBy: 'auto' | 'manual', heldMs: number, targetMs: number): boolean {
+  return endedBy === 'auto' && startedBy === 'auto' && heldMs < Math.min(FALSE_START_MS, targetMs / 2);
 }
 
 /** Short spoken summary: the most important first. */

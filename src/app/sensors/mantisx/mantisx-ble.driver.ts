@@ -19,6 +19,14 @@ const MIN_SAMPLE_MS = 1000 / 450;
 const MAX_SAMPLE_MS = 1000 / 250;
 
 /**
+ * If packets arrive in sequence (no lost packets) but more than this behind the time the
+ * samples would have had at the sensor's rate, they were held back, not lost (ms). Field
+ * test 2026-11-24: nothing arrived for 114 s, then all 39 000 samples came within a
+ * second; timed on arrival they were squeezed into that second.
+ */
+const BACKLOG_MS = 1000;
+
+/**
  * MantisX sensor (e.g. "mantis674"). Sends pitch and roll computed in the sensor,
  * gyro x/z and the size of the dynamic acceleration at ~400 Hz. No yaw/heading.
  * Protocol: docs/mantisx-protocol.md.
@@ -71,6 +79,8 @@ class MantisXBleSensor implements MotionSensor {
 
   private data?: BluetoothRemoteGATTCharacteristic;
   private lastPacket?: number;
+  private lastCounter?: number;
+  private lastSampleTime?: number;
   /** Running estimate of the time between samples (ms); measured ~340 Hz. */
   private sampleMs = 1000 / 340;
 
@@ -128,12 +138,14 @@ class MantisXBleSensor implements MotionSensor {
     if (!v) return;
     const packet = parseMantisPacket(new Uint8Array(v.buffer, v.byteOffset, v.byteLength), this.hardwareVersion);
     if (!packet) return;
-    // A packet carries several samples; spread them evenly back from the arrival time
-    const time = performance.now();
+    const arrival = performance.now();
     const n = packet.samples.length;
-    const measured = this.lastPacket === undefined ? NaN : (time - this.lastPacket) / n;
-    this.lastPacket = time;
+    const measured = this.lastPacket === undefined ? NaN : (arrival - this.lastPacket) / n;
+    this.lastPacket = arrival;
     if (measured >= MIN_SAMPLE_MS && measured <= MAX_SAMPLE_MS) this.sampleMs += 0.05 * (measured - this.sampleMs);
+    const time = packetEndTime(arrival, n, this.sampleMs, packet.counter, this.lastCounter, this.lastSampleTime);
+    this.lastCounter = packet.counter;
+    this.lastSampleTime = time;
     packet.samples.forEach((s, i) => {
       this._samples.next({
         time: time - (n - 1 - i) * this.sampleMs,
@@ -143,4 +155,26 @@ class MantisXBleSensor implements MotionSensor {
       });
     });
   };
+}
+
+/**
+ * Time of a packet's last sample. Normally the arrival time (the samples are spread back
+ * from it). When the packet follows the previous one without a lost packet but arrives
+ * long after the samples were measured (the phone held the notifications back, e.g. while
+ * the page was in the background), the samples continue from the previous packet at the
+ * sensor's rate instead.
+ */
+export function packetEndTime(
+  arrival: number,
+  n: number,
+  sampleMs: number,
+  counter: number,
+  lastCounter: number | undefined,
+  lastSampleTime: number | undefined,
+): number {
+  if (lastCounter === undefined || lastSampleTime === undefined) return arrival;
+  const inSequence = counter === ((lastCounter + 1) & 0xff);
+  const continued = lastSampleTime + n * sampleMs;
+  if (inSequence && arrival - continued > BACKLOG_MS) return continued;
+  return Math.max(arrival, lastSampleTime + 0.01);
 }

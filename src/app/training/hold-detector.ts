@@ -12,6 +12,8 @@ export interface HoldLimits {
   end: number;
   settleMs: number;
   poseTolerance: number;
+  poseAbove: number;
+  poseBelow: number;
   driftLimit: number;
 }
 
@@ -30,6 +32,19 @@ export const HOLD_LIMITS: HoldLimits = {
    * drill, or from a shot.
    */
   poseTolerance: 20,
+  /**
+   * Max degrees the bow may point *higher* than the full-draw pose (positive pitch is up).
+   * The set-up before the draw is 15–22° higher and can be just as still for 3 s (field
+   * test 2026-11-24), while a real hold may well be lower than the pose found from the
+   * level step.
+   */
+  poseAbove: 10,
+  /**
+   * Max degrees the bow may point lower than the full-draw pose. Wide, because the level
+   * step gives a pose up to ~20° above the real full draw (the archer raises the bow to
+   * set-up height), and the bow is rarely still pointing lower than at full draw.
+   */
+  poseBelow: 30,
   /**
    * Max change of roll/pitch (degrees) from where the hold started, for it to go on.
    * Between shots the bow often rests 15–35° higher and just as still as at full draw.
@@ -260,9 +275,11 @@ export class HoldDetector {
   private inPose(sample: MotionSample): boolean {
     if (!this.reference || !sample.euler) return true;
     const [roll, pitch] = sample.euler;
+    const up = wrap(pitch - this.reference[1]);
     return (
       Math.abs(roll - this.reference[0]) < this.limits.poseTolerance &&
-      Math.abs(wrap(pitch - this.reference[1])) < this.limits.poseTolerance
+      up < this.limits.poseAbove &&
+      up > -this.limits.poseBelow
     );
   }
 

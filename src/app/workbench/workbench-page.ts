@@ -52,7 +52,9 @@ export class WorkbenchPage {
     { key: 'still', label: 'Roligt under (°/s)' },
     { key: 'end', label: 'Slut over (°/s)' },
     { key: 'settleMs', label: 'Roligt i (ms)' },
-    { key: 'poseTolerance', label: 'Samme stilling (±°)' },
+    { key: 'poseTolerance', label: 'Samme cant (±°)' },
+    { key: 'poseAbove', label: 'Højst over fuldt træk (°)' },
+    { key: 'poseBelow', label: 'Højst under fuldt træk (°)' },
     { key: 'driftLimit', label: 'Flyt under hold (°)' },
   ];
 

@@ -1,3 +1,4 @@
+import { packetEndTime } from './mantisx-ble.driver';
 import { decodeMinifloat, parseMantisPacket } from './mantisx-protocol';
 
 function hex(s: string): Uint8Array {
@@ -44,5 +45,27 @@ describe('MantisX protocol', () => {
     const wrongType = new Uint8Array(76);
     wrongType[0] = 0x41;
     expect(parseMantisPacket(wrongType)).toBeUndefined();
+  });
+});
+
+describe('packetEndTime', () => {
+  const ms = 1000 / 340;
+  it('uses the arrival time while packets come in real time', () => {
+    expect(packetEndTime(1010, 3, ms, 6, 5, 1001)).toBe(1010);
+  });
+
+  it('continues at the sensor rate when held-back packets arrive in a burst', () => {
+    // Nothing for 114 s, then the packets that were measured meanwhile, in sequence
+    let last = 1000;
+    let counter = 5;
+    for (let i = 0; i < 100; i++) {
+      counter = (counter + 1) & 0xff;
+      last = packetEndTime(115000 + i * 0.01, 3, ms, counter, (counter + 255) & 0xff, last);
+    }
+    expect(last).toBeCloseTo(1000 + 300 * ms, 3);
+  });
+
+  it('jumps to the arrival time after lost packets', () => {
+    expect(packetEndTime(115000, 3, ms, 9, 5, 1000)).toBe(115000);
   });
 });
