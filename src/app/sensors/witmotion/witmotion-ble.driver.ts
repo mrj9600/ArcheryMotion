@@ -23,6 +23,8 @@ const MAX_SAMPLE_MS = 1000;
 
 /** Output rate (Hz) -> register value. */
 const RATE_CODES: Record<number, number> = { 1: 0x03, 2: 0x04, 5: 0x05, 10: 0x06, 20: 0x07, 50: 0x08, 100: 0x09, 200: 0x0b };
+/** Rate set on every connect. */
+const DEFAULT_RATE = 200;
 
 export class WitMotionBleDriver implements SensorDriver {
   readonly kind = 'witmotion-ble';
@@ -45,6 +47,12 @@ export class WitMotionBleDriver implements SensorDriver {
     const write = await service.getCharacteristic(WRITE_CHAR);
     const sensor = new WitMotionBleSensor(device, notify, write);
     await sensor.start();
+    // The rate is a sensor setting; a factory reset sets it back to 10 Hz
+    try {
+      await sensor.setRate(DEFAULT_RATE);
+    } catch (err) {
+      console.warn('WitMotion: could not set output rate', err);
+    }
     return sensor;
   }
 }
