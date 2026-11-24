@@ -25,12 +25,17 @@ export type SensorStatus = 'connecting' | 'connected' | 'disconnected';
 
 export type SensorRole = 'bow' | 'head' | 'torso' | 'bowArm' | 'drawArm' | 'other';
 
-export const SENSOR_ROLES: { value: SensorRole; label: string }[] = [
+/** `hint` says where the sensor goes, shown when the role is picked. */
+export const SENSOR_ROLES: { value: SensorRole; label: string; hint?: string }[] = [
   { value: 'bow', label: 'Bue (greb)' },
   { value: 'head', label: 'Hoved' },
   { value: 'torso', label: 'Overkrop' },
   { value: 'bowArm', label: 'Buearm' },
-  { value: 'drawArm', label: 'Trækarm' },
+  {
+    value: 'drawArm',
+    label: 'Trækarm',
+    hint: 'På overarmen lige over albuen, på ydersiden. Spænd den fast med en strop, så den ikke kan flytte sig i ærmet.',
+  },
   { value: 'other', label: 'Andet' },
 ];
 

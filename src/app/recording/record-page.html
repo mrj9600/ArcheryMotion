@@ -75,6 +75,9 @@
           }
         </select>
         <button class="secondary" (click)="manager.remove(slot)">Fjern</button>
+        @if (roleHint(slot.role()); as hint) {
+          <p class="muted hint">{{ hint }}</p>
+        }
       </div>
     } @empty {
       <p class="muted">Ingen sensorer forbundet.</p>

@@ -62,6 +62,11 @@ export class RecordPage implements OnDestroy {
     return label.replace(/\s*\(.*\)/, '');
   }
 
+  /** Where a sensor with this role goes on the archer. */
+  roleHint(role: SensorRole): string | undefined {
+    return this.roles.find((r) => r.value === role)?.hint;
+  }
+
   ngOnDestroy(): void {
     clearInterval(this.timer);
   }
