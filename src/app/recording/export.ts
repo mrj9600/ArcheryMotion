@@ -1,6 +1,6 @@
 import { Db } from '../data/db';
 import { Session } from '../data/models';
-import { encodeRecording, joinChunks, Recording, RecordingMeta, SensorData } from './recording-file';
+import { correctGyroScale, encodeRecording, joinChunks, Recording, RecordingMeta, SensorData } from './recording-file';
 
 /** Collects a stored session: metadata and each sensor's samples as continuous arrays. */
 export async function loadSession(db: Db, session: Session): Promise<{ meta: RecordingMeta; sensors: SensorData[] }> {
@@ -16,7 +16,9 @@ export async function loadSession(db: Db, session: Session): Promise<{ meta: Rec
 /** The same structure as a decoded export file, for a stored session. */
 export async function loadStoredRecording(db: Db, session: Session): Promise<Recording> {
   const { meta, sensors } = await loadSession(db, session);
-  return { header: { format: 'archery-motion-recording', version: 1, exportedAt: Date.now(), ...meta, streams: [] }, sensors };
+  // Copy the session so the stored one keeps saying how its values were saved
+  const copy = structuredClone(meta.session);
+  return correctGyroScale({ header: { format: 'archery-motion-recording', version: 1, exportedAt: Date.now(), ...meta, session: copy, streams: [] }, sensors });
 }
 
 /** Builds the export file for a stored session. */

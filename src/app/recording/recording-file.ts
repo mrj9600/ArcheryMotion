@@ -1,4 +1,5 @@
 import { Archer, EquipmentSetup, SampleChunk, Session, ShotRecord } from '../data/models';
+import { MANTIS_GYRO_FULL_SCALE, MANTIS_OLD_GYRO_FULL_SCALE } from '../sensors/mantisx/mantisx-protocol';
 
 /**
  * Export format for one session (see docs/optagelsesformat.md). The whole file is gzip
@@ -141,5 +142,32 @@ export function unpackRecording(bytes: Uint8Array): Recording {
     if (s.field === 't') data.t = arr as Float64Array;
     else data[s.field] = arr as Float32Array;
   }
-  return { header, sensors };
+  return correctGyroScale({ header, sensors });
+}
+
+/**
+ * MantisX recordings made before 24 November 2026 converted the gyro with a full scale of
+ * 1000 deg/s instead of 2000, so their angular speeds are half the real ones. This scales
+ * them up (in place) and marks the sensor as corrected; the drill's sway and tremor were
+ * measured on the same values and are scaled too.
+ */
+export function correctGyroScale(rec: Recording): Recording {
+  const session = rec.header.session;
+  for (const info of session.sensors) {
+    if (info.kind !== 'mantisx-ble' || info.gyroFullScale) continue;
+    const factor = MANTIS_GYRO_FULL_SCALE / MANTIS_OLD_GYRO_FULL_SCALE;
+    const gyro = rec.sensors[info.index]?.gyro;
+    if (gyro) for (let i = 0; i < gyro.length; i++) gyro[i] *= factor;
+    info.gyroFullScale = MANTIS_GYRO_FULL_SCALE;
+    const bow = session.sensors.find((s) => s.role === 'bow') ?? session.sensors[0];
+    if (session.drill && bow === info) {
+      for (const r of session.drill.results) {
+        r.sway *= factor;
+        r.tremor *= factor;
+        r.perSecond.sway = r.perSecond.sway.map((v) => v * factor);
+        r.perSecond.tremor = r.perSecond.tremor.map((v) => v * factor);
+      }
+    }
+  }
+  return rec;
 }

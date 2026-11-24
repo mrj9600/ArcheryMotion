@@ -151,6 +151,14 @@ export class WorkbenchPage {
     return this.targets.find((t) => t.value === value)?.label ?? '';
   }
 
+  /** E.g. "↓ 9,2° ← 4,1°" for how the bow turned in a shot's release. */
+  turnLabel(shotId: string): string {
+    const turn = this.wb.releaseTurns().get(shotId);
+    if (!turn) return '–';
+    const deg = (v: number) => Math.abs(v).toLocaleString('da-DK', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + '°';
+    return `${turn.up >= 0 ? '↑' : '↓'} ${deg(turn.up)} ${turn.right >= 0 ? '→' : '←'} ${deg(turn.right)}`;
+  }
+
   setLimit(key: keyof HoldLimits, value: string): void {
     this.wb.setLimit(key, parseFloat(String(value).replace(',', '.')));
   }

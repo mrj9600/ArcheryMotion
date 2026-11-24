@@ -2,6 +2,7 @@ import { MotionSample, Vec3 } from '../sensors/sensor.model';
 import { SensorData } from '../recording/recording-file';
 import { RELEASE_G, ReleaseDetector } from '../recording/release-detector';
 import { HoldDetector, HoldLimits, HoldStats } from '../training/hold-detector';
+import { bowMotion } from './bow-motion';
 
 /** One curve: a value per sample of a sensor. */
 export interface Series {
@@ -23,7 +24,7 @@ const AXIS_COLORS = ['#e5463d', '#2f9e44', '#2b7fd8'];
 export const TEXT_COLOR = 'text';
 
 /** Splits a sensor's interleaved arrays into curves, grouped as they are plotted. */
-export function channelsOf(data: SensorData): Channel[] {
+export function channelsOf(data: SensorData, kind = ''): Channel[] {
   const channels: Channel[] = [];
   const n = data.t.length;
   const split = (arr: Float32Array, size: number, i: number) => {
@@ -45,6 +46,18 @@ export function channelsOf(data: SensorData): Channel[] {
       label: 'Vinkelhastighed',
       unit: '°/s',
       series: [...axes(data.gyro, ['x', 'y', 'z']), { label: '|ω|', color: TEXT_COLOR, values: magnitude(data.gyro) }],
+    });
+  }
+  const bow = bowMotion(data, kind);
+  if (bow) {
+    channels.push({
+      key: 'bow',
+      label: 'Buens bevægelse',
+      unit: '°/s',
+      series: [
+        { label: 'op', color: AXIS_COLORS[0], values: bow.up },
+        { label: 'højre', color: AXIS_COLORS[2], values: bow.right },
+      ],
     });
   }
   if (data.euler) {

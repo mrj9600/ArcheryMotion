@@ -5,11 +5,13 @@ import { RELEASE_G } from '../recording/release-detector';
 import { SENSOR_ROLES } from '../sensors/sensor.model';
 import { Channel, channelsOf, detectHolds, detectReleases } from './analysis';
 import { Marker, Span } from './signal-plot';
+import { bowMotion, releaseTurn, ReleaseTurn } from './bow-motion';
 
 export interface SensorView {
   index: number;
   name: string;
   role: string;
+  kind: string;
   t: Float64Array;
   channels: Channel[];
 }
@@ -46,7 +48,8 @@ export class Workbench {
         name: info?.name ?? `Sensor ${index + 1}`,
         role: SENSOR_ROLES.find((r) => r.value === info?.role)?.label ?? '',
         t: data.t,
-        channels: channelsOf(data),
+        kind: info?.kind ?? '',
+        channels: channelsOf(data, info?.kind),
       };
     });
   });
@@ -80,6 +83,20 @@ export class Workbench {
     }));
   });
 
+  /** How far the bow turned in each shot's release (the detection sensor, MantisX only). */
+  readonly releaseTurns = computed(() => {
+    const data = this.recording()?.sensors[this.detectSensor()];
+    const view = this.sensors()[this.detectSensor()];
+    const out = new Map<string, ReleaseTurn>();
+    const motion = data && view ? bowMotion(data, view.kind) : undefined;
+    if (!motion || !data) return out;
+    for (const shot of this.shots()) {
+      const turn = releaseTurn(data.t, motion, shot.releaseTime);
+      if (turn) out.set(shot.id, turn);
+    }
+    return out;
+  });
+
   /** Releases found now that are not recorded shots. */
   readonly extraReleases = computed(() => {
     const shots = this.shots();
@@ -108,7 +125,8 @@ export class Workbench {
     this.detectSensor.set(Math.max(0, bow));
     const shown = new Set<string>();
     this.sensors().forEach((s) => {
-      for (const c of s.channels) if (c.key === 'gyro' || c.key === 'euler') shown.add(`${s.index}:${c.key}`);
+      const main = s.channels.some((c) => c.key === 'bow') ? ['bow', 'euler'] : ['gyro', 'euler'];
+      for (const c of s.channels) if (main.includes(c.key)) shown.add(`${s.index}:${c.key}`);
     });
     this.shown.set(shown);
     this.range.set(this.fullRange());

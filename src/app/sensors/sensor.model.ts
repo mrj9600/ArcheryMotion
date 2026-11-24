@@ -45,6 +45,8 @@ export interface MotionSensor {
   /** Output rates (Hz) the sensor can be set to, if supported. */
   readonly supportedRates?: number[];
   setRate?(hz: number): Promise<void>;
+  /** Gyro full scale (deg/s) the values are converted with, saved with the recording. */
+  readonly gyroFullScale?: number;
   disconnect(): Promise<void>;
 }
 

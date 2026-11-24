@@ -83,6 +83,8 @@ Hver stream er ét array for én sensor. `offset` regnes fra starten af datadele
 | `quat` | float32 | 4 (x y z w) | |
 | `accMagnitude` | float32 | 1 | g, uden tyngdekraft (MantisX) |
 
+`session.sensors[].gyroFullScale` er gyroens fulde område i °/s, som værdierne er regnet om med (MantisX: 2000). Mangler det på en MantisX, er optagelsen lavet før 24. november 2026 med 1000, og gyroen viser halvdelen af den rigtige hastighed. Appen ganger den med 2, når optagelsen åbnes.
+
 Vektorer ligger flettet: `x0 y0 z0 x1 y1 z1 ...`. Manglende værdier er `NaN`. Felter, som en sensor aldrig sender, er udeladt. MantisX sender fx ikke gyro y (står som 0) og ingen yaw.
 
 MantisX' `euler` roll er buens cant: **positiv roll = toppen hælder til højre** set fra skytten. Det er målt med sensoren monteret som i optagelserne fra 24. november 2026, hvor toppen blev holdt tippet til højre i 11 s ved fuldt træk (roll +20 til +25°). For en højrehåndsskytte er cant mod pilens side altså negativ roll. Monteres sensoren anderledes, kan fortegnet vende.

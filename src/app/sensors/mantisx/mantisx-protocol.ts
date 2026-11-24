@@ -13,10 +13,15 @@ import { Vec3 } from '../sensor.model';
 /** Acceleration scale: ±16 g over the 16-bit range. */
 const ACC_SCALE = 16 / 32768;
 /**
- * Gyro scale in deg/s per unit. The MantisX app uses 2000/32768, but compared with a
- * WitMotion sensor taped to it, 1000/32768 matches (see docs).
+ * Gyro full scale (deg/s), as in the MantisX app. The rotation it gives matches how much
+ * the sensor's own pitch changes (see docs/mantisx-protocol.md). Recordings before 24
+ * November 2026 used 1000; see correctGyroScale.
  */
-export const MANTIS_GYRO_SCALE = 1000 / 32768;
+export const MANTIS_GYRO_FULL_SCALE = 2000;
+/** Gyro scale in deg/s per unit. */
+export const MANTIS_GYRO_SCALE = MANTIS_GYRO_FULL_SCALE / 32768;
+/** The full scale used before it was corrected. */
+export const MANTIS_OLD_GYRO_FULL_SCALE = 1000;
 
 export interface MantisSample {
   /** Size of the dynamic acceleration (gravity removed), g. */

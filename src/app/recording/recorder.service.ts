@@ -202,7 +202,8 @@ export class Recorder {
     let track = this.tracks.get(slot);
     if (!track) {
       const index = session.sensors.length;
-      session.sensors.push({ index, name: slot.sensor.name, kind: slot.sensor.kind, role: slot.role() });
+      const fullScale = slot.sensor.gyroFullScale;
+      session.sensors.push({ index, name: slot.sensor.name, kind: slot.sensor.kind, role: slot.role(), ...(fullScale ? { gyroFullScale: fullScale } : {}) });
       track = { index, buffer: new ChunkBuffer(session.id, index), recent: [] };
       this.tracks.set(slot, track);
       void this.db.saveSession(session);

@@ -45,7 +45,7 @@ describe('HoldDetector', () => {
   it('warns when the sway grows to well above the first seconds', () => {
     const d = new HoldDetector();
     run(d, 0, 1, () => [40, 0, 0]);
-    const events = [...run(d, 1, 6, sway(1)), ...run(d, 7, 5, sway(5))];
+    const events = [...run(d, 1, 6, sway(2)), ...run(d, 7, 5, sway(10))];
     const warnings = events.filter((e) => e.type === 'warning');
     expect(warnings.length).toBe(1);
     const stats = d.stats();
@@ -56,10 +56,10 @@ describe('HoldDetector', () => {
   it('warns on tremor (fast shaking)', () => {
     const d = new HoldDetector();
     run(d, 0, 1, () => [40, 0, 0]);
-    const shake = (t: number): Vec3 => [4 * Math.sin(t * 2 * Math.PI * 12), 0, 0];
-    const events = [...run(d, 1, 6, sway(1)), ...run(d, 7, 4, (t) => sway(1)(t).map((v, i) => v + shake(t)[i]) as Vec3)];
+    const shake = (t: number): Vec3 => [8 * Math.sin(t * 2 * Math.PI * 12), 0, 0];
+    const events = [...run(d, 1, 6, sway(2)), ...run(d, 7, 4, (t) => sway(2)(t).map((v, i) => v + shake(t)[i]) as Vec3)];
     expect(events.some((e) => e.type === 'warning')).toBe(true);
-    expect(d.stats().tremor).toBeGreaterThan(0.5);
+    expect(d.stats().tremor).toBeGreaterThan(1);
   });
 
   it('measures drift of the bow angle', () => {

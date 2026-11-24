@@ -148,7 +148,13 @@
       @if (wb.shotMatches().length || wb.extraReleases().length) {
         <table class="events">
           <thead>
-            <tr><th>#</th><th>Tid</th><th>Mærker{{ header()?.session?.focus ? ' og fokus' : '' }}</th><th>Fundet nu</th></tr>
+            <tr>
+              <th>#</th><th>Tid</th><th>Mærker{{ header()?.session?.focus ? ' og fokus' : '' }}</th>
+              @if (wb.releaseTurns().size) {
+                <th title="Hvor meget buen drejede fra lige før slippet til 0,25 s efter">Buen i slippet</th>
+              }
+              <th>Fundet nu</th>
+            </tr>
           </thead>
           <tbody>
             @for (m of wb.shotMatches(); track m.shot.id) {
@@ -160,6 +166,9 @@
                   {{ m.shot.selfRating === 'good' ? '👍' : m.shot.selfRating === 'bad' ? '👎' : '' }}{{ m.shot.trigger === 'manual' ? ' (manuelt)' : '' }}
                   {{ m.shot.discarded ? ' fejludløsning' : '' }}
                 </td>
+                @if (wb.releaseTurns().size) {
+                  <td>{{ turnLabel(m.shot.id) }}</td>
+                }
                 <td>{{ m.found ? '✓' : '–' }}</td>
               </tr>
             }
@@ -168,6 +177,9 @@
                 <td></td>
                 <td>{{ time(r) }}</td>
                 <td>slip fundet nu, ikke optaget som skud</td>
+                @if (wb.releaseTurns().size) {
+                  <td></td>
+                }
                 <td>ny</td>
               </tr>
             }
@@ -175,6 +187,12 @@
         </table>
       } @else {
         <p class="muted">Ingen skud i optagelsen.</p>
+      }
+      @if (wb.releaseTurns().size) {
+        <p class="muted small">
+          Buen i slippet: hvor langt buen drejede fra 0,05 s før til 0,25 s efter slippet, op/ned og venstre/højre set fra skytten. At buen
+          tipper forover efter slippet er normalt for barebow.
+        </p>
       }
     </section>
 

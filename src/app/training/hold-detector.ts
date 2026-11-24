@@ -2,9 +2,10 @@ import { MotionSample } from '../sensors/sensor.model';
 
 /**
  * Thresholds on the bow's angular speed (deg/s). Tuned on the first field recordings
- * (barebow, MantisX on the bow, 2026-11-23): at full draw the bow turns about 1–1.6 deg/s
+ * (barebow, MantisX on the bow, 2026-11-23): at full draw the bow turns about 2–3 deg/s
  * on average, and lowering it onto the target from the set-up position peaks around
- * 12–18 deg/s (smoothed), so the old 20 deg/s missed the draw.
+ * 24–36 deg/s (smoothed). (The values were tuned at half the speed, before the MantisX
+ * gyro scale was corrected, and doubled with it.)
  */
 export interface HoldLimits {
   move: number;
@@ -19,11 +20,11 @@ export interface HoldLimits {
 
 export const HOLD_LIMITS: HoldLimits = {
   /** Speed that counts as raising/drawing the bow. Needed before a hold can start. */
-  move: 10,
+  move: 20,
   /** Below this the bow counts as still. */
-  still: 8,
+  still: 16,
   /** Above this the hold has ended (let-down). A shot ends it too, see release(). */
-  end: 12,
+  end: 24,
   /** How long the bow must be still before the hold counts as started (ms). */
   settleMs: 800,
   /**
@@ -313,7 +314,7 @@ export class HoldDetector {
     const baseSway = (base[0].sway + base[1].sway) / 2;
     const baseTremor = (base[0].tremor + base[1].tremor) / 2;
     const bad =
-      second.sway > Math.max(2 * baseSway, baseSway + 2) || second.tremor > Math.max(2 * baseTremor, baseTremor + 1.5);
+      second.sway > Math.max(2 * baseSway, baseSway + 4) || second.tremor > Math.max(2 * baseTremor, baseTremor + 3);
     this.badRun = bad ? this.badRun + 1 : Math.min(this.badRun, 0);
     if (this.badRun >= 2) {
       this.badRun = -1; // the next warning needs three more bad seconds

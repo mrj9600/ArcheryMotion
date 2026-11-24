@@ -79,7 +79,11 @@ Sample A = felt 1–3, sample B = felt 4–6, dvs. 2 samples pr. blok, 12 pr. pa
 3. `d = 256 >> (9 − e)`; hvis `d > 0`: `d = d − 0.5` (afrundingskorrektion).
 4. Resultat = `m · 2^e + d`. Område ca. ±32768, som en 16-bit IMU-værdi.
 
-**Skalering:** appen ganger acceleration med 16/32768 (±16 g) og gyro med 2000/32768. Sammenlignet med WIT passer gyro x dog bedst med **1000/32768** (koefficientlængde 0,996, R = 0,84). Muligvis halveres værdien et andet sted i appen (kalibreringstrin), eller sensoren kører ±1000 °/s. Brug 1000/32768 indtil andet er vist.
+**Skalering:** acceleration ganges med 16/32768 (±16 g) og gyro med **2000/32768**, som i appen. Indtil 24. november 2026 brugte ArcheryMotion 1000/32768 efter en sammenligning med WIT (se nedenfor), men WIT-sensoren viste sig at give forkerte data indtil en fabriksnulstilling. To ting fra feltoptagelserne viser, at 2000/32768 er rigtigt:
+- Gyro x lagt sammen over rolige bevægelser (op til sigtet, ned fra opsætningen, 0,4–3 s, i alt ca. 200 bevægelser) passer med ændringen i sensorens egen pitch med en faktor 2,06–2,20 i forhold til 1000/32768, når et lille nulpunkt (bias) tages med.
+- I slippet tipper buen forover. Gyro x lagt sammen over de første 0,3 s giver med 2000/32768 samme vinkel som pitch-ændringen (fx 9,2° mod 9°, 9,9° mod 10°).
+
+Optagelser fra før rettelsen har ikke `gyroFullScale` på MantisX-sensoren. Deres gyro (og holdeøvelsens udsving og rystelse) ganges med 2, når de åbnes (`correctGyroScale`).
 
 **Vinkler (felt 7/8, 12-bit unsigned):**
 - Pitch: `p = v7/4095 · R`, hvor `R = 180` når sensorens hardware-/firmwareversion ≥ 4 (vores: 04), ellers 360. Hvis `p > R/2`: `p −= R`. Appen bruger `−p` som pitch.
@@ -90,7 +94,7 @@ Sample A = felt 1–3, sample B = felt 4–6, dvs. 2 samples pr. blok, 12 pr. pa
 ### Verifikation mod WitMotion (log `mantis674+WTMRJ-log-2026-11-20T18-56-07-306Z.txt`)
 
 MantisX og WIT (200 Hz) tapet sammen og bevæget i ca. 25 s:
-- Gyro x (felt 2) passer med WIT's x-akse: R = 0,84, skala 1000/32768, tidsforskydning 0,02 s.
+- Gyro x (felt 2) passer med WIT's x-akse: R = 0,84, skala 1000/32768, tidsforskydning 0,02 s. **Skalaen her er forkert**: WIT-sensoren gav senere forkerte data (værdier over 2 g i ro, tal der frøs og sprang til 0) indtil en fabriksnulstilling, så sammenligningen skal laves om.
 - Gyro z (felt 3) følger hurtige ændringer, men ikke en jævn grunddrejning (WIT viste −155 °/s, MantisX ≈ 0). Det tyder på, at firmwaren højpasfiltrerer gyroen eller løbende fjerner langsom drejning. R = 0,35.
 - Gyro x ser ud til at mætte omkring ±255 °/s i denne optagelse.
 - Roll korrelerer 0,76 med WIT-roll.
@@ -102,8 +106,24 @@ I tomgang (tilstand 3, uden opstart) er strømmen næsten konstant og stille. De
 ## Næste skridt
 
 1. Skriv en `MantisXDriver` (`SensorDriver`): opstartssekvens, pakketype H, F(v)-afkodning, pitch/roll som orientering, gyro x/z og accelerationsstørrelse i `MotionSample`.
-2. Afklar gyroskala og -filtrering: drej sensoren præcis 90° om hver akse (langsomt og hurtigt) sammen med WIT.
+2. Bekræft gyroskala og -filtrering med den fabriksnulstillede WIT: tape dem sammen og drej præcis 90° om hver akse (langsomt og hurtigt).
 3. Brug accelerationsstørrelsen (felt 1) til slip-detektion.
+
+## Buens akser (fundet fra feltoptagelserne)
+
+MantisX sidder på buen med sin y-akse langs pilen. Fundet ved at prøve de 8 mulige retninger for gyro x og z og se, hvilken der får gyroen til at passe med, hvordan pitch ændrer sig (med cant regnet med). Testet på optagelserne fra 23. og 24. november 2026:
+
+| Gyro | Buens akse | Positiv betyder |
+|------|-----------|-----------------|
+| x | sideaksen | buen tipper **ned** |
+| y | pilens akse | sendes ikke |
+| z | lodret akse | buen drejer mod **højre**, set fra skytten |
+
+- Gyro x som sideakse er tydelig: korrelation 0,69–0,71 med pitch, mod 0,09–0,18, hvis x og z byttes. Det passer med appen, der bruger gyro x til op/ned og gyro z til højre/venstre (se nedenfor). Retningen bekræftes af slippet, hvor buen tipper forover og gyro x er positiv.
+- Retningen for gyro z er mindre sikker. Den ses kun gennem cant: korrelation 0,71 mod 0,61 med modsat fortegn, ens i alle tre optagelser. Den passer også med, at sensorens akser er højrehåndede med y frem mod målet. Kan tjekkes med buen lodret: drej langsomt 90° mod venstre og tilbage.
+- Roll positiv = toppen hælder til højre (kant-test, se [optagelsesformat.md](optagelsesformat.md)).
+
+`src/app/workbench/bow-motion.ts` regner buens drejning op/ned og venstre/højre ud fra gyro x og z, roll og pitch, så en bue med cant stadig viser venstre som venstre. Drejning om pilens akse mangler (gyro y), så venstre/højre er kun god, når buen peger inden for ca. ±30° af vandret.
 
 ## Appens analyse (fra MantisX Archery-appens kode, beskrevet med egne ord)
 

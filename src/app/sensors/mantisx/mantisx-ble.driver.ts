@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { MotionSample, MotionSensor, SensorDriver, SensorStatus } from '../sensor.model';
-import { mantisEuler, parseMantisPacket } from './mantisx-protocol';
+import { MANTIS_GYRO_FULL_SCALE, mantisEuler, parseMantisPacket } from './mantisx-protocol';
 
 const SUFFIX = '-204d-616e-7469-732054656368';
 const SERVICE = `6e400001${SUFFIX}`;
@@ -69,6 +69,7 @@ async function readHardwareVersion(server: BluetoothRemoteGATTServer): Promise<n
 
 class MantisXBleSensor implements MotionSensor {
   readonly kind = 'mantisx-ble';
+  readonly gyroFullScale = MANTIS_GYRO_FULL_SCALE;
   readonly id: string;
   readonly name: string;
 

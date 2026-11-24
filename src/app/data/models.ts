@@ -59,6 +59,13 @@ export interface SessionSensor {
   name: string;
   kind: string;
   role: SensorRole;
+  /**
+   * Gyro full scale (deg/s) the sensor's values were converted with, when it has been
+   * corrected (MantisX: 2000). Missing on MantisX recordings made before 24 November
+   * 2026, which used 1000 and therefore show half the real speed; they are corrected when
+   * opened (see correctGyroScale).
+   */
+  gyroFullScale?: number;
 }
 
 export interface Session {

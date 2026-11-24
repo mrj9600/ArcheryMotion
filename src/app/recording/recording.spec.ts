@@ -87,6 +87,24 @@ describe('recording file', () => {
     expect(Array.from(rec.sensors[0].gyro!)).toEqual(Array.from(data.gyro!));
     expect(rec.sensors[0].quat).toBeUndefined();
   });
+
+  it('doubles the gyro of MantisX recordings made with the old scale, once', () => {
+    const data = { t: Float64Array.from([0, 3]), gyro: Float32Array.from([1, 0, -2, 3, 0, 4]) };
+    const session: Session = {
+      id: 's',
+      archerId: 'a',
+      startedAt: 1000,
+      sensors: [{ index: 0, name: 'mantis', kind: 'mantisx-ble', role: 'bow' }],
+      shotCount: 0,
+      sampleCount: 2,
+    };
+    const old = unpackRecording(packRecording({ session, shots: [] }, [data]));
+    expect(Array.from(old.sensors[0].gyro!)).toEqual([2, 0, -4, 6, 0, 8]);
+    expect(old.header.session.sensors[0].gyroFullScale).toBe(2000);
+    // Saved again (now marked as corrected), it is not doubled a second time
+    const again = unpackRecording(packRecording({ session: old.header.session, shots: [] }, old.sensors));
+    expect(Array.from(again.sensors[0].gyro!)).toEqual([2, 0, -4, 6, 0, 8]);
+  });
 });
 
 describe('splitSensor', () => {
