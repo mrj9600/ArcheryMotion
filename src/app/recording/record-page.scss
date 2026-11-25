@@ -55,6 +55,10 @@
     background: var(--ok);
     color: var(--on-strong);
   }
+  &.silent {
+    background: var(--warn);
+    color: #000;
+  }
   &.bad {
     background: var(--danger);
     color: var(--on-strong);
@@ -70,6 +74,10 @@
   &.ok {
     background: var(--ok);
     color: var(--on-strong);
+  }
+  &.silent {
+    background: var(--warn);
+    color: #000;
   }
   &.bad {
     background: var(--danger);

@@ -34,8 +34,9 @@
   @if (recorder.session()) {
     <div class="links" aria-label="Sensorer">
       @for (slot of manager.slots(); track slot.sensor.id) {
-        <span class="link" [class.ok]="slot.status() === 'connected'" [class.bad]="slot.status() !== 'connected'">
-          {{ roleLabel(slot.role()) }} {{ slot.status() === 'connected' ? '✓' : slot.status() === 'reconnecting' ? 'genforbinder…' : '✕' }}
+        <span class="link" [class.ok]="linkState(slot) === 'ok'" [class.silent]="linkState(slot) === 'silent'" [class.bad]="linkState(slot) === 'bad'">
+          {{ roleLabel(slot.role()) }}
+          {{ linkState(slot) === 'ok' ? '✓' : linkState(slot) === 'silent' ? (silentSeconds(slot) ? silentSeconds(slot) + ' s uden data' : 'venter på data') : slot.status() === 'reconnecting' ? 'genforbinder…' : '✕' }}
         </span>
       }
       @if (!hasBowSensor()) {
@@ -65,8 +66,8 @@
       <div class="sensor">
         <div class="sensor-name">
           <strong>{{ slot.sensor.name }}</strong>
-          <span class="badge" [class.ok]="slot.status() === 'connected'" [class.bad]="slot.status() !== 'connected'">
-            {{ slot.status() === 'connected' ? slot.rate() + ' Hz' : slot.status() === 'reconnecting' ? 'Genforbinder…' : 'Afbrudt' }}
+          <span class="badge" [class.ok]="linkState(slot) === 'ok'" [class.silent]="linkState(slot) === 'silent'" [class.bad]="linkState(slot) === 'bad'">
+            {{ linkText(slot) }}
           </span>
         </div>
         <select [ngModel]="slot.role()" (ngModelChange)="setRole(slot, $event)">

@@ -43,17 +43,46 @@ export class RecordPage implements OnDestroy {
     return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
   });
 
-  /** Ticks every second so the elapsed time updates. */
-  private readonly now = signal(Date.now());
-  private readonly timer = setInterval(() => this.now.set(Date.now()), 1000);
+  /** Ticks every second (performance.now(), like the sample times) so the time and sensor states update. */
+  private readonly now = signal(performance.now());
+  private readonly timer = setInterval(() => this.now.set(performance.now()), 1000);
 
+  /** Recorded time: the time since the start without the pauses, so it stands still during a pause. */
   readonly elapsed = computed(() => {
     const s = this.recorder.session();
     if (!s) return '';
-    const sec = Math.max(0, Math.floor((this.now() - s.startedAt) / 1000));
+    const total = this.recorder.sessionTime(this.now());
+    const paused = (s.pauses ?? []).reduce((sum, p) => sum + Math.max(0, Math.min(p.end ?? total, total) - p.start), 0);
+    const sec = Math.max(0, Math.floor((total - paused) / 1000));
     const m = Math.floor(sec / 60);
     return `${m}:${String(sec % 60).padStart(2, '0')}`;
   });
+
+  /**
+   * Seconds since a connected sensor last sent data, or 0 while data comes in. Connected
+   * only means the phone has a Bluetooth connection; this shows whether data actually arrives.
+   */
+  silentSeconds(slot: SensorSlot): number {
+    const last = slot.latest()?.time;
+    if (slot.status() !== 'connected' || last === undefined) return 0;
+    const s = Math.floor((this.now() - last) / 1000);
+    return s >= 2 ? s : 0;
+  }
+
+  /** 'ok' (data comes in), 'silent' (connected, but no data) or 'bad' (no connection). */
+  linkState(slot: SensorSlot): 'ok' | 'silent' | 'bad' {
+    if (slot.status() !== 'connected') return 'bad';
+    return !slot.latest() || this.silentSeconds(slot) ? 'silent' : 'ok';
+  }
+
+  /** E.g. "340 Hz", "Ingen data i 12 s", "Genforbinder…". */
+  linkText(slot: SensorSlot): string {
+    if (slot.status() === 'reconnecting') return 'Genforbinder…';
+    if (slot.status() !== 'connected') return 'Afbrudt';
+    if (!slot.latest()) return 'Venter på data';
+    const silent = this.silentSeconds(slot);
+    return silent ? `Ingen data i ${silent} s` : `${slot.rate()} Hz`;
+  }
 
   readonly hasBowSensor = computed(() => this.manager.slots().some((s) => s.role() === 'bow'));
 
