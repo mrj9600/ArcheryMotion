@@ -6,12 +6,13 @@ import { Selection } from '../data/selection.service';
 import { rememberedPlacement, rememberPlacement, SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
 import { placementsFor, SENSOR_PLACEMENTS, SENSOR_ROLES, SensorPlacement, SensorRole } from '../sensors/sensor.model';
 import { HoldDrillPanel } from '../training/hold-drill-panel';
+import { PlacementSketch } from '../sensors/placement-sketch';
 import { HoldDrillRunner } from '../training/hold-drill.service';
 import { Recorder } from './recorder.service';
 
 @Component({
   selector: 'app-record-page',
-  imports: [FormsModule, RouterLink, HoldDrillPanel],
+  imports: [FormsModule, RouterLink, HoldDrillPanel, PlacementSketch],
   templateUrl: './record-page.html',
   styleUrl: './record-page.scss',
 })

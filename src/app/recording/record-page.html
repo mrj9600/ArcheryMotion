@@ -88,6 +88,7 @@
             </label>
             @if (placementHint(slot.placement()); as hint) {
               <p class="muted hint">{{ hint }}</p>
+              <app-placement-sketch class="sketch" [placement]="slot.placement()!" />
             }
           }
         }
