@@ -30,7 +30,11 @@ export const SENSOR_ROLES: { value: SensorRole; label: string; hint?: string }[]
   { value: 'bow', label: 'Bue (greb)' },
   { value: 'head', label: 'Hoved' },
   { value: 'torso', label: 'Overkrop' },
-  { value: 'bowArm', label: 'Buearm' },
+  {
+    value: 'bowArm',
+    label: 'Buearm',
+    hint: 'På underarmen, som et ur, et par cm over håndleddet mod albuen, på oversiden. Ikke på indersiden, hvor strengen og armbeskytteren er. Spænd den fast, så den ikke kan dreje rundt om armen.',
+  },
   {
     value: 'drawArm',
     label: 'Trækarm',
