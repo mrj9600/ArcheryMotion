@@ -89,6 +89,8 @@ Vektorer ligger flettet: `x0 y0 z0 x1 y1 z1 ...`. Manglende værdier er `NaN`. F
 
 MantisX' `euler` roll er buens cant: **positiv roll = toppen hælder til højre** set fra skytten. Det er målt med sensoren monteret som i optagelserne fra 24. november 2026, hvor toppen blev holdt tippet til højre i 11 s ved fuldt træk (roll +20 til +25°). For en højrehåndsskytte er cant mod pilens side altså negativ roll. Monteres sensoren anderledes, kan fortegnet vende.
 
+Nulpunktet passer ikke helt med lodret. Med buen stillet helt lodret op ad en væg (25. november 2026, skyttens vurdering: lige så præcist som med vaterpas) viste MantisX roll −1,2°. Den rigtige cant for den montering er altså roll + 1,2°. Det gælder kun, så længe MantisX sidder som den gør på den bue, og målingen blev lavet med buen vippet ca. 20° bagover, så den kan være ca. ±0,5° ved siden af. Appen bruger det ikke endnu. Det skal bruges, når reglen "aldrig cant mod pilens side" bygges, og hver opsætning skal så have sin egen lodret-måling.
+
 ## Læs i Python
 
 ```python
