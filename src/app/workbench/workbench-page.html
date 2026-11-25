@@ -153,6 +153,11 @@
               @if (wb.releaseTurns().size) {
                 <th title="Hvor meget buen drejede fra lige før slippet til 0,25 s efter">Buen i slippet</th>
               }
+              @for (a of wb.arms(); track a.sensor) {
+                <th title="Fra 1 s til 0,1 s før slippet">{{ a.label }} sidste sekund</th>
+                <th title="Fra 0,05 s før til 0,25 s efter slippet">{{ a.label }} i slippet</th>
+                <th title="Tid efter slippet, til armen er 10° under holdet">Ned efter</th>
+              }
               <th>Fundet nu</th>
             </tr>
           </thead>
@@ -169,6 +174,11 @@
                 @if (wb.releaseTurns().size) {
                   <td>{{ turnLabel(m.shot.id) }}</td>
                 }
+                @for (a of wb.arms(); track a.sensor) {
+                  <td>{{ armLabel(a.shots.get(m.shot.id)?.hold) }}</td>
+                  <td>{{ armLabel(a.shots.get(m.shot.id)?.release) }}</td>
+                  <td>{{ downLabel(a.shots.get(m.shot.id)?.downAfter) }}</td>
+                }
                 <td>{{ m.found ? '✓' : '–' }}</td>
               </tr>
             }
@@ -179,6 +189,9 @@
                 <td>slip fundet nu, ikke optaget som skud</td>
                 @if (wb.releaseTurns().size) {
                   <td></td>
+                }
+                @for (a of wb.arms(); track a.sensor) {
+                  <td></td><td></td><td></td>
                 }
                 <td>ny</td>
               </tr>
@@ -193,6 +206,16 @@
           Buen i slippet: hvor langt buen drejede fra 0,05 s før til 0,25 s efter slippet, op/ned og venstre/højre set fra skytten. Op er som ved et skud
           opad: toppen går mod skytten. Ned: toppen går væk fra skytten. Venstre/højre er, hvor buen peger, og kan være både vrid i hånden og
           buearmen, der går.
+        </p>
+      }
+      @for (a of wb.arms(); track a.sensor) {
+        <p class="muted small">
+          {{ a.label }}: op/ned og venstre/højre set fra skytten. Sensorens retninger er fundet ud fra løftet fra opsætningen til fuldt træk i
+          {{ a.axes.shots }} skud (afvigelse højst {{ a.axes.spread.toFixed(0) }}°{{ a.axes.spread > 15 ? ', sensoren kan have flyttet sig' : '' }}).
+          Den måler kun den del af armen, den sidder på.
+          @if (a.paired) {
+            Optagelsen er lavet med en version, hvor MantisX' tid var forskudt, så skuddene er parret ud fra rystet i slippet.
+          }
         </p>
       }
     </section>

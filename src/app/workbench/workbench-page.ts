@@ -159,6 +159,18 @@ export class WorkbenchPage {
     return `${turn.up >= 0 ? '↑' : '↓'} ${deg(turn.up)} ${turn.right >= 0 ? '→' : '←'} ${deg(turn.right)}`;
   }
 
+  /** E.g. "↓ 4,3° → 2,0°" for how an arm moved, or "–". */
+  armLabel(turn: { up: number; right: number } | undefined): string {
+    if (!turn || !Number.isFinite(turn.up) || !Number.isFinite(turn.right)) return '–';
+    const deg = (v: number) => Math.abs(v).toLocaleString('da-DK', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + '°';
+    return `${turn.up >= 0 ? '↑' : '↓'} ${deg(turn.up)} ${turn.right >= 0 ? '→' : '←'} ${deg(turn.right)}`;
+  }
+
+  /** E.g. "1,8 s" until the arm was taken down after the release. */
+  downLabel(seconds: number | undefined): string {
+    return seconds === undefined ? '–' : seconds.toLocaleString('da-DK', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' s';
+  }
+
   setLimit(key: keyof HoldLimits, value: string): void {
     this.wb.setLimit(key, parseFloat(String(value).replace(',', '.')));
   }

@@ -6,6 +6,7 @@ import { SENSOR_ROLES } from '../sensors/sensor.model';
 import { Channel, channelsOf, detectHolds, detectReleases } from './analysis';
 import { Marker, Span } from './signal-plot';
 import { bowMotion, releaseTurn, ReleaseTurn } from './bow-motion';
+import { ArmAxes, armShot, ArmShot, findArmAxes, hasMantisTimeBug, pairReleases } from './arm-motion';
 
 export interface SensorView {
   index: number;
@@ -14,6 +15,18 @@ export interface SensorView {
   kind: string;
   t: Float64Array;
   channels: Channel[];
+}
+
+/** One arm sensor's movement in each shot, with the axes found for it. */
+export interface ArmView {
+  sensor: number;
+  /** Role label, e.g. "Buearm". */
+  label: string;
+  axes: ArmAxes;
+  /** By shot id. */
+  shots: Map<string, ArmShot>;
+  /** The shots were paired by the release jolt because of the MantisX time bug. */
+  paired: boolean;
 }
 
 /** How far a detected release may be from a recorded shot and still count as the same (ms). */
@@ -94,6 +107,31 @@ export class Workbench {
       const turn = releaseTurn(data.t, motion, shot.releaseTime);
       if (turn) out.set(shot.id, turn);
     }
+    return out;
+  });
+
+  /**
+   * Each arm sensor's up/down and left/right in the hold and release. The directions are
+   * found from the raises in the recording (see arm-motion.ts); needs a MantisX on the bow.
+   */
+  readonly arms = computed<ArmView[]>(() => {
+    const rec = this.recording();
+    const bowIndex = this.detectSensor();
+    const bow = rec?.sensors[bowIndex];
+    if (!rec || !bow || this.sensors()[bowIndex]?.kind !== 'mantisx-ble') return [];
+    const shots = this.shots().filter((s) => !s.discarded);
+    const timeBug = hasMantisTimeBug(rec.header.session.app?.build);
+    const out: ArmView[] = [];
+    rec.header.session.sensors.forEach((info, index) => {
+      const arm = rec.sensors[index];
+      if (index === bowIndex || (info.role !== 'bowArm' && info.role !== 'drawArm') || !arm?.acc || !arm.gyro) return;
+      const releases = pairReleases(bow, arm, shots, timeBug);
+      const axes = findArmAxes(bow, arm, shots, releases);
+      if (!axes) return;
+      const perShot = new Map<string, ArmShot>();
+      for (const [id, time] of releases) perShot.set(id, armShot(arm, axes, time));
+      out.push({ sensor: index, label: SENSOR_ROLES.find((r) => r.value === info.role)?.label ?? '', axes, shots: perShot, paired: timeBug });
+    });
     return out;
   });
 
