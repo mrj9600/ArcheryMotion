@@ -91,6 +91,7 @@ Sådan blev det fundet:
 Andet fra sammenligningen 25. november:
 - Gyro z bliver **ikke** højpasfiltreret. Langsomme drejninger på 5–15 °/s passer også (det modsatte stod nedenfor fra den gamle WIT-sammenligning).
 - MantisX' tid ligger ca. 20 ms efter WIT's. Det betyder noget, når slippet skal sammenlignes mellem bue og arm.
+- **Tidsfejl 24.–25. november 2026 (build 37–48):** MantisX holder op med at sende, når den ligger stille, og fortsætter bagefter med næste pakkenummer. Rettelsen for data, som telefonen holdt tilbage (`BACKLOG_MS`), troede så, at pakkerne var holdt tilbage, og satte resten af optagelsen i forlængelse af de sidste målinger før stilheden. MantisX' tid kom derfor 1–19 s for tidligt i forhold til WIT og til skuddenes rigtige tid, og forskellen voksede (fx `1910`: 18,0 s ved skud 1 og 18,8 s ved skud 4). Bue-analysen alene er ikke påvirket, men bue og arm kan ikke sammenlignes direkte. Skuddene kan parres ved at finde rystet i slippet i begge sensorer. Nu skelner `PacketClock` de to tilfælde: tilbageholdte pakker kommer langt hurtigere end i virkeligheden og indhenter forsinkelsen, mens en sensor, der sender igen efter stilhed, ikke gør.
 - Nulpunkt: når buen ligger stille, viser MantisX gyro z ca. −0,3 °/s og gyro x ca. 0. Det er 0,1° over et slip, men mere over et langt hold.
 
 **Vinkler (felt 7/8, 12-bit unsigned):**

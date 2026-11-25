@@ -27,6 +27,12 @@ const MAX_SAMPLE_MS = 1000 / 250;
 const BACKLOG_MS = 1000;
 
 /**
+ * How long (ms of arrival time) packets that are behind are watched before deciding whether
+ * they are a held-back burst or the sensor sending in real time again after a silence.
+ */
+const BURST_JUDGE_MS = 50;
+
+/**
  * MantisX sensor (e.g. "mantis674"). Sends pitch and roll computed in the sensor,
  * gyro x/z and the size of the dynamic acceleration at ~400 Hz. No yaw/heading.
  * Protocol: docs/mantisx-protocol.md.
@@ -80,8 +86,7 @@ class MantisXBleSensor implements MotionSensor {
 
   private data?: BluetoothRemoteGATTCharacteristic;
   private lastPacket?: number;
-  private lastCounter?: number;
-  private lastSampleTime?: number;
+  private readonly clock = new PacketClock();
   /** Running estimate of the time between samples (ms); measured ~340 Hz. */
   private sampleMs = 1000 / 340;
 
@@ -144,9 +149,7 @@ class MantisXBleSensor implements MotionSensor {
     const measured = this.lastPacket === undefined ? NaN : (arrival - this.lastPacket) / n;
     this.lastPacket = arrival;
     if (measured >= MIN_SAMPLE_MS && measured <= MAX_SAMPLE_MS) this.sampleMs += 0.05 * (measured - this.sampleMs);
-    const time = packetEndTime(arrival, n, this.sampleMs, packet.counter, this.lastCounter, this.lastSampleTime);
-    this.lastCounter = packet.counter;
-    this.lastSampleTime = time;
+    const time = this.clock.endTime(arrival, n, this.sampleMs, packet.counter);
     packet.samples.forEach((s, i) => {
       this._samples.next({
         time: time - (n - 1 - i) * this.sampleMs,
@@ -159,23 +162,53 @@ class MantisXBleSensor implements MotionSensor {
 }
 
 /**
- * Time of a packet's last sample. Normally the arrival time (the samples are spread back
- * from it). When the packet follows the previous one without a lost packet but arrives
- * long after the samples were measured (the phone held the notifications back, e.g. while
- * the page was in the background), the samples continue from the previous packet at the
- * sensor's rate instead.
+ * Gives each packet the time of its last sample. Normally that is the arrival time (the
+ * samples are spread back from it).
+ *
+ * When a packet follows the previous one without a lost packet but arrives long after its
+ * samples would have been measured at the sensor's rate, there are two possibilities:
+ * - The phone held the notifications back (e.g. the page was in the background) and now
+ *   delivers them in a burst, much faster than real time. The samples then continue from the
+ *   previous packet at the sensor's rate.
+ * - The sensor itself was silent (it stops sending while it lies still) and now sends in real
+ *   time again with the next counter. The samples then belong at the arrival time.
+ *   Continuing here put the whole rest of a recording 1–15 s too early (club evenings
+ *   24–25 November 2026), so the bow and the other sensors no longer lined up.
+ * The two are told apart by how fast the lag shrinks over the first BURST_JUDGE_MS.
  */
-export function packetEndTime(
-  arrival: number,
-  n: number,
-  sampleMs: number,
-  counter: number,
-  lastCounter: number | undefined,
-  lastSampleTime: number | undefined,
-): number {
-  if (lastCounter === undefined || lastSampleTime === undefined) return arrival;
-  const inSequence = counter === ((lastCounter + 1) & 0xff);
-  const continued = lastSampleTime + n * sampleMs;
-  if (inSequence && arrival - continued > BACKLOG_MS) return continued;
-  return Math.max(arrival, lastSampleTime + 0.01);
+export class PacketClock {
+  private lastCounter?: number;
+  private lastTime?: number;
+  /** Arrival time and lag when the packets started arriving behind. */
+  private behind?: { arrival: number; lag: number; burst: boolean };
+
+  endTime(arrival: number, n: number, sampleMs: number, counter: number): number {
+    const time = this.decide(arrival, n, sampleMs, counter);
+    this.lastCounter = counter;
+    this.lastTime = time;
+    return time;
+  }
+
+  private decide(arrival: number, n: number, sampleMs: number, counter: number): number {
+    if (this.lastCounter === undefined || this.lastTime === undefined) return arrival;
+    const inSequence = counter === ((this.lastCounter + 1) & 0xff);
+    const continued = this.lastTime + n * sampleMs;
+    const lag = arrival - continued;
+    if (inSequence && lag > BACKLOG_MS) {
+      if (!this.behind) {
+        this.behind = { arrival, lag, burst: false };
+        return continued;
+      }
+      if (this.behind.burst) return continued;
+      const judged = arrival - this.behind.arrival;
+      if (judged < BURST_JUDGE_MS) return continued;
+      // A burst catches up many times faster than real time; real time keeps the lag
+      if (this.behind.lag - lag > judged) {
+        this.behind.burst = true;
+        return continued;
+      }
+    }
+    this.behind = undefined;
+    return Math.max(arrival, this.lastTime + 0.01);
+  }
 }

@@ -1,4 +1,4 @@
-import { packetEndTime } from './mantisx-ble.driver';
+import { PacketClock } from './mantisx-ble.driver';
 import { decodeMinifloat, parseMantisPacket } from './mantisx-protocol';
 
 function hex(s: string): Uint8Array {
@@ -48,24 +48,44 @@ describe('MantisX protocol', () => {
   });
 });
 
-describe('packetEndTime', () => {
+describe('PacketClock', () => {
   const ms = 1000 / 340;
+  /** A clock that has seen one packet (counter 5) ending at `time`. */
+  function clockAt(time: number): PacketClock {
+    const clock = new PacketClock();
+    clock.endTime(time, 3, ms, 5);
+    return clock;
+  }
+
   it('uses the arrival time while packets come in real time', () => {
-    expect(packetEndTime(1010, 3, ms, 6, 5, 1001)).toBe(1010);
+    expect(clockAt(1001).endTime(1010, 3, ms, 6)).toBe(1010);
   });
 
   it('continues at the sensor rate when held-back packets arrive in a burst', () => {
     // Nothing for 114 s, then the packets that were measured meanwhile, in sequence
-    let last = 1000;
+    const clock = clockAt(1000);
+    let last = 0;
+    let counter = 5;
+    for (let i = 0; i < 10000; i++) {
+      counter = (counter + 1) & 0xff;
+      last = clock.endTime(115000 + i * 0.01, 3, ms, counter);
+    }
+    expect(last).toBeCloseTo(1000 + 30000 * ms, 3);
+  });
+
+  it('goes back to the arrival time when the sensor sends in real time after a silence', () => {
+    // The sensor was silent for 15 s and then sends again with the next counter
+    const clock = clockAt(1000);
+    let last = 0;
     let counter = 5;
     for (let i = 0; i < 100; i++) {
       counter = (counter + 1) & 0xff;
-      last = packetEndTime(115000 + i * 0.01, 3, ms, counter, (counter + 255) & 0xff, last);
+      last = clock.endTime(16000 + i * 3 * ms, 3, ms, counter);
     }
-    expect(last).toBeCloseTo(1000 + 300 * ms, 3);
+    expect(last).toBeCloseTo(16000 + 99 * 3 * ms, 3);
   });
 
   it('jumps to the arrival time after lost packets', () => {
-    expect(packetEndTime(115000, 3, ms, 9, 5, 1000)).toBe(115000);
+    expect(clockAt(1000).endTime(115000, 3, ms, 9)).toBe(115000);
   });
 });
