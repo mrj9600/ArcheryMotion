@@ -163,7 +163,7 @@
           </thead>
           <tbody>
             @for (m of wb.shotMatches(); track m.shot.id) {
-              <tr (click)="showShot(m.shot.releaseTime)" [class.discarded]="m.shot.discarded">
+              <tr (click)="openShot(m.shot)" [class.discarded]="m.shot.discarded" [class.selected]="wb.replayShotId() === m.shot.id">
                 <td>{{ m.shot.number }}</td>
                 <td>{{ time(m.shot.releaseTime) }}</td>
                 <td>
@@ -219,6 +219,23 @@
         </p>
       }
     </section>
+
+    @if (replay(); as tr) {
+      <section class="card">
+        <h2>Afspilning</h2>
+        <app-shot-replay [trace]="tr" [others]="otherReplays()" />
+        <p class="muted small">
+          Fra buen løftes fra opsætningen, til den tages ned. Buen set bagfra: prikken er, hvor buen peger (op er toppen mod dig, ned er toppen væk fra
+          dig), og stregen er buens cant. Armen: hvor meget den del af armen, sensoren sidder på, har flyttet sig. Alt er regnet fra slippet (0), så
+          sporet viser, hvor buen og armen kom fra og gik hen. Over flere sekunder kan sporet glide lidt (under 0,5° pr. sekund).
+        </p>
+      </section>
+    } @else if (wb.replays().size) {
+      <section class="card">
+        <h2>Afspilning</h2>
+        <p class="muted">Klik på et skud i tabellen for at afspille det.</p>
+      </section>
+    }
 
     <section class="card">
       <h2>Hold</h2>

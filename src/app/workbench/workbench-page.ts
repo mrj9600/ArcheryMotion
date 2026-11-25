@@ -9,6 +9,7 @@ import { decodeRecording } from '../recording/recording-file';
 import { HoldLimits } from '../training/hold-detector';
 import { formatTime } from './analysis';
 import { SignalPlot } from './signal-plot';
+import { ShotReplay } from './shot-replay-panel';
 import { Workbench } from './workbench.service';
 
 /** Visible widths to jump between (ms). */
@@ -28,7 +29,7 @@ const WIDTHS: { label: string; value: number | 'all' }[] = [
  */
 @Component({
   selector: 'app-workbench-page',
-  imports: [FormsModule, DatePipe, DecimalPipe, SignalPlot],
+  imports: [FormsModule, DatePipe, DecimalPipe, SignalPlot, ShotReplay],
   templateUrl: './workbench-page.html',
   styleUrl: './workbench-page.scss',
 })
@@ -125,6 +126,19 @@ export class WorkbenchPage {
   }
 
   /** Shows a shot: 4 s before the release (aiming) to 2 s after (follow-through). */
+  /** The shot being played back and the other shots to compare with. */
+  readonly replay = computed(() => {
+    const id = this.wb.replayShotId();
+    return id ? this.wb.replays().get(id) : undefined;
+  });
+  readonly otherReplays = computed(() => [...this.wb.replays().values()]);
+
+  /** Opens a shot: shows it in the plots and plays it back. */
+  openShot(shot: { id: string; releaseTime: number }): void {
+    this.showShot(shot.releaseTime);
+    this.wb.replayShotId.set(shot.id);
+  }
+
   /** Shows the whole shot, from the raise to the let-down, with a little room on both sides. */
   showShot(time: number): void {
     const [start, end] = this.wb.shotSpan(time);

@@ -7,6 +7,7 @@ import { Channel, channelsOf, detectHolds, detectReleases } from './analysis';
 import { Marker, Span } from './signal-plot';
 import { bowMotion, releaseTurn, ReleaseTurn, shotSpan } from './bow-motion';
 import { ArmAxes, armShot, ArmShot, findArmAxes, hasMantisTimeBug, pairReleases } from './arm-motion';
+import { buildReplay, ReplayTrace } from './shot-replay';
 
 export interface SensorView {
   index: number;
@@ -27,6 +28,8 @@ export interface ArmView {
   axes: ArmAxes;
   /** By shot id. */
   shots: Map<string, ArmShot>;
+  /** Each shot's release in the arm sensor's own time, by shot id. */
+  releases: Map<string, number>;
   /** The shots were paired by the release jolt because of the MantisX time bug. */
   paired: boolean;
 }
@@ -140,9 +143,49 @@ export class Workbench {
         placement: SENSOR_PLACEMENTS.find((p) => p.value === info.placement)?.label,
         axes,
         shots: perShot,
+        releases,
         paired: timeBug,
       });
     });
+    return out;
+  });
+
+  /** The shot being played back (id). */
+  readonly replayShotId = signal<string | undefined>(undefined);
+
+  /**
+   * Every shot ready to be played back, by shot id: the bow (MantisX) and the arm sensors,
+   * from the raise to the let-down. Shots where the raise or let-down is not found are left out.
+   */
+  readonly replays = computed(() => {
+    const out = new Map<string, ReplayTrace>();
+    const rec = this.recording();
+    const bowIndex = this.detectSensor();
+    const bow = rec?.sensors[bowIndex];
+    const kind = this.sensors()[bowIndex]?.kind ?? '';
+    const motion = bow ? bowMotion(bow, kind) : undefined;
+    if (!bow || !motion) return out;
+    const arms = this.arms();
+    for (const shot of this.shots()) {
+      if (shot.discarded) continue;
+      const span = shotSpan(bow, kind, shot.releaseTime);
+      if (!span) continue;
+      const trace = buildReplay({
+        shot,
+        span,
+        bow,
+        motion,
+        arms: arms
+          .filter((a) => a.releases.has(shot.id))
+          .map((a) => ({
+            label: [a.label, a.placement?.toLowerCase()].filter(Boolean).join(', '),
+            data: rec!.sensors[a.sensor],
+            axes: a.axes,
+            release: a.releases.get(shot.id)!,
+          })),
+      });
+      if (trace) out.set(shot.id, trace);
+    }
     return out;
   });
 

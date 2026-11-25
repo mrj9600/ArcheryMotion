@@ -144,6 +144,10 @@ h3 {
   tbody tr:hover {
     background: var(--border);
   }
+  tbody tr.selected {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
   .discarded {
     opacity: 0.5;
   }
