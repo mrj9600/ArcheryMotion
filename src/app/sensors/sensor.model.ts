@@ -39,9 +39,9 @@ export const SENSOR_ROLES: { value: SensorRole; label: string; hint?: string }[]
  * Fixed, well-described places a sensor can sit on the archer. The archer picks one when
  * the sensor is connected, so the analysis never has to guess which part of the body a
  * sensor follows. A sensor only measures the part it sits on: on the upper arm it does not
- * see the forearm or hand. New places are added here (e.g. the back of the draw hand).
+ * see the forearm or hand. New places are added here.
  */
-export type SensorPlacement = 'bowForearm' | 'drawUpperArm' | 'drawForearm';
+export type SensorPlacement = 'bowForearm' | 'drawUpperArm' | 'drawForearm' | 'drawHand';
 
 export const SENSOR_PLACEMENTS: { value: SensorPlacement; role: SensorRole; label: string; hint: string }[] = [
   {
@@ -61,6 +61,12 @@ export const SENSOR_PLACEMENTS: { value: SensorPlacement; role: SensorRole; labe
     role: 'drawArm',
     label: 'Underarmen, lige bag urskiven',
     hint: 'Som på buearmen: kig på trækarmen, som når du ser på dit ur. Sensoren sidder på samme side som urskiven, lige bag den mod albuen, og vender ligesom urskiven. Spænd den fast, så den ikke kan dreje rundt om armen.',
+  },
+  {
+    value: 'drawHand',
+    role: 'drawArm',
+    label: 'Håndryggen',
+    hint: 'Midt på håndryggen på trækhånden, mellem knoerne og håndleddet, og vendt som håndryggen. Remmen går rundt om hånden over håndfladen, ikke over fingrene, hvor fingertabben eller handsken sidder, og ikke over håndleddet, så hånden kan bøje frit. Sensoren følger hånden, også i slippet.',
   },
 ];
 

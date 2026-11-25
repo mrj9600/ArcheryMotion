@@ -27,6 +27,31 @@ import { SensorPlacement } from './sensor.model';
           <text x="50" y="161" class="label strong" text-anchor="end">5 cm</text>
         </svg>
       }
+      @case ('drawHand') {
+        <svg viewBox="0 0 330 150" role="img" aria-label="Trækhånden set fra håndryggen. Sensoren sidder midt på håndryggen mellem knoerne og håndleddet, med remmen over håndfladen.">
+          <text x="165" y="14" class="label" text-anchor="middle">Trækhånden set fra håndryggen</text>
+          <!-- Drawn for a right hand (fingers to the left); a left hand is the mirror image. -->
+          <g [attr.transform]="hand() === 'left' ? 'translate(330 0) scale(-1 1)' : null">
+            <path class="body" d="M200 52 L300 46 L300 98 L200 92 Z" />
+            <path class="body" d="M200 52 Q150 40 96 44 L96 100 Q150 104 200 92 Z" />
+            <rect class="body" x="38" y="45" width="62" height="12" rx="6" />
+            <rect class="body" x="28" y="59" width="72" height="12" rx="6" />
+            <rect class="body" x="32" y="73" width="68" height="12" rx="6" />
+            <rect class="body" x="46" y="87" width="54" height="11" rx="5.5" />
+            <path class="body" d="M172 96 Q152 122 122 126 Q112 126 114 118 Q134 112 148 97 Z" />
+            <line class="guide" x1="98" y1="40" x2="98" y2="104" />
+            <line class="guide" x1="200" y1="44" x2="200" y2="100" />
+            <line class="strap" x1="134" y1="43" x2="134" y2="103" />
+            <line class="strap" x1="162" y1="44" x2="162" y2="102" />
+            <rect class="sensor" x="128" y="58" width="40" height="28" rx="4" />
+          </g>
+          <text [attr.x]="mx(98)" y="34" class="label" text-anchor="middle">knoer</text>
+          <text [attr.x]="mx(148)" y="34" class="label strong" text-anchor="middle">sensor</text>
+          <text [attr.x]="mx(200)" y="34" class="label" text-anchor="middle">håndled</text>
+          <text [attr.x]="mx(262)" y="120" class="label" text-anchor="middle">{{ hand() === 'left' ? 'venstre hånd' : 'højre hånd' }}</text>
+          <text x="165" y="144" class="label small" text-anchor="middle">Remmen over håndfladen, ikke over fingrene eller håndleddet</text>
+        </svg>
+      }
       @default {
         <svg viewBox="0 0 330 150" role="img" aria-label="Underarmen set ovenfra, som når man kigger på sit ur. Sensoren sidder på samme side som urskiven, lige bag den mod albuen.">
           <text x="165" y="14" class="label" text-anchor="middle">{{ placement() === 'drawForearm' ? 'Trækarmen' : 'Buearmen' }}, som når du kigger på dit ur</text>

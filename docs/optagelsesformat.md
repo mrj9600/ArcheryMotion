@@ -90,8 +90,9 @@ Hver stream er ét array for én sensor. `offset` regnes fra starten af datadele
 | `bowForearm` | buearm | underarmen, lige bag urskiven: på samme side som urskiven (håndryggens side), lige bag den mod albuen, og vendt som urskiven |
 | `drawUpperArm` | trækarm | overarmen, 5 cm over albuen, på ydersiden (væk fra kroppen, når armen hænger ned) |
 | `drawForearm` | trækarm | underarmen, lige bag urskiven, som på buearmen |
+| `drawHand` | trækarm | midt på håndryggen mellem knoerne og håndleddet; remmen over håndfladen, ikke over fingrene (fingertabben) eller håndleddet |
 
-Mangler feltet, er placeringen ikke angivet (optagelser fra før 25. november 2026). Nye steder, fx håndryggen på trækhånden, tilføjes i `SENSOR_PLACEMENTS` (`src/app/sensors/sensor.model.ts`).
+Mangler feltet, er placeringen ikke angivet (optagelser fra før 25. november 2026). Nye steder tilføjes i `SENSOR_PLACEMENTS` (`src/app/sensors/sensor.model.ts`).
 
 `session.sensors[].gyroFullScale` er gyroens fulde område i °/s, som værdierne er regnet om med (MantisX: 2293,76, dvs. 0,07 °/s pr. enhed). Mangler det på en MantisX, er optagelsen lavet før 24. november 2026 med 1000. Fra 24.–25. november står der 2000. Appen regner begge om til den rigtige skala, når optagelsen åbnes.
 
