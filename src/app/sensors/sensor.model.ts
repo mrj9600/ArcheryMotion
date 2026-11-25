@@ -34,7 +34,7 @@ export const SENSOR_ROLES: { value: SensorRole; label: string; hint?: string }[]
   {
     value: 'drawArm',
     label: 'Trækarm',
-    hint: 'På overarmen lige over albuen, på ydersiden. Spænd den fast med en strop, så den ikke kan flytte sig i ærmet.',
+    hint: 'På overarmen, 5–10 cm over albuen, på ydersiden (den side, der vender væk fra kroppen, når armen hænger ned). Ikke på forsiden, hvor underarmen klemmer ved fuldt træk. Spænd den fast med en strop, så den ikke kan flytte sig i ærmet.',
   },
   { value: 'other', label: 'Andet' },
 ];

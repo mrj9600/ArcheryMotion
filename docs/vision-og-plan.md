@@ -229,7 +229,7 @@ Ud over analysen skal appen kunne styre øvelser. Sensorerne finder selv ud af, 
   - Appen kan tegne pilens linje og kraftlinjen oven i billedet og vise vinklerne.
   - Markører på buen og albuen gør det mere præcist.
 - **Sensorer er bedst til stabilitet og konsistens i alignment.**
-  - En sensor på trækarmen giver *albuens højde i forhold til pilen* direkte via tyngdekraften. Den sidder på **overarmen lige over albuen**, på ydersiden, spændt fast med en strop (ikke løst i ærmet og ikke på underarmen). Overarmen viser albuens bevægelse: bagud i ekspansionen, fremad ved creep eller collapse, og op/ned. Underarmen følger mest hånden, og den får sin egen sensor i trin 12.
+  - En sensor på trækarmen giver *albuens højde i forhold til pilen* direkte via tyngdekraften. Den sidder på **overarmen 5–10 cm over albuen**, på ydersiden (siden væk fra kroppen, når armen hænger ned; ikke forsiden, hvor underarmen klemmer ved fuldt træk), spændt fast med en strop (ikke løst i ærmet og ikke på underarmen). Overarmen viser albuens bevægelse: bagud i ekspansionen, fremad ved creep eller collapse, og op/ned. Underarmen følger mest hånden, og den får sin egen sensor i trin 12.
   - Vinklen *vandret* kræver en fælles retning mellem bue- og armsensor. Den kan nulstilles i en referencestilling eller én gang ud fra video, og holdes derefter med gyroen i det korte skud.
   - Sensorer viser fint, om alignment *ændrer sig* under hold og slip (creep, albue, der falder) og mellem skud mod mål i forskellig højde.
 - **Kombinationen** er stærkest: Videoen kalibrerer sensorerne i kontrollerede forhold, og sensorerne bruges alene i felten.
