@@ -87,8 +87,15 @@ export function releaseTurn(t: Float64Array, motion: BowMotion, releaseTime: num
   return { up, right };
 }
 
-/** The bow points at least this much further down than at full draw in the set-up before the raise, and when it is taken down (degrees). */
-const SPAN_DROP = 12;
+/**
+ * The set-up before the raise: the bow points at least this much further down than at full
+ * draw (degrees) for at least SETUP_STILL_MS. Usually 15–22°; one shot on 25 November 2026
+ * (the first after a long pause) was set up only 9° down.
+ */
+const SETUP_DROP = 7;
+const SETUP_STILL_MS = 500;
+/** Taken down after the shot: the bow points this much further down than in the follow-through (degrees). */
+const LETDOWN_DROP = 12;
 
 /** Median of the MantisX pitch between two times, or undefined without data. */
 function medianPitch(t: Float64Array, euler: Float32Array, from: number, to: number): number | undefined {
@@ -108,16 +115,22 @@ export function shotSpan(data: SensorData, kind: string, releaseTime: number): [
   if (kind !== 'mantisx-ble' || !data.euler) return undefined;
   const { t, euler } = data;
   const pitch = (k: number) => euler[3 * k + 1];
-  // Raise: the last set-up sample (12° lower than the hold) before the release, then back to
-  // where the bow was still at the set-up level
+  // Raise: the last set-up sample before the release, then back to where the bow was still
+  // at the set-up level
   const hold = medianPitch(t, euler, releaseTime - 1500, releaseTime - 300);
   if (hold === undefined) return undefined;
+  // Going back from the release: the first sample of a stretch of SETUP_STILL_MS that is all
+  // at least SETUP_DROP lower than the hold (a short dip while aiming does not count)
   let cross = -1;
+  let low = -1;
   for (let k = firstAt(t, releaseTime - 500) - 1; k >= 0 && t[k] > releaseTime - 15000; k--) {
-    if (pitch(k) > hold + SPAN_DROP) {
-      cross = k;
-      break;
-    }
+    if (pitch(k) > hold + SETUP_DROP) {
+      if (low < 0) low = k;
+      if (t[low] - t[k] >= SETUP_STILL_MS) {
+        cross = low;
+        break;
+      }
+    } else low = -1;
   }
   if (cross < 0) return undefined;
   const setup = medianPitch(t, euler, t[cross] - 1000, t[cross] + 1);
@@ -130,7 +143,7 @@ export function shotSpan(data: SensorData, kind: string, releaseTime: number): [
   if (after === undefined) return undefined;
   let down = -1;
   for (let k = firstAt(t, releaseTime + 300); k < t.length && t[k] < releaseTime + 10000; k++) {
-    if (pitch(k) > after + SPAN_DROP) {
+    if (pitch(k) > after + LETDOWN_DROP) {
       down = k;
       break;
     }

@@ -42,7 +42,11 @@
       @if (!hasBowSensor()) {
         <span class="link bad">Ingen bue</span>
       }
+      <button class="secondary pocket-button" (click)="pocket.set(true)">Lommetilstand</button>
     </div>
+    @if (pocket()) {
+      <app-pocket-mode [status]="pocketStatus()" (unlocked)="pocket.set(false)" />
+    }
   } @else {
   <section class="card">
     <div class="card-head">

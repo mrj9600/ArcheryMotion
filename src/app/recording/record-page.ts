@@ -7,12 +7,13 @@ import { rememberedPlacement, rememberPlacement, SensorManager, SensorSlot } fro
 import { placementsFor, SENSOR_PLACEMENTS, SENSOR_ROLES, SensorPlacement, SensorRole } from '../sensors/sensor.model';
 import { HoldDrillPanel } from '../training/hold-drill-panel';
 import { PlacementSketch } from '../sensors/placement-sketch';
+import { PocketMode } from './pocket-mode';
 import { HoldDrillRunner } from '../training/hold-drill.service';
 import { Recorder } from './recorder.service';
 
 @Component({
   selector: 'app-record-page',
-  imports: [FormsModule, RouterLink, HoldDrillPanel, PlacementSketch],
+  imports: [FormsModule, RouterLink, HoldDrillPanel, PlacementSketch, PocketMode],
   templateUrl: './record-page.html',
   styleUrl: './record-page.scss',
 })
@@ -41,6 +42,16 @@ export class RecordPage implements OnDestroy {
   readonly ratings = computed(() => {
     const shots = this.recorder.shots().filter((s) => !s.discarded);
     return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
+  });
+
+  /** Black, touch-locked screen while the phone is in a pocket (see PocketMode). */
+  readonly pocket = signal(false);
+
+  /** Dim status line in pocket mode. */
+  readonly pocketStatus = computed(() => {
+    const s = this.recorder.session();
+    if (!s) return '';
+    return `${this.recorder.paused() ? 'Pause' : 'Optager'} ${this.elapsed()} · ${s.shotCount} skud`;
   });
 
   /** Ticks every second (performance.now(), like the sample times) so the time and sensor states update. */
