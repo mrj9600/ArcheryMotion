@@ -5,12 +5,12 @@ const DEG = Math.PI / 180;
 /**
  * How a MantisX on the bow is turned, found from the field recordings of 23–24 November
  * 2026 (see docs/mantisx-protocol.md):
- * - gyro x is the bow's side axis; positive = the front of the bow turns up.
+ * - gyro x is the bow's side axis; positive = the bow turns up (as for an uphill shot: the top toward the archer).
  * - gyro z is the bow's vertical axis; positive = the bow turns to the right, as the
  *   archer sees it.
  * - gyro y is the arrow axis and is not sent.
- * - roll positive = the top of the bow tilts to the right, pitch positive = the front of
- *   the bow points down (checked against a WitMotion's gravity, 25 November 2026).
+ * - roll positive = the top of the bow tilts to the right, pitch positive = the bow points
+ *   down, the top away from the archer (checked against a WitMotion's gravity, 25 November 2026).
  */
 export const MANTIS_BOW_AXES = { side: { axis: 0, sign: 1 }, vertical: { axis: 2, sign: -1 } } as const;
 

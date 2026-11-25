@@ -37,7 +37,7 @@ export const HOLD_LIMITS: HoldLimits = {
    * Max degrees the bow may point higher than the full-draw pose. Wide, because the level
    * step gives a pose up to ~20° below the real full draw (the archer holds the bow at
    * set-up height), and the bow is rarely still pointing higher than at full draw.
-   * (Positive pitch is the front of the bow *down*, confirmed 25 November 2026.)
+   * (Positive pitch is the bow pointing *down*, the top away from the archer; confirmed 25 November 2026.)
    */
   poseAbove: 30,
   /**
@@ -276,7 +276,7 @@ export class HoldDetector {
   private inPose(sample: MotionSample): boolean {
     if (!this.reference || !sample.euler) return true;
     const [roll, pitch] = sample.euler;
-    // Positive pitch is the front of the bow down
+    // Positive pitch is the bow pointing down (top away from the archer)
     const up = -wrap(pitch - this.reference[1]);
     return (
       Math.abs(roll - this.reference[0]) < this.limits.poseTolerance &&

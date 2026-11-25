@@ -91,7 +91,7 @@ MantisX' `euler` roll er buens cant: **positiv roll = toppen hælder til højre*
 
 Nulpunktet passer ikke helt med lodret. Med buen stillet helt lodret op ad en væg (25. november 2026, skyttens vurdering: lige så præcist som med vaterpas) viste MantisX roll −1,2°. Den rigtige cant for den montering er altså roll + 1,2°. Det gælder kun, så længe MantisX sidder som den gør på den bue. Målingen blev lavet med buen pegende ca. 20° nedad, så den kan være ca. ±0,5° ved siden af.
 
-MantisX' pitch er **positiv, når buens front peger nedad** (fx +20° med buen pegende 20° nedad). Appen bruger det ikke endnu. Det skal bruges, når reglen "aldrig cant mod pilens side" bygges, og hver opsætning skal så have sin egen lodret-måling.
+MantisX' pitch er **positiv, når buen peger nedad** (toppen væk fra skytten) (fx +20° med buen pegende 20° nedad). Appen bruger det ikke endnu. Det skal bruges, når reglen "aldrig cant mod pilens side" bygges, og hver opsætning skal så have sin egen lodret-måling.
 
 ## Læs i Python
 
