@@ -17,8 +17,8 @@ export class HoldDrillPanel {
   readonly target = computed(() => this.drill.settings().holdSeconds * 1000);
   readonly progress = computed(() => Math.min(1, this.drill.held() / this.target()));
   readonly last = computed(() => this.drill.results().at(-1));
-  /** Live stability meter: 0–40 deg/s mapped to 0–1. */
-  readonly meter = computed(() => Math.min(1, this.drill.speed() / 40));
+  /** Live stability meter: 0–46 deg/s mapped to 0–1. */
+  readonly meter = computed(() => Math.min(1, this.drill.speed() / 46));
   readonly meterLevel = computed(() => {
     const v = this.drill.speed();
     return v < 4 ? 'ok' : v < 8 ? 'warn' : 'bad';

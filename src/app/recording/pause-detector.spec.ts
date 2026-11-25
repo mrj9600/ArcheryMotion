@@ -18,13 +18,13 @@ const noise = (amp: number) => (t: number): Vec3 => [amp * Math.sin(t * 37), amp
 describe('PauseDetector', () => {
   it('does not pause while the bow is held, even quietly', () => {
     const d = new PauseDetector();
-    // Resting in the hand: mostly calm, but now and then above 1 deg/s
-    expect(run(d, 0, 60, (t) => noise(t % 4 < 0.3 ? 1.5 : 0.5)(t))).toEqual([]);
+    // Resting in the hand: mostly calm, but now and then above 2.3 deg/s
+    expect(run(d, 0, 60, (t) => noise(t % 4 < 0.3 ? 3.4 : 1.1)(t))).toEqual([]);
   });
 
   it('pauses after 10 s on a stand and resumes when picked up', () => {
     const d = new PauseDetector();
-    const down = run(d, 0, 30, noise(0.3));
+    const down = run(d, 0, 30, noise(0.7));
     expect(down.length).toBe(1);
     expect(down[0][0]).toBe('pause');
     expect(down[0][1]).toBeCloseTo(10, 0);

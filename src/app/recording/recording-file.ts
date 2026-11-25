@@ -146,16 +146,16 @@ export function unpackRecording(bytes: Uint8Array): Recording {
 }
 
 /**
- * MantisX recordings made before 24 November 2026 converted the gyro with a full scale of
- * 1000 deg/s instead of 2000, so their angular speeds are half the real ones. This scales
- * them up (in place) and marks the sensor as corrected; the drill's sway and tremor were
- * measured on the same values and are scaled too.
+ * Older MantisX recordings converted the gyro with a smaller full scale: 1000 deg/s
+ * before 24 November 2026 (no `gyroFullScale` saved), then 2000. This scales them up to
+ * the current scale (in place) and marks the sensor as corrected; the drill's sway and
+ * tremor were measured on the same values and are scaled too.
  */
 export function correctGyroScale(rec: Recording): Recording {
   const session = rec.header.session;
   for (const info of session.sensors) {
-    if (info.kind !== 'mantisx-ble' || info.gyroFullScale) continue;
-    const factor = MANTIS_GYRO_FULL_SCALE / MANTIS_OLD_GYRO_FULL_SCALE;
+    if (info.kind !== 'mantisx-ble' || info.gyroFullScale === MANTIS_GYRO_FULL_SCALE) continue;
+    const factor = MANTIS_GYRO_FULL_SCALE / (info.gyroFullScale ?? MANTIS_OLD_GYRO_FULL_SCALE);
     const gyro = rec.sensors[info.index]?.gyro;
     if (gyro) for (let i = 0; i < gyro.length; i++) gyro[i] *= factor;
     info.gyroFullScale = MANTIS_GYRO_FULL_SCALE;

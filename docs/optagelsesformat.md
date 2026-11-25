@@ -83,7 +83,7 @@ Hver stream er ét array for én sensor. `offset` regnes fra starten af datadele
 | `quat` | float32 | 4 (x y z w) | |
 | `accMagnitude` | float32 | 1 | g, uden tyngdekraft (MantisX) |
 
-`session.sensors[].gyroFullScale` er gyroens fulde område i °/s, som værdierne er regnet om med (MantisX: 2000). Mangler det på en MantisX, er optagelsen lavet før 24. november 2026 med 1000, og gyroen viser halvdelen af den rigtige hastighed. Appen ganger den med 2, når optagelsen åbnes.
+`session.sensors[].gyroFullScale` er gyroens fulde område i °/s, som værdierne er regnet om med (MantisX: 2293,76, dvs. 0,07 °/s pr. enhed). Mangler det på en MantisX, er optagelsen lavet før 24. november 2026 med 1000. Fra 24.–25. november står der 2000. Appen regner begge om til den rigtige skala, når optagelsen åbnes.
 
 Vektorer ligger flettet: `x0 y0 z0 x1 y1 z1 ...`. Manglende værdier er `NaN`. Felter, som en sensor aldrig sender, er udeladt. MantisX sender fx ikke gyro y (står som 0) og ingen yaw.
 

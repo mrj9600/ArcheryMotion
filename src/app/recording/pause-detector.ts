@@ -2,17 +2,17 @@ import { MotionSample } from '../sensors/sensor.model';
 
 /**
  * Limits for the automatic pause, from the first field recordings (MantisX on the bow):
- * a bow put down on a stand turns at most 0.6–1 deg/s (sensor noise), while a bow held
- * in the hand, even resting between shots, regularly goes above 2 deg/s. (Doubled with
- * the corrected MantisX gyro scale.)
+ * a bow put down on a stand turns at most 0.7–1.1 deg/s (sensor noise), while a bow held
+ * in the hand, even resting between shots, regularly goes above 2.3 deg/s. (Scaled up by
+ * 2.29 with the corrected MantisX gyro scale.)
  */
 export const PAUSE_LIMITS = {
   /** Every sample below this (deg/s) counts as the bow lying still. */
-  stillMax: 2,
+  stillMax: 2.3,
   /** How long the bow must lie still before the recording pauses (ms). */
   pauseAfterMs: 10000,
   /** Smoothed speed (deg/s) that counts as the bow being picked up again. */
-  resume: 6,
+  resume: 6.9,
 };
 
 /** Time constant (s) of the smoothed speed used to resume. */

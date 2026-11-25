@@ -32,12 +32,12 @@ describe('MantisX protocol', () => {
     const [a, b] = packet.samples;
     // Reference values from an independent Python implementation, checked against a WitMotion gyro
     expect(a.accMagnitude).toBeCloseTo(0.0620, 4);
-    expect(a.gyroX).toBeCloseTo(-364.78, 2);
-    expect(a.gyroZ).toBeCloseTo(22.095, 3);
+    expect(a.gyroX).toBeCloseTo(-364.78 * 1.14688, 1);
+    expect(a.gyroZ).toBeCloseTo(22.095 * 1.14688, 2);
     expect(a.pitch).toBeCloseTo(64.0, 2);
     expect(a.roll).toBeCloseTo(-129.14, 2);
-    expect(b.gyroX).toBeCloseTo(-377.47, 2);
-    expect(b.gyroZ).toBeCloseTo(21.484, 3);
+    expect(b.gyroX).toBeCloseTo(-377.47 * 1.14688, 1);
+    expect(b.gyroZ).toBeCloseTo(21.484 * 1.14688, 2);
   });
 
   it('rejects other packet types and sizes', () => {
