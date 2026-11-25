@@ -86,3 +86,57 @@ export function releaseTurn(t: Float64Array, motion: BowMotion, releaseTime: num
   }
   return { up, right };
 }
+
+/** The bow points at least this much further down than at full draw in the set-up before the raise, and when it is taken down (degrees). */
+const SPAN_DROP = 12;
+
+/** Median of the MantisX pitch between two times, or undefined without data. */
+function medianPitch(t: Float64Array, euler: Float32Array, from: number, to: number): number | undefined {
+  const v: number[] = [];
+  for (let k = firstAt(t, from); k < t.length && t[k] < to; k++) if (Number.isFinite(euler[3 * k + 1])) v.push(euler[3 * k + 1]);
+  if (!v.length) return undefined;
+  v.sort((a, b) => a - b);
+  return v[v.length >> 1];
+}
+
+/**
+ * The whole shot: from when the bow starts to be raised from the set-up (pointing down) to
+ * when it starts to be taken down after the release. MantisX only (pitch + = pointing
+ * down). Returns undefined when the raise or the let-down is not found within 15 s / 10 s.
+ */
+export function shotSpan(data: SensorData, kind: string, releaseTime: number): [number, number] | undefined {
+  if (kind !== 'mantisx-ble' || !data.euler) return undefined;
+  const { t, euler } = data;
+  const pitch = (k: number) => euler[3 * k + 1];
+  // Raise: the last set-up sample (12° lower than the hold) before the release, then back to
+  // where the bow was still at the set-up level
+  const hold = medianPitch(t, euler, releaseTime - 1500, releaseTime - 300);
+  if (hold === undefined) return undefined;
+  let cross = -1;
+  for (let k = firstAt(t, releaseTime - 500) - 1; k >= 0 && t[k] > releaseTime - 15000; k--) {
+    if (pitch(k) > hold + SPAN_DROP) {
+      cross = k;
+      break;
+    }
+  }
+  if (cross < 0) return undefined;
+  const setup = medianPitch(t, euler, t[cross] - 1000, t[cross] + 1);
+  if (setup === undefined) return undefined;
+  let start = cross;
+  while (start > 0 && t[start - 1] > t[cross] - 3000 && pitch(start) < setup - 2) start--;
+  // Let-down: the first sample 12° lower than the follow-through, then back to where the bow
+  // was still at the follow-through level
+  const after = medianPitch(t, euler, releaseTime + 300, releaseTime + 1000);
+  if (after === undefined) return undefined;
+  let down = -1;
+  for (let k = firstAt(t, releaseTime + 300); k < t.length && t[k] < releaseTime + 10000; k++) {
+    if (pitch(k) > after + SPAN_DROP) {
+      down = k;
+      break;
+    }
+  }
+  if (down < 0) return undefined;
+  let end = down;
+  while (end > 0 && t[end] > releaseTime + 300 && pitch(end) > after + 2) end--;
+  return [t[start], t[end]];
+}

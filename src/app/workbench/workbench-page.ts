@@ -125,8 +125,10 @@ export class WorkbenchPage {
   }
 
   /** Shows a shot: 4 s before the release (aiming) to 2 s after (follow-through). */
+  /** Shows the whole shot, from the raise to the let-down, with a little room on both sides. */
   showShot(time: number): void {
-    this.wb.setRange([time - 4000, time + 2000]);
+    const [start, end] = this.wb.shotSpan(time);
+    this.wb.setRange([start - 500, end + 500]);
   }
 
   showHold(start: number, end: number): void {

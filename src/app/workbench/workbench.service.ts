@@ -5,7 +5,7 @@ import { RELEASE_G } from '../recording/release-detector';
 import { SENSOR_PLACEMENTS, SENSOR_ROLES } from '../sensors/sensor.model';
 import { Channel, channelsOf, detectHolds, detectReleases } from './analysis';
 import { Marker, Span } from './signal-plot';
-import { bowMotion, releaseTurn, ReleaseTurn } from './bow-motion';
+import { bowMotion, releaseTurn, ReleaseTurn, shotSpan } from './bow-motion';
 import { ArmAxes, armShot, ArmShot, findArmAxes, hasMantisTimeBug, pairReleases } from './arm-motion';
 
 export interface SensorView {
@@ -145,6 +145,16 @@ export class Workbench {
     });
     return out;
   });
+
+  /**
+   * The whole shot around a release: from when the bow starts to be raised to when it starts
+   * to be taken down (MantisX on the bow), or 4 s before to 2 s after when that is not found.
+   */
+  shotSpan(releaseTime: number): [number, number] {
+    const data = this.recording()?.sensors[this.detectSensor()];
+    const kind = this.sensors()[this.detectSensor()]?.kind ?? '';
+    return (data && shotSpan(data, kind, releaseTime)) ?? [releaseTime - 4000, releaseTime + 2000];
+  }
 
   /** Releases found now that are not recorded shots. */
   readonly extraReleases = computed(() => {
