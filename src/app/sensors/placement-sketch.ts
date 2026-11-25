@@ -28,24 +28,32 @@ import { SensorPlacement } from './sensor.model';
         </svg>
       }
       @default {
-        <svg viewBox="24 2 300 130" role="img" aria-label="Underarmen set fra siden med håndryggen opad. Sensoren sidder på oversiden 5 cm fra urets plads mod albuen.">
-          <text x="165" y="14" class="label" text-anchor="middle">{{ placement() === 'drawForearm' ? 'Trækarmen' : 'Buearmen' }} set fra siden, håndryggen opad</text>
-          <!-- hand (left) and forearm to the elbow (right) -->
-          <path class="body" d="M118 58 L300 50 Q316 66 300 98 L118 86 Q86 90 52 82 Q34 78 36 70 Q38 62 56 60 Q88 54 118 58 Z" />
-          <text x="40" y="100" class="label">hånd</text>
-          <text x="300" y="116" class="label" text-anchor="middle">albue</text>
-          <!-- watch -->
-          <rect class="watch" x="112" y="56" width="10" height="32" rx="2" />
-          <text x="117" y="104" class="label" text-anchor="middle">ur</text>
-          <!-- strap and sensor 5 cm toward the elbow, on the top -->
-          <line class="strap" x1="146" y1="57" x2="146" y2="87" />
-          <line class="strap" x1="164" y1="56" x2="164" y2="86" />
-          <rect class="sensor" x="143" y="45" width="24" height="12" rx="3" />
-          <!-- 5 cm -->
-          <path class="dim" d="M117 30 L155 30 M117 25 L117 35 M155 25 L155 35" />
-          <text x="136" y="26" class="label strong" text-anchor="middle">5 cm</text>
-          <text x="210" y="44" class="label">oversiden</text>
-          <text x="200" y="128" class="label small" text-anchor="middle">{{ placement() === 'bowForearm' ? 'Ikke indersiden: der er strengen og armbeskytteren' : 'Ikke indersiden' }}</text>
+        <svg viewBox="0 0 330 150" role="img" aria-label="Underarmen set ovenfra, som når man kigger på sit ur. Sensoren sidder på samme side som urskiven, lige bag den mod albuen.">
+          <text x="165" y="14" class="label" text-anchor="middle">{{ placement() === 'drawForearm' ? 'Trækarmen' : 'Buearmen' }}, som når du kigger på dit ur</text>
+          <!-- forearm from the wrist to the elbow, seen from the watch side -->
+          <path class="body" d="M112 50 L296 40 Q318 70 296 100 L112 90 Z" />
+          <!-- back of the hand, fingers and thumb -->
+          <path class="body" d="M112 50 Q80 44 56 46 L56 94 Q80 96 112 90 Z" />
+          <rect class="body" x="22" y="47" width="36" height="9" rx="4.5" />
+          <rect class="body" x="16" y="58" width="42" height="9" rx="4.5" />
+          <rect class="body" x="18" y="69" width="40" height="9" rx="4.5" />
+          <rect class="body" x="26" y="80" width="32" height="9" rx="4.5" />
+          <path class="body" d="M92 92 Q78 108 60 112 Q52 112 54 106 Q66 100 76 92 Z" />
+          <text x="40" y="132" class="label" text-anchor="middle">hånd</text>
+          <text x="296" y="122" class="label" text-anchor="middle">albue</text>
+          <!-- watch: strap and face -->
+          <rect class="watch" x="114" y="48" width="18" height="44" rx="3" />
+          <circle class="face" cx="123" cy="70" r="14" />
+          <path class="hands" d="M123 70 L123 61 M123 70 L130 72" />
+          <text x="123" y="112" class="label" text-anchor="middle">urskive</text>
+          <!-- sensor right behind the face, toward the elbow, with its strap -->
+          <line class="strap" x1="150" y1="49" x2="150" y2="91" />
+          <line class="strap" x1="178" y1="47" x2="178" y2="91" />
+          <rect class="sensor" x="144" y="56" width="40" height="28" rx="4" />
+          <text x="164" y="112" class="label strong" text-anchor="middle">sensor</text>
+          <path class="dim" d="M200 70 L250 70 M244 65 L250 70 L244 75" />
+          <text x="225" y="62" class="label" text-anchor="middle">mod albuen</text>
+          <text x="165" y="144" class="label small" text-anchor="middle">{{ placement() === 'bowForearm' ? 'Ikke på indersiden: der er strengen og armbeskytteren' : 'Ikke på indersiden' }}</text>
         </svg>
       }
     }
@@ -82,6 +90,16 @@ import { SensorPlacement } from './sensor.model';
     }
     .sensor {
       fill: var(--accent);
+    }
+    .face {
+      fill: var(--bg);
+      stroke: var(--muted);
+      stroke-width: 1.5;
+    }
+    .hands {
+      stroke: var(--muted);
+      stroke-width: 1.5;
+      stroke-linecap: round;
     }
     .dim {
       stroke: var(--text);

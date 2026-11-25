@@ -47,8 +47,8 @@ export const SENSOR_PLACEMENTS: { value: SensorPlacement; role: SensorRole; labe
   {
     value: 'bowForearm',
     role: 'bowArm',
-    label: 'Underarmen, 5 cm over uret',
-    hint: 'Find stedet, hvor et ur sidder på buearmen, og flyt 5 cm op mod albuen. Sensoren sidder på oversiden af underarmen (samme side som håndryggen), ikke på indersiden, hvor strengen og armbeskytteren er. Spænd den fast, så den ikke kan dreje rundt om armen.',
+    label: 'Underarmen, lige bag urskiven',
+    hint: 'Kig på buearmen, som når du ser på dit ur. Sensoren sidder på samme side som urskiven, lige bag den mod albuen, og vender ligesom urskiven. Ikke på indersiden, hvor strengen og armbeskytteren er. Spænd den fast, så den ikke kan dreje rundt om armen.',
   },
   {
     value: 'drawUpperArm',
@@ -59,8 +59,8 @@ export const SENSOR_PLACEMENTS: { value: SensorPlacement; role: SensorRole; labe
   {
     value: 'drawForearm',
     role: 'drawArm',
-    label: 'Underarmen, 5 cm over uret',
-    hint: 'Som på buearmen: find stedet, hvor et ur sidder på trækarmen, og flyt 5 cm op mod albuen. Sensoren sidder på oversiden af underarmen (samme side som håndryggen). Spænd den fast, så den ikke kan dreje rundt om armen.',
+    label: 'Underarmen, lige bag urskiven',
+    hint: 'Som på buearmen: kig på trækarmen, som når du ser på dit ur. Sensoren sidder på samme side som urskiven, lige bag den mod albuen, og vender ligesom urskiven. Spænd den fast, så den ikke kan dreje rundt om armen.',
   },
 ];
 

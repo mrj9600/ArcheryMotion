@@ -87,9 +87,9 @@ Hver stream er ét array for én sensor. `offset` regnes fra starten af datadele
 
 | placement | rolle | sted |
 |-----------|-------|------|
-| `bowForearm` | buearm | underarmen, 5 cm over uret: stedet, hvor et ur sidder, flyttet 5 cm op mod albuen, på oversiden (samme side som håndryggen) |
+| `bowForearm` | buearm | underarmen, lige bag urskiven: på samme side som urskiven (håndryggens side), lige bag den mod albuen, og vendt som urskiven |
 | `drawUpperArm` | trækarm | overarmen, 5 cm over albuen, på ydersiden (væk fra kroppen, når armen hænger ned) |
-| `drawForearm` | trækarm | underarmen, 5 cm over uret, som på buearmen |
+| `drawForearm` | trækarm | underarmen, lige bag urskiven, som på buearmen |
 
 Mangler feltet, er placeringen ikke angivet (optagelser fra før 25. november 2026). Nye steder, fx håndryggen på trækhånden, tilføjes i `SENSOR_PLACEMENTS` (`src/app/sensors/sensor.model.ts`).
 

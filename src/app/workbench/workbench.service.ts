@@ -22,7 +22,7 @@ export interface ArmView {
   sensor: number;
   /** Role label, e.g. "Buearm". */
   label: string;
-  /** Where on the arm it sat, e.g. "Underarmen, 5 cm over uret", or undefined if not given. */
+  /** Where on the arm it sat, e.g. "Underarmen, lige bag urskiven", or undefined if not given. */
   placement?: string;
   axes: ArmAxes;
   /** By shot id. */
