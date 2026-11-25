@@ -133,7 +133,8 @@ export function shotSpan(data: SensorData, kind: string, releaseTime: number): [
     } else low = -1;
   }
   if (cross < 0) return undefined;
-  const setup = medianPitch(t, euler, t[cross] - 1000, t[cross] + 1);
+  // The set-up level, from before the bow has come far up the raise
+  const setup = medianPitch(t, euler, t[cross] - 1500, t[cross] - 300);
   if (setup === undefined) return undefined;
   let start = cross;
   while (start > 0 && t[start - 1] > t[cross] - 3000 && pitch(start) < setup - 2) start--;
