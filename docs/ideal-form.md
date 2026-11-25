@@ -41,7 +41,14 @@ For at reglerne giver mening, skal sensorernes data regnes om til buens akser (a
 - **Cant til højre**: toppen går mod højre. Cant til venstre: toppen går mod venstre.
 - **Op**: som ved et skud opad. Toppen går **mod skytten**.
 - **Ned**: som ved et skud nedad. Toppen går **væk fra skytten**, mod målet.
-- **Venstre/højre**: buen drejer, så den peger mere til venstre eller højre.
+- **Venstre/højre**: buen peger mere til venstre eller højre.
+
+Der er to slags bevægelse, og de har hver sit ord:
+- **Vrid** til venstre/højre: buen drejer om håndsektionens akse i hånden, mens buearmen står stille (torque).
+- **Sigtet går** til venstre/højre eller op/ned: hele buen og buearmen flytter sigtet, som når man fører sigtet hen over skiven.
+- Tilsvarende for op/ned: buen tipper i hånden (**toppen mod dig / væk fra dig**), eller **sigtet går op/ned**, fordi buearmen løftes eller sænkes.
+
+En sensor på buen ser kun, hvor buen peger, så vrid og sigtet, der går, giver den samme drejning. De skilles ad på tempo (et vrid i slippet sker på hundrededele af et sekund) eller med en sensor på buearmen (drejer buen, mens armen står stille, er det vrid). Indtil det kan skilles ad, siger appen "buen pegede mere mod venstre".
 
 Det gælder både i appens tekster, i instruktioner til skytten og i analysen. Ord som "front", "bagover" og "forover" bruges ikke, fordi de kan forstås på flere måder.
 
