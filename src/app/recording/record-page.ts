@@ -90,6 +90,16 @@ export class RecordPage implements OnDestroy {
     slot.placement.set(rememberedPlacement(slot.sensor.name, role));
   }
 
+  /**
+   * Which hand an arm ends in for the chosen archer: a right-handed archer holds the bow in
+   * the left hand, so the bow arm is the left arm.
+   */
+  handOf(role: SensorRole): 'left' | 'right' {
+    const rightHanded = this.selection.archer()?.handedness !== 'left';
+    const bowArmLeft = rightHanded;
+    return (role === 'bowArm') === bowArmLeft ? 'left' : 'right';
+  }
+
   /** The fixed places a sensor with this role can sit. */
   placements(role: SensorRole) {
     return placementsFor(role);

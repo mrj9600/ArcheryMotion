@@ -30,29 +30,34 @@ import { SensorPlacement } from './sensor.model';
       @default {
         <svg viewBox="0 0 330 150" role="img" aria-label="Underarmen set ovenfra, som når man kigger på sit ur. Sensoren sidder på samme side som urskiven, lige bag den mod albuen.">
           <text x="165" y="14" class="label" text-anchor="middle">{{ placement() === 'drawForearm' ? 'Trækarmen' : 'Buearmen' }}, som når du kigger på dit ur</text>
-          <!-- forearm from the wrist to the elbow, seen from the watch side -->
-          <path class="body" d="M112 50 L296 40 Q318 70 296 100 L112 90 Z" />
-          <!-- back of the hand, fingers and thumb -->
-          <path class="body" d="M112 50 Q80 44 56 46 L56 94 Q80 96 112 90 Z" />
-          <rect class="body" x="22" y="47" width="36" height="9" rx="4.5" />
-          <rect class="body" x="16" y="58" width="42" height="9" rx="4.5" />
-          <rect class="body" x="18" y="69" width="40" height="9" rx="4.5" />
-          <rect class="body" x="26" y="80" width="32" height="9" rx="4.5" />
-          <path class="body" d="M92 92 Q78 108 60 112 Q52 112 54 106 Q66 100 76 92 Z" />
-          <text x="40" y="132" class="label" text-anchor="middle">hånd</text>
-          <text x="296" y="122" class="label" text-anchor="middle">albue</text>
-          <!-- watch: strap and face -->
-          <rect class="watch" x="114" y="48" width="18" height="44" rx="3" />
-          <circle class="face" cx="123" cy="70" r="14" />
-          <path class="hands" d="M123 70 L123 61 M123 70 L130 72" />
-          <text x="123" y="112" class="label" text-anchor="middle">urskive</text>
-          <!-- sensor right behind the face, toward the elbow, with its strap -->
-          <line class="strap" x1="150" y1="49" x2="150" y2="91" />
-          <line class="strap" x1="178" y1="47" x2="178" y2="91" />
-          <rect class="sensor" x="144" y="56" width="40" height="28" rx="4" />
-          <text x="164" y="112" class="label strong" text-anchor="middle">sensor</text>
-          <path class="dim" d="M200 70 L250 70 M244 65 L250 70 L244 75" />
-          <text x="225" y="62" class="label" text-anchor="middle">mod albuen</text>
+          <!-- Drawn for a right hand (hand on the left); a left hand is the mirror image. -->
+          <g [attr.transform]="hand() === 'left' ? 'translate(330 0) scale(-1 1)' : null">
+            <!-- forearm from the wrist to the elbow, seen from the watch side -->
+            <path class="body" d="M112 50 L296 40 Q318 70 296 100 L112 90 Z" />
+            <!-- back of the hand, fingers and thumb -->
+            <path class="body" d="M112 50 Q80 44 56 46 L56 94 Q80 96 112 90 Z" />
+            <rect class="body" x="22" y="47" width="36" height="9" rx="4.5" />
+            <rect class="body" x="16" y="58" width="42" height="9" rx="4.5" />
+            <rect class="body" x="18" y="69" width="40" height="9" rx="4.5" />
+            <rect class="body" x="26" y="80" width="32" height="9" rx="4.5" />
+            <path class="body" d="M92 92 Q78 108 60 112 Q52 112 54 106 Q66 100 76 92 Z" />
+            <!-- watch strap, sensor right behind the face toward the elbow, its strap, arrow -->
+            <rect class="watch" x="114" y="48" width="18" height="44" rx="3" />
+            <line class="strap" x1="150" y1="49" x2="150" y2="91" />
+            <line class="strap" x1="178" y1="47" x2="178" y2="91" />
+            <rect class="sensor" x="144" y="56" width="40" height="28" rx="4" />
+            <path class="dim" d="M200 70 L250 70 M244 65 L250 70 L244 75" />
+          </g>
+          <!-- the watch face is never mirrored -->
+          <g [attr.transform]="'translate(' + mx(123) + ' 70)'">
+            <circle class="face" r="14" />
+            <path class="hands" d="M0 0 L0 -9 M0 0 L7 2" />
+          </g>
+          <text [attr.x]="mx(40)" y="132" class="label" text-anchor="middle">{{ hand() === 'left' ? 'venstre hånd' : 'højre hånd' }}</text>
+          <text [attr.x]="mx(296)" y="122" class="label" text-anchor="middle">albue</text>
+          <text [attr.x]="mx(123)" y="112" class="label" text-anchor="middle">urskive</text>
+          <text [attr.x]="mx(164)" y="112" class="label strong" text-anchor="middle">sensor</text>
+          <text [attr.x]="mx(225)" y="62" class="label" text-anchor="middle">mod albuen</text>
           <text x="165" y="144" class="label small" text-anchor="middle">{{ placement() === 'bowForearm' ? 'Ikke på indersiden: der er strengen og armbeskytteren' : 'Ikke på indersiden' }}</text>
         </svg>
       }
@@ -121,4 +126,11 @@ import { SensorPlacement } from './sensor.model';
 })
 export class PlacementSketch {
   readonly placement = input.required<SensorPlacement>();
+  /** Which hand the arm ends in (from the archer's handedness); the forearm drawing is mirrored for the left. */
+  readonly hand = input<'left' | 'right'>('right');
+
+  /** x of a label in the forearm drawing, mirrored with the drawing for a left hand. */
+  mx(x: number): number {
+    return this.hand() === 'left' ? 330 - x : x;
+  }
 }
