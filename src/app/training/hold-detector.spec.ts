@@ -89,7 +89,7 @@ describe('HoldDetector', () => {
     run(d, 0, 1, () => [40, 0, 0]);
     const events = run(d, 1, 12, sway(1), () => 0);
     expect(events.some((e) => e.type === 'start')).toBe(true);
-    // Raised 15° over 3 s, slower than the end speed
+    // Moved 15° over 3 s, slower than the end speed
     const drift = run(d, 13, 3, sway(1), () => 0).concat(run(d, 16, 3, sway(1), () => 15));
     expect(drift.some((e) => e.type === 'end')).toBe(true);
   });
@@ -98,7 +98,7 @@ describe('HoldDetector', () => {
     const d = new HoldDetector();
     d.setReference([0, 0, 0]);
     run(d, 0, 1, () => [40, 0, 0], () => 30);
-    expect(run(d, 1, 3, sway(1), () => 30)).toEqual([]); // bow resting 30° higher
+    expect(run(d, 1, 3, sway(1), () => 30)).toEqual([]); // bow resting 30° lower (positive pitch = front down)
     run(d, 4, 1, () => [40, 0, 0], () => 5);
     expect(run(d, 5, 2, sway(1), () => 5).some((e) => e.type === 'start')).toBe(true);
   });
@@ -115,13 +115,13 @@ describe('HoldDetector', () => {
     expect(run(d, 12, 2, sway(1), () => 0).some((e) => e.type === 'start')).toBe(true);
   });
 
-  it('does not take the set-up (bow higher than full draw) for a hold', () => {
+  it('does not take the set-up (bow lower than full draw) for a hold', () => {
     const d = new HoldDetector();
     d.setReference([0, 0, 0]);
     d.arm();
     run(d, 0, 1, () => [40, 0, 0]);
-    expect(run(d, 1, 3, sway(1), () => 18)).toEqual([]); // set-up, 18° above
-    const events = run(d, 4, 3, sway(1), () => -15); // lower than the level step's pose is fine
+    expect(run(d, 1, 3, sway(1), () => 18)).toEqual([]); // set-up, 18° below
+    const events = run(d, 4, 3, sway(1), () => -15); // higher than the level step's pose is fine
     expect(events.some((e) => e.type === 'start')).toBe(true);
   });
 });

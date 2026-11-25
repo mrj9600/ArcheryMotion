@@ -9,7 +9,7 @@ import { HOLD_LIMITS, HoldDetector, HoldEndedBy, HoldEvent } from './hold-detect
 
 /**
  * 'level': before the first hold, the archer raises the bow to the level it will be held
- * at, so the drill knows the full-draw pose and does not take the bow resting higher (or
+ * at, so the drill knows the full-draw pose and does not take the bow resting lower (or
  * the set-up before the draw) for a hold.
  */
 export type HoldPhase = 'idle' | 'level' | 'ready' | 'holding' | 'rest' | 'done';
@@ -43,7 +43,7 @@ const LEVEL_INSTRUCTION_MS = 4000;
 /**
  * A hold that ends by itself before the target time is kept back this long (ms). If the
  * bow settles again in that time, the first "hold" was the set-up before the draw (which
- * is higher, as in BEST, and can be still for 3 s); the new hold replaces it in the same
+ * pointed 15–22° lower in the field tests, and can be still for 3 s); the new hold replaces it in the same
  * repetition. After a real let-down the bow is lowered and does not settle at full draw
  * again so soon.
  */

@@ -62,7 +62,7 @@ Er sessionen en holdeøvelse, har `session.drill` indstillingerne og én række 
                 "warnings": [28210], "perSecond": { "sway": [3.1, 1.6, 1.5], "tremor": [0.5, 0.4, 0.5] } }] }
 ```
 
-- `start`/`end` er sessionstid (ms). Holdet starter, når buen har bevæget sig (løftet og trukket) og derefter ligger roligt i 0,8 s. Buen skal også pege som ved fuldt træk (fra niveautrinnet eller fra seneste skud): cant inden for 20°, højst 10° højere og højst 30° lavere. Opsætningen før trækket er 15–22° højere og tæller derfor ikke. Holdet slutter, når buen igen bevæger sig hurtigt eller langsomt flytter sig mere end 10° (nedtræk), eller ved et skud.
+- `start`/`end` er sessionstid (ms). Holdet starter, når buen har bevæget sig (løftet og trukket) og derefter ligger roligt i 0,8 s. Buen skal også pege som ved fuldt træk (fra niveautrinnet eller fra seneste skud): cant inden for 20°, højst 30° højere og højst 10° lavere. Opsætningen før trækket pegede 15–22° lavere i optagelserne og tæller derfor ikke. Holdet slutter, når buen igen bevæger sig hurtigt eller langsomt flytter sig mere end 10° (nedtræk), eller ved et skud.
 - Et hold, der slutter af sig selv inden for 2,5 s (højst halvdelen af måltiden), var ikke et hold, men buen holdt stille under opsætningen. Det gemmes ikke, og gentagelsen venter på det rigtige hold (en dyb bip). Slutter et hold af sig selv før måltiden, venter appen 4 s: ligger buen roligt i fuldt træk igen inden da, var det første opsætningen, og det nye hold erstatter det.
 - `endedBy` er `auto` (nedtræk), `manual` (knappen) eller `shot` (skytten skød i stedet for at tage ned).
 - `sway` (udsving) er den langsomme del af buens vinkelhastighed og `tremor` (rystelse) den hurtige del (over ca. 1,6 Hz), begge i °/s som RMS. `perSecond` har dem for hvert hele sekund af holdet.
@@ -89,7 +89,9 @@ Vektorer ligger flettet: `x0 y0 z0 x1 y1 z1 ...`. Manglende værdier er `NaN`. F
 
 MantisX' `euler` roll er buens cant: **positiv roll = toppen hælder til højre** set fra skytten. Det er målt med sensoren monteret som i optagelserne fra 24. november 2026, hvor toppen blev holdt tippet til højre i 11 s ved fuldt træk (roll +20 til +25°). For en højrehåndsskytte er cant mod pilens side altså negativ roll. Monteres sensoren anderledes, kan fortegnet vende.
 
-Nulpunktet passer ikke helt med lodret. Med buen stillet helt lodret op ad en væg (25. november 2026, skyttens vurdering: lige så præcist som med vaterpas) viste MantisX roll −1,2°. Den rigtige cant for den montering er altså roll + 1,2°. Det gælder kun, så længe MantisX sidder som den gør på den bue, og målingen blev lavet med buen vippet ca. 20° bagover, så den kan være ca. ±0,5° ved siden af. Appen bruger det ikke endnu. Det skal bruges, når reglen "aldrig cant mod pilens side" bygges, og hver opsætning skal så have sin egen lodret-måling.
+Nulpunktet passer ikke helt med lodret. Med buen stillet helt lodret op ad en væg (25. november 2026, skyttens vurdering: lige så præcist som med vaterpas) viste MantisX roll −1,2°. Den rigtige cant for den montering er altså roll + 1,2°. Det gælder kun, så længe MantisX sidder som den gør på den bue. Målingen blev lavet med buen pegende ca. 20° nedad, så den kan være ca. ±0,5° ved siden af.
+
+MantisX' pitch er **positiv, når buens front peger nedad** (fx +20° med buen pegende 20° nedad). Appen bruger det ikke endnu. Det skal bruges, når reglen "aldrig cant mod pilens side" bygges, og hver opsætning skal så have sin egen lodret-måling.
 
 ## Læs i Python
 

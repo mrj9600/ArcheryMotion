@@ -17,9 +17,9 @@ function constant(n: number, gyro: [number, number, number], roll = 0, pitch = 0
 
 describe('bowMotion (MantisX)', () => {
   it('reads gyro x as up/down and gyro z as left/right on an upright bow', () => {
-    const down = bowMotion(constant(3, [10, 0, 0]), 'mantisx-ble')!;
-    expect(down.up[0]).toBeCloseTo(-10, 5);
-    expect(down.right[0]).toBeCloseTo(0, 5);
+    const up = bowMotion(constant(3, [10, 0, 0]), 'mantisx-ble')!;
+    expect(up.up[0]).toBeCloseTo(10, 5);
+    expect(up.right[0]).toBeCloseTo(0, 5);
     const right = bowMotion(constant(3, [0, 0, 10]), 'mantisx-ble')!;
     expect(right.right[0]).toBeCloseTo(10, 5);
     expect(right.up[0]).toBeCloseTo(0, 5);
@@ -27,7 +27,7 @@ describe('bowMotion (MantisX)', () => {
 
   it('keeps left/right as left/right when the bow is canted', () => {
     // Top tilted 90° to the right: turning right in the world is about the bow's side axis
-    const m = bowMotion(constant(3, [-10, 0, 0], 90), 'mantisx-ble')!;
+    const m = bowMotion(constant(3, [10, 0, 0], 90), 'mantisx-ble')!;
     expect(m.right[0]).toBeCloseTo(10, 4);
     expect(m.up[0]).toBeCloseTo(0, 4);
   });

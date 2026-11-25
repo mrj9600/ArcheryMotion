@@ -123,13 +123,15 @@ MantisX sidder på buen med sin y-akse langs pilen. Fundet ved at prøve de 8 mu
 
 | Gyro | Buens akse | Positiv betyder |
 |------|-----------|-----------------|
-| x | sideaksen | buen tipper **ned** |
+| x | sideaksen | buens front drejer **op** |
 | y | pilens akse | sendes ikke |
 | z | lodret akse | buen drejer mod **højre**, set fra skytten |
 
-- Gyro x som sideakse er tydelig: korrelation 0,69–0,71 med pitch, mod 0,09–0,18, hvis x og z byttes. Det passer med appen, der bruger gyro x til op/ned og gyro z til højre/venstre (se nedenfor). Retningen bekræftes af slippet, hvor buen tipper forover og gyro x er positiv.
+- Gyro x som sideakse er tydelig: korrelation 0,69–0,71 med pitch, mod 0,09–0,18, hvis x og z byttes. Det passer med appen, der bruger gyro x til op/ned og gyro z til højre/venstre (se nedenfor). Retningen er bekræftet 25. november: WIT's tyngdekraft viser, at buens front peger op, når MantisX' pitch er negativ (se nedenfor).
 - Retningen for gyro z blev først fundet gennem cant (korrelation 0,71 mod 0,61 med modsat fortegn). Den er bekræftet 25. november: da buen blev drejet 90° mod venstre, var gyro z negativ, og WIT's retning (yaw) steg med 99°, altså mod uret set ovenfra.
 - Roll positiv = toppen hælder til højre (kant-test, se [optagelsesformat.md](optagelsesformat.md)).
+- **Pitch positiv = buens front peger nedad.** Det passer med 3D-visningen og simulatoren, men i en periode (24.–25. november) regnede analysen det forkert som opad. Rettet efter to ting: med buen stillet op ad en væg, pegende ca. 20° nedad (som ved et skud ned ad bakke, skyttens beskrivelse), viste MantisX +20°. Og WIT's tyngdekraft viser pilens akse 40° opad, når MantisX viser −52°, og 51° nedad ved +40° (retningen for WIT's pilakse er fundet fra cant-bevægelserne og den bekræftede cant-retning).
+- I slippet drejer buens front **op**: ca. 7–13° de første 0,25 s i optagelsen fra 24. november (pitch falder, gyro x er positiv). Det modsiger umiddelbart BEST, hvor buen "tipper frem" i follow-through. Det er ikke afklaret, om det er buens første reaktion i slippet (før slyngen griber), eller om noget i tolkningen stadig er forkert.
 
 `src/app/workbench/bow-motion.ts` regner buens drejning op/ned og venstre/højre ud fra gyro x og z, roll og pitch, så en bue med cant stadig viser venstre som venstre. Drejning om pilens akse mangler (gyro y), så venstre/højre er kun god, når buen peger inden for ca. ±30° af vandret.
 

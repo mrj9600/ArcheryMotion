@@ -34,21 +34,21 @@ export const HOLD_LIMITS: HoldLimits = {
    */
   poseTolerance: 20,
   /**
-   * Max degrees the bow may point *higher* than the full-draw pose (positive pitch is up).
-   * The set-up before the draw is 15–22° higher and can be just as still for 3 s (field
-   * test 2026-11-24), while a real hold may well be lower than the pose found from the
-   * level step.
+   * Max degrees the bow may point higher than the full-draw pose. Wide, because the level
+   * step gives a pose up to ~20° below the real full draw (the archer holds the bow at
+   * set-up height), and the bow is rarely still pointing higher than at full draw.
+   * (Positive pitch is the front of the bow *down*, confirmed 25 November 2026.)
    */
-  poseAbove: 10,
+  poseAbove: 30,
   /**
-   * Max degrees the bow may point lower than the full-draw pose. Wide, because the level
-   * step gives a pose up to ~20° above the real full draw (the archer raises the bow to
-   * set-up height), and the bow is rarely still pointing lower than at full draw.
+   * Max degrees the bow may point *lower* than the full-draw pose. The set-up before the
+   * draw is 15–22° lower and can be just as still for 3 s (field test 2026-11-24), while
+   * a real hold may well be higher than the pose found from the level step.
    */
-  poseBelow: 30,
+  poseBelow: 10,
   /**
    * Max change of roll/pitch (degrees) from where the hold started, for it to go on.
-   * Between shots the bow often rests 15–35° higher and just as still as at full draw.
+   * Between shots the bow often rests 15–35° lower and just as still as at full draw.
    */
   driftLimit: 10,
 };
@@ -276,7 +276,8 @@ export class HoldDetector {
   private inPose(sample: MotionSample): boolean {
     if (!this.reference || !sample.euler) return true;
     const [roll, pitch] = sample.euler;
-    const up = wrap(pitch - this.reference[1]);
+    // Positive pitch is the front of the bow down
+    const up = -wrap(pitch - this.reference[1]);
     return (
       Math.abs(roll - this.reference[0]) < this.limits.poseTolerance &&
       up < this.limits.poseAbove &&
