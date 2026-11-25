@@ -25,23 +25,49 @@ export type SensorStatus = 'connecting' | 'connected' | 'disconnected';
 
 export type SensorRole = 'bow' | 'head' | 'torso' | 'bowArm' | 'drawArm' | 'other';
 
-/** `hint` says where the sensor goes, shown when the role is picked. */
+/** `hint` says where the sensor goes, shown when the role is picked (roles without fixed placements). */
 export const SENSOR_ROLES: { value: SensorRole; label: string; hint?: string }[] = [
   { value: 'bow', label: 'Bue (greb)' },
   { value: 'head', label: 'Hoved' },
   { value: 'torso', label: 'Overkrop' },
-  {
-    value: 'bowArm',
-    label: 'Buearm',
-    hint: 'På underarmen, som et ur, et par cm over håndleddet mod albuen, på oversiden. Ikke på indersiden, hvor strengen og armbeskytteren er. Spænd den fast, så den ikke kan dreje rundt om armen.',
-  },
-  {
-    value: 'drawArm',
-    label: 'Trækarm',
-    hint: 'På overarmen, 5–10 cm over albuen, på ydersiden (den side, der vender væk fra kroppen, når armen hænger ned). Ikke på forsiden, hvor underarmen klemmer ved fuldt træk. Spænd den fast med en strop, så den ikke kan flytte sig i ærmet.',
-  },
+  { value: 'bowArm', label: 'Buearm' },
+  { value: 'drawArm', label: 'Trækarm' },
   { value: 'other', label: 'Andet' },
 ];
+
+/**
+ * Fixed, well-described places a sensor can sit on the archer. The archer picks one when
+ * the sensor is connected, so the analysis never has to guess which part of the body a
+ * sensor follows. A sensor only measures the part it sits on: on the upper arm it does not
+ * see the forearm or hand. New places are added here (e.g. the back of the draw hand).
+ */
+export type SensorPlacement = 'bowForearm' | 'drawUpperArm' | 'drawForearm';
+
+export const SENSOR_PLACEMENTS: { value: SensorPlacement; role: SensorRole; label: string; hint: string }[] = [
+  {
+    value: 'bowForearm',
+    role: 'bowArm',
+    label: 'Underarmen, 5 cm over uret',
+    hint: 'Find stedet, hvor et ur sidder på buearmen, og flyt 5 cm op mod albuen. Sensoren sidder på oversiden af underarmen (samme side som håndryggen), ikke på indersiden, hvor strengen og armbeskytteren er. Spænd den fast, så den ikke kan dreje rundt om armen.',
+  },
+  {
+    value: 'drawUpperArm',
+    role: 'drawArm',
+    label: 'Overarmen, 5 cm over albuen',
+    hint: 'På overarmen, 5 cm over albuen, på ydersiden (den side, der vender væk fra kroppen, når armen hænger ned). Ikke på forsiden, hvor underarmen klemmer ved fuldt træk. Spænd den fast med en strop, så den ikke kan flytte sig i ærmet.',
+  },
+  {
+    value: 'drawForearm',
+    role: 'drawArm',
+    label: 'Underarmen, 5 cm over uret',
+    hint: 'Som på buearmen: find stedet, hvor et ur sidder på trækarmen, og flyt 5 cm op mod albuen. Sensoren sidder på oversiden af underarmen (samme side som håndryggen). Spænd den fast, så den ikke kan dreje rundt om armen.',
+  },
+];
+
+/** The placements a sensor with this role can have (empty: the role says enough). */
+export function placementsFor(role: SensorRole) {
+  return SENSOR_PLACEMENTS.filter((p) => p.role === role);
+}
 
 /** A connected (or simulated) motion sensor, independent of brand. */
 export interface MotionSensor {

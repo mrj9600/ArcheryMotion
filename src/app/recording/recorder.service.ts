@@ -102,7 +102,12 @@ export class Recorder {
     for (const track of this.tracks.values()) this.write(track.buffer.flush());
     await this.writes;
     // Roles may have been changed during the session
-    for (const [slot, track] of this.tracks) session.sensors[track.index].role = slot.role();
+    for (const [slot, track] of this.tracks) {
+      session.sensors[track.index].role = slot.role();
+      const placement = slot.placement();
+      if (placement) session.sensors[track.index].placement = placement;
+      else delete session.sensors[track.index].placement;
+    }
     session.endedAt = Date.now();
     await this.db.saveSession(session);
     await this.wakeLock.disable();
@@ -203,7 +208,15 @@ export class Recorder {
     if (!track) {
       const index = session.sensors.length;
       const fullScale = slot.sensor.gyroFullScale;
-      session.sensors.push({ index, name: slot.sensor.name, kind: slot.sensor.kind, role: slot.role(), ...(fullScale ? { gyroFullScale: fullScale } : {}) });
+      const placement = slot.placement();
+      session.sensors.push({
+        index,
+        name: slot.sensor.name,
+        kind: slot.sensor.kind,
+        role: slot.role(),
+        ...(placement ? { placement } : {}),
+        ...(fullScale ? { gyroFullScale: fullScale } : {}),
+      });
       track = { index, buffer: new ChunkBuffer(session.id, index), recent: [] };
       this.tracks.set(slot, track);
       void this.db.saveSession(session);

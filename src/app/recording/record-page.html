@@ -75,12 +75,31 @@
           }
         </select>
         <button class="secondary" (click)="manager.remove(slot)">Fjern</button>
+        @if (placements(slot.role()); as places) {
+          @if (places.length) {
+            <label class="field placement">
+              Hvor sidder den?
+              <select [ngModel]="slot.placement() ?? ''" (ngModelChange)="setPlacement(slot, $event)">
+                <option value="" disabled>Vælg placering</option>
+                @for (p of places; track p.value) {
+                  <option [value]="p.value">{{ p.label }}</option>
+                }
+              </select>
+            </label>
+            @if (placementHint(slot.placement()); as hint) {
+              <p class="muted hint">{{ hint }}</p>
+            }
+          }
+        }
         @if (roleHint(slot.role()); as hint) {
           <p class="muted hint">{{ hint }}</p>
         }
       </div>
     } @empty {
       <p class="muted">Ingen sensorer forbundet.</p>
+    }
+    @if (missingPlacement().length) {
+      <p class="warn">Vælg, hvor {{ missingPlacement().length === 1 ? 'armsensoren' : 'armsensorerne' }} sidder, så analysen ved, hvilken del af armen der måles.</p>
     }
     @if (manager.slots().length && !hasBowSensor()) {
       <p class="warn">Ingen sensor har rollen "Bue", så skud findes ikke automatisk.</p>

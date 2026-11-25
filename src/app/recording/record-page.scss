@@ -6,6 +6,10 @@
   padding: 6px 0;
   border-top: 1px solid var(--border);
 
+  .placement {
+    flex-basis: 100%;
+  }
+
   .hint {
     flex-basis: 100%;
     margin: 0;

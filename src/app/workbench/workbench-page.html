@@ -210,7 +210,7 @@
       }
       @for (a of wb.arms(); track a.sensor) {
         <p class="muted small">
-          {{ a.label }}: op/ned og venstre/højre set fra skytten. Sensorens retninger er fundet ud fra løftet fra opsætningen til fuldt træk i
+          {{ a.label }}, {{ a.placement ? 'sensoren sad: ' + a.placement.toLowerCase() : 'placeringen er ikke angivet i optagelsen' }}. Op/ned og venstre/højre set fra skytten. Sensorens retninger er fundet ud fra løftet fra opsætningen til fuldt træk i
           {{ a.axes.shots }} skud (afvigelse højst {{ a.axes.spread.toFixed(0) }}°{{ a.axes.spread > 15 ? ', sensoren kan have flyttet sig' : '' }}).
           Den måler kun den del af armen, den sidder på.
           @if (a.paired) {

@@ -1,5 +1,5 @@
 import { BuildInfo } from '../build-info.model';
-import { SensorRole } from '../sensors/sensor.model';
+import { SensorPlacement, SensorRole } from '../sensors/sensor.model';
 
 export type BowType = 'recurve' | 'barebow' | 'compound' | 'longbow' | 'traditional';
 
@@ -59,6 +59,11 @@ export interface SessionSensor {
   name: string;
   kind: string;
   role: SensorRole;
+  /**
+   * Where on the archer the sensor sat, as picked by the archer (see SENSOR_PLACEMENTS).
+   * Missing on recordings from before 25 November 2026 and when none was picked.
+   */
+  placement?: SensorPlacement;
   /**
    * Gyro full scale (deg/s) the sensor's values were converted with (MantisX: 2293.76).
    * Missing on MantisX recordings made before 24 November 2026, which used 1000; those

@@ -1,6 +1,6 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
-import { MotionSample, MotionSensor, SensorDriver, SensorRole } from './sensor.model';
+import { MotionSample, MotionSensor, placementsFor, SensorDriver, SensorPlacement, SensorRole } from './sensor.model';
 import { SimulatedSensor } from './simulated/simulated-sensor';
 import { MantisXBleDriver } from './mantisx/mantisx-ble.driver';
 import { WitMotionBleDriver } from './witmotion/witmotion-ble.driver';
@@ -17,10 +17,34 @@ export interface SensorSlot {
   sensor: MotionSensor;
   status: WritableSignal<SlotStatus>;
   role: WritableSignal<SensorRole>;
+  /** Where on the archer it sits; undefined until the archer has picked one (see setRole). */
+  placement: WritableSignal<SensorPlacement | undefined>;
   latest: WritableSignal<MotionSample | undefined>;
   /** Measured samples per second. */
   rate: WritableSignal<number>;
   subscription: Subscription;
+}
+
+const PLACEMENT_KEY = 'archerymotion.placement';
+
+/** The placement the archer last picked for this sensor in this role (never a guess). */
+export function rememberedPlacement(sensorName: string, role: SensorRole): SensorPlacement | undefined {
+  try {
+    const saved = localStorage.getItem(`${PLACEMENT_KEY}.${sensorName}.${role}`);
+    return placementsFor(role).find((p) => p.value === saved)?.value;
+  } catch {
+    return undefined;
+  }
+}
+
+export function rememberPlacement(sensorName: string, role: SensorRole, placement: SensorPlacement | undefined): void {
+  try {
+    const key = `${PLACEMENT_KEY}.${sensorName}.${role}`;
+    if (placement) localStorage.setItem(key, placement);
+    else localStorage.removeItem(key);
+  } catch {
+    /* storage not available */
+  }
 }
 
 /** Wait between reconnect attempts (ms); grows from the first to the last value. */
@@ -112,6 +136,7 @@ export class SensorManager {
       sensor,
       status: signal('connected'),
       role: signal(role),
+      placement: signal(rememberedPlacement(sensor.name, role)),
       latest: signal(undefined),
       rate: signal(0),
       subscription: Subscription.EMPTY,

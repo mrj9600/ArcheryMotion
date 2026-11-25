@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { FOCUS_AREAS, FocusKey, SessionFocus, ShotRecord, TARGET_ELEVATIONS } from '../data/models';
 import { Selection } from '../data/selection.service';
-import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
-import { SENSOR_ROLES, SensorRole } from '../sensors/sensor.model';
+import { rememberedPlacement, rememberPlacement, SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
+import { placementsFor, SENSOR_PLACEMENTS, SENSOR_ROLES, SensorPlacement, SensorRole } from '../sensors/sensor.model';
 import { HoldDrillPanel } from '../training/hold-drill-panel';
 import { HoldDrillRunner } from '../training/hold-drill.service';
 import { Recorder } from './recorder.service';
@@ -86,7 +86,26 @@ export class RecordPage implements OnDestroy {
 
   setRole(slot: SensorSlot, role: SensorRole): void {
     slot.role.set(role);
+    slot.placement.set(rememberedPlacement(slot.sensor.name, role));
   }
+
+  /** The fixed places a sensor with this role can sit. */
+  placements(role: SensorRole) {
+    return placementsFor(role);
+  }
+
+  placementHint(placement: SensorPlacement | undefined): string | undefined {
+    return SENSOR_PLACEMENTS.find((p) => p.value === placement)?.hint;
+  }
+
+  setPlacement(slot: SensorSlot, value: string): void {
+    const placement = placementsFor(slot.role()).find((p) => p.value === value)?.value;
+    slot.placement.set(placement);
+    rememberPlacement(slot.sensor.name, slot.role(), placement);
+  }
+
+  /** Arm sensors whose placement has not been picked yet. */
+  readonly missingPlacement = computed(() => this.manager.slots().filter((s) => placementsFor(s.role()).length && !s.placement()));
 
   setMode(mode: 'free' | 'hold'): void {
     this.mode.set(mode);

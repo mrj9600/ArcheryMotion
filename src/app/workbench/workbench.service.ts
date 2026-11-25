@@ -2,7 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { Recording } from '../recording/recording-file';
 import { HOLD_LIMITS, HoldLimits } from '../training/hold-detector';
 import { RELEASE_G } from '../recording/release-detector';
-import { SENSOR_ROLES } from '../sensors/sensor.model';
+import { SENSOR_PLACEMENTS, SENSOR_ROLES } from '../sensors/sensor.model';
 import { Channel, channelsOf, detectHolds, detectReleases } from './analysis';
 import { Marker, Span } from './signal-plot';
 import { bowMotion, releaseTurn, ReleaseTurn } from './bow-motion';
@@ -22,6 +22,8 @@ export interface ArmView {
   sensor: number;
   /** Role label, e.g. "Buearm". */
   label: string;
+  /** Where on the arm it sat, e.g. "Underarmen, 5 cm over uret", or undefined if not given. */
+  placement?: string;
   axes: ArmAxes;
   /** By shot id. */
   shots: Map<string, ArmShot>;
@@ -59,7 +61,9 @@ export class Workbench {
       return {
         index,
         name: info?.name ?? `Sensor ${index + 1}`,
-        role: SENSOR_ROLES.find((r) => r.value === info?.role)?.label ?? '',
+        role: [SENSOR_ROLES.find((r) => r.value === info?.role)?.label, SENSOR_PLACEMENTS.find((p) => p.value === info?.placement)?.label.toLowerCase()]
+          .filter(Boolean)
+          .join(', '),
         t: data.t,
         kind: info?.kind ?? '',
         channels: channelsOf(data, info?.kind),
@@ -130,7 +134,14 @@ export class Workbench {
       if (!axes) return;
       const perShot = new Map<string, ArmShot>();
       for (const [id, time] of releases) perShot.set(id, armShot(arm, axes, time));
-      out.push({ sensor: index, label: SENSOR_ROLES.find((r) => r.value === info.role)?.label ?? '', axes, shots: perShot, paired: timeBug });
+      out.push({
+        sensor: index,
+        label: SENSOR_ROLES.find((r) => r.value === info.role)?.label ?? '',
+        placement: SENSOR_PLACEMENTS.find((p) => p.value === info.placement)?.label,
+        axes,
+        shots: perShot,
+        paired: timeBug,
+      });
     });
     return out;
   });

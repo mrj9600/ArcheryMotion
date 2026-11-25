@@ -83,6 +83,16 @@ Hver stream er ét array for én sensor. `offset` regnes fra starten af datadele
 | `quat` | float32 | 4 (x y z w) | |
 | `accMagnitude` | float32 | 1 | g, uden tyngdekraft (MantisX) |
 
+`session.sensors[].placement` er, hvor skytten har angivet, at sensoren sad. Sensoren måler kun den del af kroppen, den sidder på, så det skal være et fast, veldefineret sted:
+
+| placement | rolle | sted |
+|-----------|-------|------|
+| `bowForearm` | buearm | underarmen, 5 cm over uret: stedet, hvor et ur sidder, flyttet 5 cm op mod albuen, på oversiden (samme side som håndryggen) |
+| `drawUpperArm` | trækarm | overarmen, 5 cm over albuen, på ydersiden (væk fra kroppen, når armen hænger ned) |
+| `drawForearm` | trækarm | underarmen, 5 cm over uret, som på buearmen |
+
+Mangler feltet, er placeringen ikke angivet (optagelser fra før 25. november 2026). Nye steder, fx håndryggen på trækhånden, tilføjes i `SENSOR_PLACEMENTS` (`src/app/sensors/sensor.model.ts`).
+
 `session.sensors[].gyroFullScale` er gyroens fulde område i °/s, som værdierne er regnet om med (MantisX: 2293,76, dvs. 0,07 °/s pr. enhed). Mangler det på en MantisX, er optagelsen lavet før 24. november 2026 med 1000. Fra 24.–25. november står der 2000. Appen regner begge om til den rigtige skala, når optagelsen åbnes.
 
 Vektorer ligger flettet: `x0 y0 z0 x1 y1 z1 ...`. Manglende værdier er `NaN`. Felter, som en sensor aldrig sender, er udeladt. MantisX sender fx ikke gyro y (står som 0) og ingen yaw.
