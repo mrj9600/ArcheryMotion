@@ -1,5 +1,6 @@
 import { Component, computed, effect, input, OnDestroy, signal } from '@angular/core';
-import { ReplayTrace, STEP_MS } from './shot-replay';
+import { ReplayCube } from './replay-cube';
+import { cubePose, ReplayTrace, STEP_MS } from './shot-replay';
 
 /** Half the width of a view in degrees at magnification 1. */
 const VIEW_DEG = 20;
@@ -27,9 +28,14 @@ interface View {
  */
 @Component({
   selector: 'app-shot-replay',
+  imports: [ReplayCube],
   template: `
     @let tr = trace();
     <div class="controls">
+      <div class="segmented" role="group" aria-label="Visning">
+        <button [class.on]="mode() === '3d'" (click)="mode.set('3d')">3D</button>
+        <button [class.on]="mode() === '2d'" (click)="mode.set('2d')">2D</button>
+      </div>
       <button (click)="toggle()">{{ playing() ? 'Pause' : 'Afspil' }}</button>
       <label>
         Hastighed
@@ -47,6 +53,16 @@ interface View {
           }
         </select>
       </label>
+      @if (mode() === '3d') {
+        <label>
+          Drejning
+          <select [value]="magTurn()" (change)="magTurn.set(+$any($event.target).value)">
+            @for (m of turnMags; track m) {
+              <option [value]="m">×{{ m }}</option>
+            }
+          </select>
+        </label>
+      }
       <label class="check">
         <input type="checkbox" [checked]="showOthers()" (change)="showOthers.set($any($event.target).checked)" />
         Vis de andre skud
@@ -57,6 +73,19 @@ interface View {
       Skud {{ tr.number }}{{ tr.rating === 'good' ? ' 👍' : tr.rating === 'bad' ? ' 👎' : '' }} ·
       <strong>{{ timeLabel() }}</strong>
     </p>
+    @if (mode() === '3d') {
+      <app-replay-cube [trace]="tr" [index]="index()" [magMove]="mag()" [magTurn]="magTurn()" [others]="others()" [showOthers]="showOthers()" />
+      <p class="values">{{ poseLabel() }}</p>
+      <p class="legend">
+        Kassen er buens håndsektion set bagfra: den lyse flade er toppen, den blå flade og pilen peger mod målet. Træk i billedet for at se fra en
+        anden vinkel, knib eller rul for at zoome.
+        @if (split()) {
+          Kassen flytter sig med buearmen (buearmen går) og drejer med det, buen gør i hånden: vrid til venstre/højre, toppen mod/væk fra dig og cant.
+        } @else {
+          Kassen flytter sig derhen, hvor buen peger, og drejer kun med cant. Vrid i hånden kan først skilles fra, når der er en sensor på buearmen.
+        }
+      </p>
+    } @else {
     <div class="views">
       @for (v of views(); track v.title) {
         <figure>
@@ -85,6 +114,7 @@ interface View {
         </figure>
       }
     </div>
+    }
     <p class="legend">
       <span class="sw early"></span> før det sidste sekund <span class="sw last"></span> sidste sekund
       <span class="sw final"></span> sidste 0,2 s <span class="sw after"></span> efter slippet
@@ -99,6 +129,25 @@ interface View {
       flex-wrap: wrap;
       gap: 12px;
       align-items: center;
+    }
+    .segmented {
+      display: flex;
+    }
+    .segmented button {
+      background: var(--border);
+      color: var(--text);
+      border-radius: 0;
+      padding: 6px 14px;
+    }
+    .segmented button:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+    .segmented button:last-child {
+      border-radius: 0 6px 6px 0;
+    }
+    .segmented button.on {
+      background: var(--accent);
+      color: var(--on-strong);
     }
     .controls label {
       display: flex;
@@ -221,6 +270,25 @@ export class ShotReplay implements OnDestroy {
   readonly speed = signal(0.25);
   readonly mag = signal(5);
   readonly showOthers = signal(false);
+  readonly mode = signal<'3d' | '2d'>('3d');
+  readonly turnMags = [1, 2, 5, 10];
+  readonly magTurn = signal(2);
+
+  /** The current point of the trace. */
+  readonly index = computed(() => this.indexAt(this.time()));
+
+  /** True when the bow's turning in the hand is split from the bow arm's movement. */
+  readonly split = computed(() => cubePose(this.trace(), 0).split);
+
+  readonly poseLabel = computed(() => {
+    const p = cubePose(this.trace(), this.index());
+    const f = (x: number) => Math.abs(x).toLocaleString('da-DK', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '°';
+    const move = `${p.split ? 'Buearmen' : 'Buen'}: ${p.up >= 0 ? 'op' : 'ned'} ${f(p.up)}, ${p.right >= 0 ? 'højre' : 'venstre'} ${f(p.right)}`;
+    const turn = p.split
+      ? ` · i hånden: vrid ${p.twist >= 0 ? 'højre' : 'venstre'} ${f(p.twist)}, toppen ${p.tip >= 0 ? 'mod dig' : 'væk fra dig'} ${f(p.tip)}`
+      : '';
+    return `${move}${turn} · cant ${p.cant >= 0 ? 'højre' : 'venstre'} ${f(p.cant)} (fra slippet)`;
+  });
 
   private frame?: number;
   private lastFrame?: number;
@@ -260,7 +328,7 @@ export class ShotReplay implements OnDestroy {
     return t < 0 ? `${s} s før slippet` : t === 0 ? 'slippet' : `${s} s efter slippet`;
   });
 
-  private index(t: number): number {
+  private indexAt(t: number): number {
     const tr = this.trace();
     return Math.max(0, Math.min(tr.t.length - 1, Math.round((t - tr.t[0]) / STEP_MS)));
   }
@@ -272,8 +340,8 @@ export class ShotReplay implements OnDestroy {
     const k = this.scale();
     const parts: string[] = [];
     // Each phase starts at the last point of the one before, so the trail is unbroken
-    const first = Math.max(0, this.index(Math.max(from, tr.t[0])) - (from > -Infinity ? 1 : 0));
-    const last = this.index(Math.min(to, now));
+    const first = Math.max(0, this.indexAt(Math.max(from, tr.t[0])) - (from > -Infinity ? 1 : 0));
+    const last = this.indexAt(Math.min(to, now));
     if (tr.t[first] > now) return '';
     for (let i = first; i <= last; i++) parts.push(`${(v.right[i] * k).toFixed(1)},${(-v.up[i] * k).toFixed(1)}`);
     return parts.join(' ');
@@ -294,14 +362,14 @@ export class ShotReplay implements OnDestroy {
 
   /** The current point and the bow's tilt. */
   at(v: View): { x: number; y: number; sin: number; cos: number } {
-    const i = this.index(this.time());
+    const i = this.indexAt(this.time());
     const k = this.scale();
     const cant = ((v.cant?.[i] ?? 0) * Math.PI) / 180;
     return { x: v.right[i] * k, y: -v.up[i] * k, sin: Math.sin(cant), cos: Math.cos(cant) };
   }
 
   valueLabel(v: View): string {
-    const i = this.index(this.time());
+    const i = this.indexAt(this.time());
     const f = (x: number) => Math.abs(x).toLocaleString('da-DK', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '°';
     const up = `${v.up[i] >= 0 ? 'op' : 'ned'} ${f(v.up[i])}`;
     const right = `${v.right[i] >= 0 ? 'højre' : 'venstre'} ${f(v.right[i])}`;

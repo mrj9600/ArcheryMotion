@@ -21,6 +21,8 @@ export interface SensorView {
 /** One arm sensor's movement in each shot, with the axes found for it. */
 export interface ArmView {
   sensor: number;
+  /** Role, e.g. 'bowArm'. */
+  role: string;
   /** Role label, e.g. "Buearm". */
   label: string;
   /** Where on the arm it sat, e.g. "Underarmen, lige bag urskiven", or undefined if not given. */
@@ -139,6 +141,7 @@ export class Workbench {
       for (const [id, time] of releases) perShot.set(id, armShot(arm, axes, time));
       out.push({
         sensor: index,
+        role: info.role,
         label: SENSOR_ROLES.find((r) => r.value === info.role)?.label ?? '',
         placement: SENSOR_PLACEMENTS.find((p) => p.value === info.placement)?.label,
         axes,
@@ -179,6 +182,7 @@ export class Workbench {
           .filter((a) => a.releases.has(shot.id))
           .map((a) => ({
             label: [a.label, a.placement?.toLowerCase()].filter(Boolean).join(', '),
+            role: a.role,
             data: rec!.sensors[a.sensor],
             axes: a.axes,
             release: a.releases.get(shot.id)!,

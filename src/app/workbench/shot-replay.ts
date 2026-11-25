@@ -12,7 +12,7 @@ export interface ReplayTrace {
   /** Where the bow points (degrees), 0 at the release: + up (top toward the archer), + right. */
   bow: { up: Float32Array; right: Float32Array; cant: Float32Array };
   /** Each arm sensor: how far the arm has moved (degrees), 0 at the release. */
-  arms: { label: string; up: Float32Array; right: Float32Array }[];
+  arms: { label: string; role: string; up: Float32Array; right: Float32Array }[];
 }
 
 /** Time between the points of a trace (ms). */
@@ -87,7 +87,7 @@ export interface ReplayInput {
   span: [number, number];
   bow: SensorData;
   motion: BowMotion;
-  arms: { label: string; data: SensorData; axes: ArmAxes; /** The release in the arm's own time. */ release: number }[];
+  arms: { label: string; role: string; data: SensorData; axes: ArmAxes; /** The release in the arm's own time. */ release: number }[];
 }
 
 /** Builds the trace of one shot. The bow needs angles (roll for the cant). */
@@ -118,10 +118,39 @@ export function buildReplay({ shot, span, bow, motion, arms }: ReplayInput): Rep
         const raise = a.axes.raise;
         return {
           label: a.label,
+          role: a.role,
           up: integrate(a.data.t, (k) => dot(raise, g, k), a.release, t),
           // Turning about up (right-hand rule) is to the left
           right: integrate(a.data.t, (k) => -dot(up, g, k), a.release, t),
         };
       }),
   };
+}
+
+/** Where the 3D box is and how it is turned at one point of a trace (degrees, not magnified). */
+export interface CubePose {
+  /** Position: how far the whole bow has gone up / right. */
+  up: number;
+  right: number;
+  /** Turn of the box itself: the bow tipping (top toward the archer +), vrid (+ right) and cant (+ top right). */
+  tip: number;
+  twist: number;
+  cant: number;
+  /** True when a bow-arm sensor splits the bow's movement into "buearmen går" (position) and the bow turning in the hand (tip, twist). */
+  split: boolean;
+}
+
+/**
+ * With a sensor on the bow arm, the box moves with the bow arm (buearmen går) and turns by
+ * what the bow does in the hand: the bow's own turn minus the arm's (vrid left/right, tipping
+ * up/down). Without one, the bow sensor alone cannot tell them apart, so the box moves to
+ * where the bow points and only the cant turns it.
+ */
+export function cubePose(trace: ReplayTrace, i: number): CubePose {
+  const bowUp = trace.bow.up[i];
+  const bowRight = trace.bow.right[i];
+  const cant = trace.bow.cant[i];
+  const arm = trace.arms.find((a) => a.role === 'bowArm');
+  if (!arm) return { up: bowUp, right: bowRight, tip: 0, twist: 0, cant, split: false };
+  return { up: arm.up[i], right: arm.right[i], tip: bowUp - arm.up[i], twist: bowRight - arm.right[i], cant, split: true };
 }
