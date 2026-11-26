@@ -11,8 +11,11 @@ export interface ReplayTrace {
   t: Float32Array;
   /** Where the bow points (degrees), 0 at the release: + up (top toward the archer), + right. */
   bow: { up: Float32Array; right: Float32Array; cant: Float32Array };
-  /** Each arm sensor: how far the arm has moved (degrees), 0 at the release. */
-  arms: { label: string; role: string; up: Float32Array; right: Float32Array }[];
+  /**
+   * Each arm sensor: how far the arm has moved (degrees), 0 at the release, and how far it
+   * has turned about its own length (+ top to the right, as the cant).
+   */
+  arms: { label: string; role: string; up: Float32Array; right: Float32Array; roll: Float32Array }[];
 }
 
 /** Time between the points of a trace (ms). */
@@ -80,6 +83,7 @@ function resample(t: Float64Array, values: (k: number) => number, zero: number, 
 }
 
 const dot = (a: number[], g: Float32Array, k: number) => a[0] * g[3 * k] + a[1] * g[3 * k + 1] + a[2] * g[3 * k + 2];
+const cross = (a: number[], b: number[]) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 export interface ReplayInput {
   shot: { id: string; number: number; releaseTime: number; selfRating?: 'good' | 'bad' };
@@ -116,12 +120,16 @@ export function buildReplay({ shot, span, bow, motion, arms }: ReplayInput): Rep
         const g = a.data.gyro!;
         const up = a.axes.up;
         const raise = a.axes.raise;
+        // The arm's length: across up and the raise axis (for the bow arm, toward the target)
+        const along = cross(up, raise);
         return {
           label: a.label,
           role: a.role,
           up: integrate(a.data.t, (k) => dot(raise, g, k), a.release, t),
           // Turning about up (right-hand rule) is to the left
           right: integrate(a.data.t, (k) => -dot(up, g, k), a.release, t),
+          // Turning about the direction the arm points (right-hand rule) takes its top to the right
+          roll: integrate(a.data.t, (k) => dot(along, g, k), a.release, t),
         };
       }),
   };
@@ -153,4 +161,18 @@ export function cubePose(trace: ReplayTrace, i: number): CubePose {
   const arm = trace.arms.find((a) => a.role === 'bowArm');
   if (!arm) return { up: bowUp, right: bowRight, tip: 0, twist: 0, cant, split: false };
   return { up: arm.up[i], right: arm.right[i], tip: bowUp - arm.up[i], twist: bowRight - arm.right[i], cant, split: true };
+}
+
+/** The 3D box of one arm sensor: it moves with the arm and turns about the arm's length. */
+export function armPose(arm: ReplayTrace['arms'][number], i: number): CubePose {
+  return { up: arm.up[i], right: arm.right[i], tip: 0, twist: 0, cant: arm.roll[i], split: false };
+}
+
+/**
+ * Squeezes a position so it never leaves the space: linear in the middle (where the hold
+ * is), ever flatter toward the edge (where the raise and the let-down come from far away).
+ * `half` is the half width of the space, in the same unit as `x`.
+ */
+export function softEdge(x: number, half: number): number {
+  return half * Math.tanh(x / half);
 }

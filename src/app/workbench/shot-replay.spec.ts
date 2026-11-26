@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SensorData } from '../recording/recording-file';
-import { buildReplay, cubePose } from './shot-replay';
+import { buildReplay, cubePose, softEdge } from './shot-replay';
 
 describe('buildReplay', () => {
   it('adds up the bow and arm movement from the raise to the let-down, 0 at the release', () => {
@@ -18,6 +18,8 @@ describe('buildReplay', () => {
       euler[3 * k] = 3;
       armT[k] = k * 10 + 500;
       gyro[3 * k] = 4;
+      // ... and about its length (sensor y, across up and the raise axis) at 1°/s
+      gyro[3 * k + 1] = 1;
     }
     const bow: SensorData = { t, euler };
     const arm: SensorData = { t: armT, gyro };
@@ -37,6 +39,7 @@ describe('buildReplay', () => {
     expect(trace.bow.cant[at(-1000)]).toBeCloseTo(3, 5);
     expect(trace.arms[0].up[at(1000)]).toBeCloseTo(4, 1);
     expect(trace.arms[0].right[at(1000)]).toBeCloseTo(0, 5);
+    expect(trace.arms[0].roll[at(1000)]).toBeCloseTo(1, 1);
   });
 });
 
@@ -45,16 +48,24 @@ describe('cubePose', () => {
   const base = { shotId: 'a', number: 1, t: f([0, 10]), bow: { up: f([0, 6]), right: f([0, -4]), cant: f([1, 2]) } };
 
   it('moves to where the bow points when there is no bow-arm sensor', () => {
-    const p = cubePose({ ...base, arms: [{ label: 'Trækarm', role: 'drawArm', up: f([0, 9]), right: f([0, 9]) }] }, 1);
+    const p = cubePose({ ...base, arms: [{ label: 'Trækarm', role: 'drawArm', up: f([0, 9]), right: f([0, 9]), roll: f([0, 0]) }] }, 1);
     expect(p).toEqual({ up: 6, right: -4, tip: 0, twist: 0, cant: 2, split: false });
   });
 
   it('moves with the bow arm and turns by what the bow does in the hand', () => {
-    const p = cubePose({ ...base, arms: [{ label: 'Buearm', role: 'bowArm', up: f([0, -2]), right: f([0, -3]) }] }, 1);
+    const p = cubePose({ ...base, arms: [{ label: 'Buearm', role: 'bowArm', up: f([0, -2]), right: f([0, -3]), roll: f([0, 0]) }] }, 1);
     expect(p.up).toBeCloseTo(-2);
     expect(p.right).toBeCloseTo(-3);
     expect(p.tip).toBeCloseTo(8);
     expect(p.twist).toBeCloseTo(-1);
     expect(p.split).toBe(true);
+  });
+});
+
+describe('softEdge', () => {
+  it('keeps small values and never passes the edge', () => {
+    expect(softEdge(0.1, 2)).toBeCloseTo(0.1, 2);
+    expect(softEdge(-50, 2)).toBeGreaterThanOrEqual(-2);
+    expect(softEdge(50, 2)).toBeLessThanOrEqual(2);
   });
 });

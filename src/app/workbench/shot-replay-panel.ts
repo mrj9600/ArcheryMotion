@@ -1,6 +1,6 @@
 import { Component, computed, effect, input, OnDestroy, signal } from '@angular/core';
 import { ReplayCube } from './replay-cube';
-import { cubePose, ReplayTrace, STEP_MS } from './shot-replay';
+import { armPose, cubePose, ReplayTrace, softEdge, STEP_MS } from './shot-replay';
 
 /** Half the width of a view in degrees at magnification 1. */
 const VIEW_DEG = 20;
@@ -74,11 +74,24 @@ interface View {
       <strong>{{ timeLabel() }}</strong>
     </p>
     @if (mode() === '3d') {
-      <app-replay-cube [trace]="tr" [index]="index()" [magMove]="mag()" [magTurn]="magTurn()" [others]="others()" [showOthers]="showOthers()" />
-      <p class="values">{{ poseLabel() }}</p>
+      <div class="cubes">
+        <figure>
+          <figcaption>Buen set bagfra</figcaption>
+          <app-replay-cube [trace]="tr" [index]="index()" [magMove]="mag()" [magTurn]="magTurn()" [others]="others()" [showOthers]="showOthers()" />
+          <p class="values">{{ poseLabel() }}</p>
+        </figure>
+        @for (a of tr.arms; track a.label; let k = $index) {
+          <figure>
+            <figcaption>{{ a.label }}</figcaption>
+            <app-replay-cube [trace]="tr" [arm]="k" [index]="index()" [magMove]="mag()" [magTurn]="magTurn()" [others]="others()" [showOthers]="showOthers()" />
+            <p class="values">{{ armLabel(k) }}</p>
+          </figure>
+        }
+      </div>
       <p class="legend">
         Kassen er buens håndsektion set bagfra: den lyse flade er toppen, den blå flade og pilen peger mod målet. Træk i billedet for at se fra en
-        anden vinkel, knib eller rul for at zoome.
+        anden vinkel, knib eller rul for at zoome. Armens kasse ligger langs armen med den blå ende yderst og drejer om armens længderetning.
+        Langt ude trykkes billedet sammen, så løftet og nedtagningen bliver i rummet; tallene er de rigtige.
         @if (split()) {
           Kassen flytter sig med buearmen (buearmen går) og drejer med det, buen gør i hånden: vrid til venstre/højre, toppen mod/væk fra dig og cant.
         } @else {
@@ -161,6 +174,11 @@ interface View {
     }
     .clock {
       margin: 0 0 8px;
+    }
+    .cubes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
     }
     .views {
       display: grid;
@@ -290,6 +308,20 @@ export class ShotReplay implements OnDestroy {
     return `${move}${turn} · cant ${p.cant >= 0 ? 'højre' : 'venstre'} ${f(p.cant)} (fra slippet)`;
   });
 
+  armLabel(k: number): string {
+    const arm = this.trace().arms[k];
+    if (!arm) return '';
+    const p = armPose(arm, this.index());
+    const f = (x: number) => Math.abs(x).toLocaleString('da-DK', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '°';
+    return `${p.up >= 0 ? 'op' : 'ned'} ${f(p.up)}, ${p.right >= 0 ? 'højre' : 'venstre'} ${f(p.right)} · drejet om armen ${p.cant >= 0 ? 'højre' : 'venstre'} ${f(p.cant)} (fra slippet)`;
+  }
+
+  /** A position in view units, squeezed so far movements stay in the view. */
+  private xy(right: number, up: number): [number, number] {
+    const k = this.scale();
+    return [softEdge(right * k, 100), -softEdge(up * k, 100)];
+  }
+
   private frame?: number;
   private lastFrame?: number;
 
@@ -337,13 +369,15 @@ export class ShotReplay implements OnDestroy {
   points(v: View, from: number, to: number): string {
     const tr = this.trace();
     const now = this.time();
-    const k = this.scale();
     const parts: string[] = [];
     // Each phase starts at the last point of the one before, so the trail is unbroken
     const first = Math.max(0, this.indexAt(Math.max(from, tr.t[0])) - (from > -Infinity ? 1 : 0));
     const last = this.indexAt(Math.min(to, now));
     if (tr.t[first] > now) return '';
-    for (let i = first; i <= last; i++) parts.push(`${(v.right[i] * k).toFixed(1)},${(-v.up[i] * k).toFixed(1)}`);
+    for (let i = first; i <= last; i++) {
+      const [x, y] = this.xy(v.right[i], v.up[i]);
+      parts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    }
     return parts.join(' ');
   }
 
@@ -353,19 +387,21 @@ export class ShotReplay implements OnDestroy {
     const which = this.views().indexOf(v);
     const src = which === 0 ? o.bow : o.arms[which - 1];
     if (!src || o.shotId === tr.shotId) return '';
-    const k = this.scale();
     const now = this.time();
     const parts: string[] = [];
-    for (let i = 0; i < o.t.length && o.t[i] <= now; i++) parts.push(`${(src.right[i] * k).toFixed(1)},${(-src.up[i] * k).toFixed(1)}`);
+    for (let i = 0; i < o.t.length && o.t[i] <= now; i++) {
+      const [x, y] = this.xy(src.right[i], src.up[i]);
+      parts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    }
     return parts.join(' ');
   }
 
   /** The current point and the bow's tilt. */
   at(v: View): { x: number; y: number; sin: number; cos: number } {
     const i = this.indexAt(this.time());
-    const k = this.scale();
     const cant = ((v.cant?.[i] ?? 0) * Math.PI) / 180;
-    return { x: v.right[i] * k, y: -v.up[i] * k, sin: Math.sin(cant), cos: Math.cos(cant) };
+    const [x, y] = this.xy(v.right[i], v.up[i]);
+    return { x, y, sin: Math.sin(cant), cos: Math.cos(cant) };
   }
 
   valueLabel(v: View): string {
