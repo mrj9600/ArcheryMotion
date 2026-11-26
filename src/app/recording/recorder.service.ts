@@ -6,6 +6,7 @@ import { RecordingDropout, SampleChunk, Session, ShotRecord, TargetElevation } f
 import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
 import { ChunkBuffer } from './chunk-buffer';
 import { beep, ScreenWakeLock, vibrate } from './cues';
+import { LiveMotion } from './live-motion';
 import { PauseDetector } from './pause-detector';
 import { RELEASE_G, ReleaseDetector } from './release-detector';
 
@@ -28,6 +29,7 @@ const PRE_RESUME_MS = 2000;
 export class Recorder {
   private readonly db = inject(Db);
   private readonly manager = inject(SensorManager);
+  private readonly live = inject(LiveMotion);
 
   readonly session = signal<Session | undefined>(undefined);
   /** Shots of the running session, newest first. */
@@ -88,6 +90,7 @@ export class Recorder {
     this.paused.set(undefined);
     this.shots.set([]);
     this.error.set(undefined);
+    this.live.reset();
     this.session.set(session);
     await this.db.saveSession(session);
     this.subscription = this.manager.sampleEvents.subscribe(({ slot, sample }) => this.onSample(slot, sample));
@@ -228,6 +231,8 @@ export class Recorder {
       if (change === 'pause' && !this.paused()) this.beginPause('auto', t);
       else if (change === 'resume' && this.paused() === 'auto') this.endPause(t);
     }
+    // The live view shows the movement also during a pause
+    this.live.add(slot, t, sample, mainBow);
     if (this.paused()) {
       track.recent.push({ t, sample });
       while (track.recent.length && t - track.recent[0].t > PRE_RESUME_MS) track.recent.shift();
@@ -260,6 +265,7 @@ export class Recorder {
       crawl: this.crawl() || undefined,
     };
     this.shots.update((list) => [shot, ...list]);
+    this.live.shot(releaseTime);
     if (this.sound()) beep();
     vibrate();
     try {

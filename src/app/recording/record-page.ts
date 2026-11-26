@@ -7,13 +7,14 @@ import { rememberedPlacement, rememberPlacement, SensorManager, SensorSlot } fro
 import { placementsFor, SENSOR_PLACEMENTS, SENSOR_ROLES, SensorPlacement, SensorRole } from '../sensors/sensor.model';
 import { HoldDrillPanel } from '../training/hold-drill-panel';
 import { PlacementSketch } from '../sensors/placement-sketch';
+import { LiveCubes } from './live-cubes';
 import { PocketMode } from './pocket-mode';
 import { HoldDrillRunner } from '../training/hold-drill.service';
 import { Recorder } from './recorder.service';
 
 @Component({
   selector: 'app-record-page',
-  imports: [FormsModule, RouterLink, HoldDrillPanel, PlacementSketch, PocketMode],
+  imports: [FormsModule, RouterLink, HoldDrillPanel, PlacementSketch, PocketMode, LiveCubes],
   templateUrl: './record-page.html',
   styleUrl: './record-page.scss',
 })
@@ -43,6 +44,14 @@ export class RecordPage implements OnDestroy {
     const shots = this.recorder.shots().filter((s) => !s.discarded);
     return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
   });
+
+  /** The 3D live view during a recording (remembered; off by default, it costs some battery). */
+  readonly showLive = signal(loadFlag(LIVE_KEY));
+
+  toggleLive(): void {
+    this.showLive.update((v) => !v);
+    saveFlag(LIVE_KEY, this.showLive());
+  }
 
   /** Black, touch-locked screen while the phone is in a pocket (see PocketMode). */
   readonly pocket = signal(false);
@@ -258,5 +267,23 @@ function loadMode(): 'free' | 'hold' {
     return localStorage.getItem(MODE_KEY) === 'hold' ? 'hold' : 'free';
   } catch {
     return 'free';
+  }
+}
+
+const LIVE_KEY = 'archerymotion.showLive';
+
+function loadFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function saveFlag(key: string, on: boolean): void {
+  try {
+    localStorage.setItem(key, on ? '1' : '0');
+  } catch {
+    // Not remembered
   }
 }

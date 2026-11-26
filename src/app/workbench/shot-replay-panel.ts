@@ -41,7 +41,7 @@ interface View {
         Hastighed
         <select [value]="speed()" (change)="speed.set(+$any($event.target).value)">
           @for (s of speeds; track s) {
-            <option [value]="s">{{ s === 1 ? 'normal' : s + '×' }}</option>
+            <option [value]="s" [selected]="s === speed()">{{ s === 1 ? 'normal' : s + '×' }}</option>
           }
         </select>
       </label>
@@ -49,7 +49,7 @@ interface View {
         Forstørrelse
         <select [value]="mag()" (change)="mag.set(+$any($event.target).value)">
           @for (m of mags; track m) {
-            <option [value]="m">×{{ m }}</option>
+            <option [value]="m" [selected]="m === mag()">×{{ m }}</option>
           }
         </select>
       </label>
@@ -58,7 +58,7 @@ interface View {
           Drejning
           <select [value]="magTurn()" (change)="magTurn.set(+$any($event.target).value)">
             @for (m of turnMags; track m) {
-              <option [value]="m">×{{ m }}</option>
+              <option [value]="m" [selected]="m === magTurn()">×{{ m }}</option>
             }
           </select>
         </label>
@@ -90,7 +90,7 @@ interface View {
       </div>
       <p class="legend">
         Kassen er buens håndsektion set bagfra: den lyse flade er toppen, den blå flade og pilen peger mod målet. Træk i billedet for at se fra en
-        anden vinkel, knib eller rul for at zoome. Armens kasse ligger langs armen med den blå ende yderst og drejer om armens længderetning.
+        anden vinkel, knib eller rul for at zoome. Armens terning flytter sig med armen og drejer om armens længderetning.
         Langt ude trykkes billedet sammen, så løftet og nedtagningen bliver i rummet; tallene er de rigtige.
         @if (split()) {
           Kassen flytter sig med buearmen (buearmen går) og drejer med det, buen gør i hånden: vrid til venstre/højre, toppen mod/væk fra dig og cant.

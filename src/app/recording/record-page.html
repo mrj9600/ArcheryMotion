@@ -42,10 +42,13 @@
       @if (!hasBowSensor()) {
         <span class="link bad">Ingen bue</span>
       }
-      <button class="secondary pocket-button" (click)="pocket.set(true)">Lommetilstand</button>
+      <button class="secondary pocket-button" (click)="toggleLive()">{{ showLive() ? 'Skjul live' : 'Vis live' }}</button>
+      <button class="secondary link-button" (click)="pocket.set(true)">Lommetilstand</button>
     </div>
     @if (pocket()) {
       <app-pocket-mode [status]="pocketStatus()" (unlocked)="pocket.set(false)" />
+    } @else if (showLive()) {
+      <app-live-cubes />
     }
   } @else {
   <section class="card">

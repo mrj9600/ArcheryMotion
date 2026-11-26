@@ -34,8 +34,8 @@ const SPACE = 2;
  * The shot in 3D: a box for the bow's handle (the bright face is the top, the blue face
  * points at the target) that moves up/down and left/right in the space and turns. The
  * archer looks from behind (+z) toward the target (−z); x is right and y is up. With `arm`
- * set, the box is that arm sensor instead: long along the arm, moving with the arm and
- * turning about the arm's length.
+ * set, the box is that arm sensor instead: a cube moving with the arm and turning about the
+ * arm's length.
  */
 @Component({
   selector: 'app-replay-cube',
@@ -125,14 +125,13 @@ export class ReplayCube implements AfterViewInit, OnDestroy {
     this.scene.add(floor);
 
     // The handle: right/left sides grey, top bright, bottom dark, front (target) blue, back (archer) light.
-    // An arm is long along its length instead, its far end blue.
+    // An arm is a plain cube (for now), with the same face colours.
     const faces = [0x8a94a3, 0x8a94a3, 0xf2f2f2, 0x3a4250, 0xc9d1db, 0x3182ce].map((c) => new MeshLambertMaterial({ color: c }));
-    const geo = this.arm() < 0 ? new BoxGeometry(0.35, 1.1, 0.35) : new BoxGeometry(0.3, 0.3, 1.1);
+    const geo = this.arm() < 0 ? new BoxGeometry(0.35, 1.1, 0.35) : new BoxGeometry(0.5, 0.5, 0.5);
     this.box.add(new Mesh(geo, faces));
     this.box.add(new LineSegments(new EdgesGeometry(geo), new LineBasicMaterial({ color: 0x111111 })));
     // Where the bow points
-    const tip = this.arm() < 0 ? 0.18 : 0.55;
-    this.box.add(new ArrowHelper(new Vector3(0, 0, -1), new Vector3(0, 0, -tip), 0.9, 0x3182ce, 0.18, 0.1));
+    if (this.arm() < 0) this.box.add(new ArrowHelper(new Vector3(0, 0, -1), new Vector3(0, 0, -0.18), 1.1, 0x3182ce, 0.18, 0.1));
     this.scene.add(this.box);
     this.scene.add(this.trail);
     this.scene.add(this.otherLines);
