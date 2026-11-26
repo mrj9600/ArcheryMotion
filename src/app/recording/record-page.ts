@@ -45,6 +45,9 @@ export class RecordPage implements OnDestroy {
     return { good: shots.filter((s) => s.selfRating === 'good').length, bad: shots.filter((s) => s.selfRating === 'bad').length };
   });
 
+  /** Archer, equipment and place are shown as one summary line until "Skift" is pressed. */
+  readonly editSetup = signal(false);
+
   /** The 3D live view during a recording (remembered; off by default, it costs some battery). */
   readonly showLive = signal(loadFlag(LIVE_KEY));
 

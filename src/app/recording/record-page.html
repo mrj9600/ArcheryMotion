@@ -5,7 +5,20 @@
 
   @if (!recorder.session()) {
     <section class="card">
-      <h2>Skytte og udstyr</h2>
+      @if (selection.archers().length && !editSetup()) {
+        <button class="summary" (click)="editSetup.set(true)" aria-label="Skift skytte, udstyr eller sted">
+          <span>
+            <strong>{{ selection.archer()?.name }}</strong> · {{ selection.setup()?.name ?? 'Udstyr ikke angivet' }}{{ place() ? ' · ' + place() : '' }}
+          </span>
+          <span class="change">Skift</span>
+        </button>
+      } @else {
+      <div class="card-head">
+        <h2>Skytte og udstyr</h2>
+        @if (selection.archers().length) {
+          <button class="secondary" (click)="editSetup.set(false)">Færdig</button>
+        }
+      </div>
       @if (selection.archers().length) {
         <label class="field">
           Skytte
@@ -27,6 +40,7 @@
         <label class="field">Sted (valgfrit) <input [ngModel]="place()" (ngModelChange)="place.set($event)" placeholder="Fx klubbens feltbane" /></label>
       } @else {
         <p>Opret først en skytte under <a routerLink="/skytter">Skytter</a>.</p>
+      }
       }
     </section>
   }

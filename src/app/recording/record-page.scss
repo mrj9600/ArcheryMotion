@@ -218,3 +218,22 @@
   padding: 4px 10px;
   font-size: 13px;
 }
+
+.summary {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  color: var(--text);
+  padding: 0;
+  text-align: left;
+  font-weight: normal;
+}
+
+.summary .change {
+  color: var(--accent);
+  font-size: 14px;
+  white-space: nowrap;
+}
