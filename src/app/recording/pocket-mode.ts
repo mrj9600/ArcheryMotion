@@ -1,13 +1,15 @@
 import { Component, input, OnDestroy, OnInit, output, signal } from '@angular/core';
 
 /** How long the ring must be held to leave pocket mode (ms). */
-const HOLD_MS = 2000;
+const HOLD_MS = 1500;
+/** Circumference of the progress circle (r = 56: 2π·56 ≈ 352), written out so the styles stay static. */
+const RING = 352;
 
 /**
  * Pocket mode: a black screen that ignores touches, so the phone can lie in a pocket while
  * it records. The screen stays on (the recording keeps the wake lock), because a web app
  * stops getting sensor data when the phone is locked. Black uses little power on most
- * phone screens. Leave it by holding the ring for 2 s.
+ * phone screens. Leave it by holding the ring for 1.5 s.
  */
 @Component({
   selector: 'app-pocket-mode',
@@ -21,11 +23,15 @@ const HOLD_MS = 2000;
         (pointerup)="cancel()"
         (pointercancel)="cancel()"
         (pointerleave)="cancel()"
-        aria-label="Hold i 2 sekunder for at låse op"
+        aria-label="Hold i 1,5 sekund for at låse op"
       >
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="track" cx="60" cy="60" r="56" />
+          <circle class="fill" cx="60" cy="60" r="56" />
+        </svg>
         <span>Hold</span>
       </button>
-      <p class="help">Hold fingeren på ringen i 2 sekunder for at låse op.<br />Tryk ikke på tænd/sluk-knappen: så stopper optagelsen med at få data, indtil du låser op.</p>
+      <p class="help">Hold fingeren på ringen i 1,5 sekund for at låse op.<br />Tryk ikke på tænd/sluk-knappen: så stopper optagelsen med at få data, indtil du låser op.</p>
     </div>
   `,
   styles: `
@@ -56,24 +62,36 @@ const HOLD_MS = 2000;
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      border: 3px solid #444;
+      border: none;
       background: #000;
       color: #666;
       font-size: 16px;
       position: relative;
       padding: 0;
     }
-    .ring::after {
-      content: '';
+    .ring svg {
       position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      border: 3px solid #2f855a;
-      clip-path: inset(100% 0 0 0);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      /* Starts at the top and fills clockwise, like a clock hand */
+      transform: rotate(-90deg);
     }
-    .ring.holding::after {
-      clip-path: inset(0 0 0 0);
-      transition: clip-path ${HOLD_MS}ms linear;
+    .ring circle {
+      fill: none;
+      stroke-width: 4;
+    }
+    .track {
+      stroke: #444;
+    }
+    .fill {
+      stroke: #2f855a;
+      stroke-dasharray: ${RING};
+      stroke-dashoffset: ${RING};
+    }
+    .ring.holding .fill {
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset ${HOLD_MS}ms linear;
     }
   `,
 })
@@ -122,6 +140,7 @@ export class PocketMode implements OnInit, OnDestroy {
     this.holding.set(true);
     this.timer = setTimeout(() => {
       this.holding.set(false);
+      navigator.vibrate?.(60);
       this.unlocked.emit();
     }, HOLD_MS);
   }
