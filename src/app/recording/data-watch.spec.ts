@@ -10,13 +10,13 @@ describe('DataWatch', () => {
     expect(w.check(60000, 0, true, [{ id: 'bow', lastData: 6000 }]).alarm).toEqual([]);
   });
 
-  it('after a reconnect without data: restarts once at 15 s and warns at 90 s', () => {
+  it('after a reconnect without data: restarts once at 10 s and warns at 30 s', () => {
     const w = new DataWatch();
     const s = { id: 'bow', lastData: 1000, backSince: 50000 };
-    expect(w.check(60000, 0, true, [s])).toEqual({ restart: [], alarm: [] });
-    expect(w.check(65000, 0, true, [s])).toEqual({ restart: ['bow'], alarm: [] });
-    expect(w.check(80000, 0, true, [s])).toEqual({ restart: [], alarm: [] });
-    expect(w.check(140000, 0, true, [s])).toEqual({ restart: [], alarm: ['bow'] });
+    expect(w.check(55000, 0, true, [s])).toEqual({ restart: [], alarm: [] });
+    expect(w.check(60000, 0, true, [s])).toEqual({ restart: ['bow'], alarm: [] });
+    expect(w.check(75000, 0, true, [s])).toEqual({ restart: [], alarm: [] });
+    expect(w.check(80000, 0, true, [s])).toEqual({ restart: [], alarm: ['bow'] });
     // Data came: all fine
     expect(w.check(141000, 0, true, [{ id: 'bow', lastData: 140500, backSince: undefined }])).toEqual({ restart: [], alarm: [] });
   });

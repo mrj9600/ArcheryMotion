@@ -9,13 +9,15 @@
  *   before the automatic pause), so this never happens in a working recording.
  * - A sensor lost the connection and got it back, but has sent nothing since. While paused
  *   this may be a sleeping MantisX on a stand, so the app first connects it again by itself
- *   (`restartMs`) and warns only if there is still nothing after `alarmMs`, by when the
- *   archer has normally picked the bow up again.
+ *   (`restartMs`) and warns if there is still nothing after `alarmMs`. That is short enough
+ *   to come before the next end, so the alarm may also sound for a bow that is only
+ *   standing still; "Slå alarm fra" silences it until the sensor sends again.
  */
 export const DATA_WATCH = {
   silentMs: 5000,
-  restartMs: 15000,
-  alarmMs: 90000,
+  restartMs: 10000,
+  /** 90 s was too long: by then the archer is shooting again (28 November 2026). */
+  alarmMs: 30000,
 };
 
 export interface WatchedSensor {
