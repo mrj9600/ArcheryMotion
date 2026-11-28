@@ -107,6 +107,15 @@ export class RecordPage implements OnDestroy {
     return silent ? `Ingen data i ${silent} s` : `${slot.rate()} Hz`;
   }
 
+  /** A connected sensor that has sent nothing for a while can be connected again. */
+  canReconnect(slot: SensorSlot): boolean {
+    return this.manager.canRestart(slot) && slot.status() === 'connected' && (!slot.latest() || this.silentSeconds(slot) >= RECONNECT_AFTER_S);
+  }
+
+  reconnect(slot: SensorSlot): void {
+    void this.recorder.reconnect(slot);
+  }
+
   readonly hasBowSensor = computed(() => this.manager.slots().some((s) => s.role() === 'bow'));
 
   /** Short name of a role for the compact status during recording, e.g. "Bue". */
@@ -290,3 +299,6 @@ function saveFlag(key: string, on: boolean): void {
     // Not remembered
   }
 }
+
+/** A sensor silent this long (s) gets a "Genforbind" button (a MantisX is silent while the bow lies still). */
+const RECONNECT_AFTER_S = 5;

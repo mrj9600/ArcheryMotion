@@ -58,6 +58,8 @@ export class SensorManager {
   readonly slots = signal<SensorSlot[]>([]);
   /** Every sample from every sensor. */
   readonly sampleEvents = new Subject<{ slot: SensorSlot; sample: MotionSample }>();
+  /** How to connect a BLE sensor again. */
+  private readonly links = new Map<SensorSlot, { device: BluetoothDevice; driver: SensorDriver }>();
 
   readonly bluetoothAvailable = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 
@@ -78,6 +80,7 @@ export class SensorManager {
     for (const driver of this.drivers) {
       if (await driver.supports(server)) {
         const slot = this.add(await driver.connect(device, server));
+        this.links.set(slot, { device, driver });
         // The connection drops when the phone and the bow get too far apart: keep trying
         device.addEventListener('gattserverdisconnected', () => {
           if (slot.status() === 'connected' && this.slots().includes(slot)) void this.reconnect(slot, device, driver);
@@ -93,7 +96,29 @@ export class SensorManager {
     return this.add(new SimulatedSensor());
   }
 
+  /** True for sensors that can be connected again (BLE, not simulated). */
+  canRestart(slot: SensorSlot): boolean {
+    return this.links.has(slot);
+  }
+
+  /**
+   * Drops the connection and connects again, for a sensor that says it is connected but
+   * sends no data. The driver starts the sensor's data again as on the first connection.
+   */
+  async restart(slot: SensorSlot): Promise<void> {
+    const link = this.links.get(slot);
+    if (!link || slot.status() !== 'connected') return;
+    try {
+      await slot.sensor.disconnect();
+    } catch {
+      // Already gone
+    }
+    // The disconnect event usually starts reconnecting; if it did not come, start it here
+    if (slot.status() === 'connected' && this.slots().includes(slot)) void this.reconnect(slot, link.device, link.driver);
+  }
+
   async remove(slot: SensorSlot): Promise<void> {
+    this.links.delete(slot);
     slot.status.set('disconnected'); // stops reconnecting
     this.slots.update((list) => list.filter((s) => s !== slot));
     slot.subscription.unsubscribe();

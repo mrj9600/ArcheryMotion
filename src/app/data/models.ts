@@ -101,6 +101,10 @@ export interface RecordingDropout {
   sensorIndex: number;
   start: number;
   end?: number;
+  /** Started by the archer ("Genforbind") because the sensor sent no data. */
+  by?: 'manual';
+  /** Session time of the first sample after the connection was back; missing if none came. */
+  firstData?: number;
 }
 
 export interface RecordingPause {

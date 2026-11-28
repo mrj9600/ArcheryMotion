@@ -55,6 +55,10 @@ export class Recorder {
   private writes: Promise<unknown> = Promise.resolve();
   /** Open dropouts by sensor. */
   private readonly lost = new Map<SensorSlot, RecordingDropout>();
+  /** Dropouts that have ended, waiting for the sensor's first sample. */
+  private readonly back = new Map<SensorSlot, RecordingDropout>();
+  /** Sensors the archer asked to connect again. */
+  private readonly restarting = new Set<SensorSlot>();
 
   constructor() {
     // Notes when a sensor loses the connection and when it is back
@@ -85,6 +89,8 @@ export class Recorder {
     this.t0 = performance.now();
     this.tracks.clear();
     this.lost.clear();
+    this.back.clear();
+    this.restarting.clear();
     this.detector = new ReleaseDetector(this.threshold());
     this.pauseDetector = new PauseDetector();
     this.paused.set(undefined);
@@ -139,6 +145,12 @@ export class Recorder {
     return this.manager.slots().find((s) => s.role() === 'bow');
   }
 
+  /** Connects a sensor again that sends no data (noted in the recording's dropouts). */
+  async reconnect(slot: SensorSlot): Promise<void> {
+    if (this.session()) this.restarting.add(slot);
+    await this.manager.restart(slot);
+  }
+
   /** Pauses by hand; only the button resumes it (the bow may move while walking). */
   pause(): void {
     if (!this.session() || this.paused()) return;
@@ -187,12 +199,13 @@ export class Recorder {
     const open = this.lost.get(slot);
     const now = performance.now() - this.t0;
     if (lost && !open) {
-      const dropout: RecordingDropout = { sensorIndex: track.index, start: now };
+      const dropout: RecordingDropout = { sensorIndex: track.index, start: now, ...(this.restarting.delete(slot) ? { by: 'manual' as const } : {}) };
       (session.dropouts ??= []).push(dropout);
       this.lost.set(slot, dropout);
     } else if (!lost && open) {
       open.end = now;
       this.lost.delete(slot);
+      this.back.set(slot, open);
       if (this.sound()) beep(990, 60);
     } else {
       return;
@@ -225,6 +238,13 @@ export class Recorder {
       void this.db.saveSession(session);
     }
     const t = sample.time - this.t0;
+    const back = this.back.get(slot);
+    if (back) {
+      // Logged so a connection that comes back without data can be told apart
+      back.firstData = t;
+      this.back.delete(slot);
+      void this.db.saveSession(session);
+    }
     const mainBow = slot.role() === 'bow' && this.isMainBow(slot);
     if (mainBow) {
       const change = this.pauseDetector.feed(sample);

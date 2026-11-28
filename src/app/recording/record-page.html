@@ -52,6 +52,9 @@
           {{ roleLabel(slot.role()) }}
           {{ linkState(slot) === 'ok' ? '✓' : linkState(slot) === 'silent' ? (silentSeconds(slot) ? silentSeconds(slot) + ' s uden data' : 'venter på data') : slot.status() === 'reconnecting' ? 'genforbinder…' : '✕' }}
         </span>
+        @if (canReconnect(slot)) {
+          <button class="secondary link-button" (click)="reconnect(slot)">Genforbind {{ roleLabel(slot.role()).toLowerCase() }}</button>
+        }
       }
       @if (!hasBowSensor()) {
         <span class="link bad">Ingen bue</span>
@@ -96,6 +99,9 @@
             <option [value]="r.value">{{ r.label }}</option>
           }
         </select>
+        @if (canReconnect(slot)) {
+          <button class="secondary" (click)="reconnect(slot)">Genforbind</button>
+        }
         <button class="secondary" (click)="manager.remove(slot)">Fjern</button>
         @if (placements(slot.role()); as places) {
           @if (places.length) {
