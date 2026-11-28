@@ -61,6 +61,19 @@
       }
       <button class="secondary live-button" (click)="toggleLive()">{{ showLive() ? 'Skjul live' : 'Vis live' }}</button>
     </div>
+    @if (alarmText(); as text) {
+      <div class="alarm" role="alert">
+        <strong>⚠ {{ text }}</strong>
+        <div class="alarm-actions">
+          @for (slot of recorder.alarm(); track slot.sensor.id) {
+            @if (manager.canRestart(slot)) {
+              <button (click)="reconnect(slot)">Genforbind {{ roleLabel(slot.role()).toLowerCase() }}</button>
+            }
+          }
+          <button class="secondary" (click)="recorder.dismissAlarm()">Slå alarm fra</button>
+        </div>
+      </div>
+    }
     <button class="secondary pocket-button" (click)="lockedFor.set(undefined); pocket.set(true)">Lommetilstand</button>
     @if (lockedFor(); as ms) {
       <p class="warn locked">
@@ -69,7 +82,7 @@
       </p>
     }
     @if (pocket()) {
-      <app-pocket-mode [status]="pocketStatus()" (unlocked)="pocket.set(false)" (wasLocked)="lockedFor.set($event)" />
+      <app-pocket-mode [status]="pocketStatus()" [alarm]="alarmText()" (unlocked)="pocket.set(false)" (wasLocked)="lockedFor.set($event)" />
     } @else if (showLive()) {
       <app-live-cubes />
     }

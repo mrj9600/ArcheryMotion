@@ -15,6 +15,9 @@ const RING = 352;
   selector: 'app-pocket-mode',
   template: `
     <div class="pocket" (contextmenu)="$event.preventDefault()">
+      @if (alarm()) {
+        <p class="alarm" role="alert">⚠ {{ alarm() }}<br />Lås op for at genforbinde.</p>
+      }
       <p class="state">{{ status() }}</p>
       <button
         class="ring"
@@ -58,6 +61,14 @@ const RING = 352;
       font-size: 14px;
       padding: 0 24px;
     }
+    .alarm {
+      color: #ff5a5a;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin: 0;
+      padding: 0 24px;
+    }
     .ring {
       width: 120px;
       height: 120px;
@@ -98,6 +109,8 @@ const RING = 352;
 export class PocketMode implements OnInit, OnDestroy {
   /** Shown dimly, e.g. "Optager · 12 skud". */
   readonly status = input('');
+  /** Shown big and red while sensors send no data (the alarm sound comes from the recorder). */
+  readonly alarm = input('');
   readonly unlocked = output<void>();
   /** The phone was locked (screen off) for this many ms; pocket mode is left right away. */
   readonly wasLocked = output<number>();

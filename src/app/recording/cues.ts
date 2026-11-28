@@ -18,6 +18,34 @@ export function beep(frequency = 880, durationMs = 120): void {
   }
 }
 
+/** Loud warning: three high tones and a long vibration, meant to be heard from a pocket. */
+export function alarm(): void {
+  try {
+    audio ??= new AudioContext();
+    if (audio.state === 'suspended') void audio.resume();
+    for (let i = 0; i < 3; i++) {
+      const at = audio.currentTime + i * 0.3;
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = 'square'; // carries further than a sine at the same volume
+      osc.frequency.value = i % 2 ? 1000 : 1400;
+      gain.gain.setValueAtTime(0.9, at);
+      gain.gain.setValueAtTime(0.9, at + 0.18);
+      gain.gain.exponentialRampToValueAtTime(0.001, at + 0.22);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(at);
+      osc.stop(at + 0.22);
+    }
+  } catch {
+    /* no audio available */
+  }
+  try {
+    navigator.vibrate?.([400, 150, 400, 150, 400]);
+  } catch {
+    /* not supported */
+  }
+}
+
 export function vibrate(ms = 80): void {
   try {
     navigator.vibrate?.(ms);

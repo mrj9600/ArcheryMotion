@@ -59,6 +59,14 @@ export class RecordPage implements OnDestroy {
   /** Black, touch-locked screen while the phone is in a pocket (see PocketMode). */
   readonly pocket = signal(false);
 
+  /** E.g. "Bue og trækarm sender ingen data". */
+  readonly alarmText = computed(() => {
+    const names = this.recorder.alarm().map((s) => this.roleLabel(s.role()).toLowerCase());
+    if (!names.length) return '';
+    const list = names.length === 1 ? names[0] : names.slice(0, -1).join(', ') + ' og ' + names[names.length - 1];
+    return `${list[0].toUpperCase()}${list.slice(1)} sender ingen data. Skud bliver ikke registreret.`;
+  });
+
   /** How long (ms) the phone was locked the last time it was, while in pocket mode. */
   readonly lockedFor = signal<number | undefined>(undefined);
 

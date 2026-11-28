@@ -5,7 +5,8 @@ import { Db, newId } from '../data/db';
 import { RecordingDropout, SampleChunk, Session, ShotRecord, TargetElevation } from '../data/models';
 import { SensorManager, SensorSlot } from '../sensors/sensor-manager.service';
 import { ChunkBuffer } from './chunk-buffer';
-import { beep, ScreenWakeLock, vibrate } from './cues';
+import { alarm, beep, ScreenWakeLock, vibrate } from './cues';
+import { DataWatch } from './data-watch';
 import { LiveMotion } from './live-motion';
 import { PauseDetector } from './pause-detector';
 import { RELEASE_G, ReleaseDetector } from './release-detector';
@@ -57,8 +58,15 @@ export class Recorder {
   private readonly lost = new Map<SensorSlot, RecordingDropout>();
   /** Dropouts that have ended, waiting for the sensor's first sample. */
   private readonly back = new Map<SensorSlot, RecordingDropout>();
-  /** Sensors the archer asked to connect again. */
-  private readonly restarting = new Set<SensorSlot>();
+  /** Sensors connected again on purpose, and by whom. */
+  private readonly restarting = new Map<SensorSlot, 'manual' | 'auto'>();
+  /** When the connection first came back after a sensor's last sample (performance.now()). */
+  private readonly backSince = new Map<SensorSlot, number>();
+  private watch = new DataWatch();
+  private watchTimer?: ReturnType<typeof setInterval>;
+  private lastAlarm = 0;
+  /** Sensors that send no data although they should (see DataWatch); sounds the alarm. */
+  readonly alarm = signal<SensorSlot[]>([]);
 
   constructor() {
     // Notes when a sensor loses the connection and when it is back
@@ -91,6 +99,11 @@ export class Recorder {
     this.lost.clear();
     this.back.clear();
     this.restarting.clear();
+    this.backSince.clear();
+    this.watch = new DataWatch();
+    this.alarm.set([]);
+    clearInterval(this.watchTimer);
+    this.watchTimer = setInterval(() => this.checkData(), 1000);
     this.detector = new ReleaseDetector(this.threshold());
     this.pauseDetector = new PauseDetector();
     this.paused.set(undefined);
@@ -107,6 +120,8 @@ export class Recorder {
     const session = this.session();
     if (!session) return;
     this.subscription?.unsubscribe();
+    clearInterval(this.watchTimer);
+    this.alarm.set([]);
     this.paused.set(undefined);
     for (const track of this.tracks.values()) this.write(track.buffer.flush());
     await this.writes;
@@ -146,9 +161,40 @@ export class Recorder {
   }
 
   /** Connects a sensor again that sends no data (noted in the recording's dropouts). */
-  async reconnect(slot: SensorSlot): Promise<void> {
-    if (this.session()) this.restarting.add(slot);
+  async reconnect(slot: SensorSlot, by: 'manual' | 'auto' = 'manual'): Promise<void> {
+    if (this.session()) this.restarting.set(slot, by);
     await this.manager.restart(slot);
+  }
+
+  /** The archer heard the alarm: quiet until those sensors send data again. */
+  dismissAlarm(): void {
+    for (const slot of this.alarm()) this.watch.dismiss(slot.sensor.id, slot.latest()?.time);
+    this.alarm.set([]);
+  }
+
+  /** Once a second: restarts or warns about sensors that send no data (see DataWatch). */
+  private checkData(): void {
+    if (!this.session()) return;
+    const now = performance.now();
+    const slots = this.manager.slots().filter((s) => s.status() !== 'disconnected');
+    const result = this.watch.check(
+      now,
+      this.t0,
+      !!this.paused(),
+      slots.map((s) => ({ id: s.sensor.id, lastData: s.latest()?.time, backSince: this.backSince.get(s) })),
+    );
+    for (const id of result.restart) {
+      const slot = slots.find((s) => s.sensor.id === id);
+      if (slot) void this.reconnect(slot, 'auto');
+    }
+    const alarmed = slots.filter((s) => result.alarm.includes(s.sensor.id));
+    const before = this.alarm();
+    if (alarmed.length !== before.length || alarmed.some((s, i) => s !== before[i])) this.alarm.set(alarmed);
+    // Every 4 s while it lasts
+    if (alarmed.length && now - this.lastAlarm >= 4000) {
+      this.lastAlarm = now;
+      alarm();
+    }
   }
 
   /** Pauses by hand; only the button resumes it (the bow may move while walking). */
@@ -199,13 +245,16 @@ export class Recorder {
     const open = this.lost.get(slot);
     const now = performance.now() - this.t0;
     if (lost && !open) {
-      const dropout: RecordingDropout = { sensorIndex: track.index, start: now, ...(this.restarting.delete(slot) ? { by: 'manual' as const } : {}) };
+      const by = this.restarting.get(slot);
+      this.restarting.delete(slot);
+      const dropout: RecordingDropout = { sensorIndex: track.index, start: now, ...(by ? { by } : {}) };
       (session.dropouts ??= []).push(dropout);
       this.lost.set(slot, dropout);
     } else if (!lost && open) {
       open.end = now;
       this.lost.delete(slot);
       this.back.set(slot, open);
+      if (!this.backSince.has(slot)) this.backSince.set(slot, performance.now());
       if (this.sound()) beep(990, 60);
     } else {
       return;
@@ -238,6 +287,7 @@ export class Recorder {
       void this.db.saveSession(session);
     }
     const t = sample.time - this.t0;
+    this.backSince.delete(slot);
     const back = this.back.get(slot);
     if (back) {
       // Logged so a connection that comes back without data can be told apart
