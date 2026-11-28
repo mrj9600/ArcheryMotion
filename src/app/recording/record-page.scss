@@ -208,32 +208,16 @@
   }
 }
 
-.pocket-button {
+.live-button {
   margin-left: auto;
   padding: 4px 10px;
   font-size: 13px;
 }
 
-.link-button {
-  padding: 4px 10px;
-  font-size: 13px;
-}
-
-.summary {
+/* Big, so it is easy to hit before the phone goes in the pocket */
+.pocket-button {
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  background: none;
-  color: var(--text);
-  padding: 0;
-  text-align: left;
-  font-weight: normal;
-}
-
-.summary .change {
-  color: var(--accent);
-  font-size: 14px;
-  white-space: nowrap;
+  min-height: 52px;
+  font-size: 17px;
+  font-weight: 600;
 }

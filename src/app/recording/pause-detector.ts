@@ -13,19 +13,35 @@ export const PAUSE_LIMITS = {
   pauseAfterMs: 10000,
   /** Smoothed speed (deg/s) that counts as the bow being picked up again. */
   resume: 6.9,
+  /**
+   * The bow carried flat (pointing steeply up or down, |pitch| at least this, degrees) for
+   * `pauseAfterMs` also pauses: walking between targets. From the field recordings of
+   * 28 November 2026: carried, the bow points 75–85° up or down; when shooting, even steeply
+   * downhill, it stays within about 60° and never that long.
+   */
+  flatPitch: 60,
+  /** After a pause, the bow must point within this (|pitch|, degrees) for `backMs` to resume. */
+  backPitch: 45,
+  backMs: 500,
 };
 
 /** Time constant (s) of the smoothed speed used to resume. */
 const RESUME_TAU = 0.1;
 
 /**
- * Finds when the bow has been put down (no movement at all for a while) and when it is
- * picked up again, so the recording can pause while the archer fetches arrows.
+ * Finds when the bow has been put down (no movement at all for a while) or is carried flat
+ * (pointing steeply up or down for a while), and when it is taken up to shoot again, so the
+ * recording can pause while the archer fetches arrows or walks to the next target. It
+ * resumes when the bow moves and points within `backPitch` (the bow's pitch needs angles,
+ * e.g. a MantisX; without them only the stillness counts).
  */
 export class PauseDetector {
   paused = false;
 
   private stillSince?: number;
+  private flatSince?: number;
+  /** Since when the bow has pointed within backPitch (undefined: not now). */
+  private levelSince?: number;
   private speed = 0;
   private lastTime?: number;
 
@@ -40,21 +56,24 @@ export class PauseDetector {
     this.lastTime = t;
     const mag = Math.hypot(gyro[0], gyro[1], gyro[2]);
     this.speed += (1 - Math.exp(-dt / RESUME_TAU)) * (mag - this.speed);
+    const pitch = sample.euler ? Math.abs(sample.euler[1]) : 0;
+    if (pitch < this.limits.backPitch) this.levelSince ??= t;
+    else this.levelSince = undefined;
 
     if (this.paused) {
-      if (this.speed > this.limits.resume) {
-        this.paused = false;
-        this.stillSince = undefined;
+      if (this.speed > this.limits.resume && this.levelSince !== undefined && t - this.levelSince >= this.limits.backMs) {
+        this.reset();
         return 'resume';
       }
       return undefined;
     }
-    if (mag >= this.limits.stillMax) {
-      this.stillSince = undefined;
-      return undefined;
-    }
-    this.stillSince ??= t;
-    if (t - this.stillSince >= this.limits.pauseAfterMs) {
+    if (pitch >= this.limits.flatPitch) this.flatSince ??= t;
+    else this.flatSince = undefined;
+    if (mag >= this.limits.stillMax) this.stillSince = undefined;
+    else this.stillSince ??= t;
+    const still = this.stillSince !== undefined && t - this.stillSince >= this.limits.pauseAfterMs;
+    const flat = this.flatSince !== undefined && t - this.flatSince >= this.limits.pauseAfterMs;
+    if (still || flat) {
       this.paused = true;
       return 'pause';
     }
@@ -65,5 +84,6 @@ export class PauseDetector {
   reset(): void {
     this.paused = false;
     this.stillSince = undefined;
+    this.flatSince = undefined;
   }
 }

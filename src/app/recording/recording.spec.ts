@@ -54,6 +54,18 @@ describe('ReleaseDetector', () => {
     expect(d.feed({ time: 0, accMagnitude: 0.1 })).toBe(false);
     expect(d.feed({ time: 10, accMagnitude: 1.5 })).toBe(true);
   });
+
+  it('ignores a jolt while the bow is turning a lot (not held at full draw)', () => {
+    // MantisX at 100 Hz: swung at 40 deg/s, then a 7 g knock; later held still and shot
+    const d = new ReleaseDetector(6);
+    const hits: number[] = [];
+    for (let t = 0; t < 10000; t += 10) {
+      const swinging = t < 4000;
+      const jolt = t === 3000 || t === 8000;
+      if (d.feed({ time: t, gyro: [swinging ? 40 : 1, 0, 0], accMagnitude: jolt ? 7 : 0.1 })) hits.push(t);
+    }
+    expect(hits).toEqual([8000]);
+  });
 });
 
 describe('recording file', () => {

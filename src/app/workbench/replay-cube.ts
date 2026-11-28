@@ -186,9 +186,11 @@ export class ReplayCube implements AfterViewInit, OnDestroy {
     const pose = this.poseOf(tr, i);
     if (!pose) return;
     this.box.position.copy(this.position(pose.up, pose.right));
-    // Yaw (right is −y rotation), then tip (up is +x rotation), then cant (top right is −z rotation)
+    // Yaw (right is −y rotation), then tip (up is +x rotation), then cant (top right is −z rotation).
+    // The bow's cant is its real tilt and is never magnified; an arm's turn about itself is
     const m = this.magTurn();
-    this.box.rotation.copy(new Euler(pose.tip * m * DEG, -pose.twist * m * DEG, -pose.cant * m * DEG, 'YXZ'));
+    const mc = this.arm() < 0 ? 1 : m;
+    this.box.rotation.copy(new Euler(pose.tip * m * DEG, -pose.twist * m * DEG, -pose.cant * mc * DEG, 'YXZ'));
 
     // Trail up to now, coloured by phase
     const pts: number[] = [];
