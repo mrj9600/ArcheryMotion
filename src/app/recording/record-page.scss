@@ -226,3 +226,11 @@
   padding: 2px 10px;
   font-size: 13px;
 }
+
+.locked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+}

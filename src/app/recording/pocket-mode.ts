@@ -25,7 +25,7 @@ const HOLD_MS = 2000;
       >
         <span>Hold</span>
       </button>
-      <p class="help">Hold fingeren på ringen i 2 sekunder for at låse op.<br />Tryk ikke på tænd/sluk-knappen: så stopper optagelsen med at få data.</p>
+      <p class="help">Hold fingeren på ringen i 2 sekunder for at låse op.<br />Tryk ikke på tænd/sluk-knappen: så stopper optagelsen med at få data, indtil du låser op.</p>
     </div>
   `,
   styles: `
@@ -81,16 +81,37 @@ export class PocketMode implements OnInit, OnDestroy {
   /** Shown dimly, e.g. "Optager · 12 skud". */
   readonly status = input('');
   readonly unlocked = output<void>();
+  /** The phone was locked (screen off) for this many ms; pocket mode is left right away. */
+  readonly wasLocked = output<number>();
 
   readonly holding = signal(false);
   private timer?: ReturnType<typeof setTimeout>;
+  private hiddenAt?: number;
+
+  /**
+   * The side button locks the phone (a page cannot stop that), and the archer usually
+   * presses it to get out. So coming back from a locked screen leaves pocket mode at once.
+   */
+  private readonly onVisibility = () => {
+    if (document.hidden) {
+      this.hiddenAt = performance.now();
+      return;
+    }
+    if (this.hiddenAt === undefined) return;
+    const ms = performance.now() - this.hiddenAt;
+    this.hiddenAt = undefined;
+    this.wasLocked.emit(ms);
+    this.unlocked.emit();
+  };
 
   ngOnInit(): void {
     // Full screen hides the phone's own bars; not all browsers allow it
     document.documentElement.requestFullscreen?.().catch(() => undefined);
+    document.addEventListener('visibilitychange', this.onVisibility);
   }
 
   ngOnDestroy(): void {
+    document.removeEventListener('visibilitychange', this.onVisibility);
     this.cancel();
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => undefined);
   }

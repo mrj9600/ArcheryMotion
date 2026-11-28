@@ -59,6 +59,14 @@ export class RecordPage implements OnDestroy {
   /** Black, touch-locked screen while the phone is in a pocket (see PocketMode). */
   readonly pocket = signal(false);
 
+  /** How long (ms) the phone was locked the last time it was, while in pocket mode. */
+  readonly lockedFor = signal<number | undefined>(undefined);
+
+  lockedSeconds(ms: number): string {
+    const s = Math.round(ms / 1000);
+    return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`;
+  }
+
   /** Dim status line in pocket mode. */
   readonly pocketStatus = computed(() => {
     const s = this.recorder.session();
